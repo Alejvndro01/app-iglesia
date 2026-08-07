@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: iglesia_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-iglesia_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ClaveSegura_2026!}
+      POSTGRES_DB: ${DB_NAME:-iglesia_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-iglesia_admin} -d ${DB_NAME:-iglesia_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iglesia_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-iglesia_admin}:${DB_PASSWORD:-ClaveSegura_2026!}@postgres:5432/${DB_NAME:-iglesia_db}?schema=public
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - app_net
+
+volumes:
+  pgdata:
+
+networks:
+  app_net:
+    driver: bridge
