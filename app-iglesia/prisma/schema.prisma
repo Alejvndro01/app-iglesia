@@ -20,10 +20,10 @@ model Usuario {
 
 model Archivo {
   id        String   @id @default(uuid())
-  filename  String
+  nombre    String   // <--- Asegúrate de que tenga este campo
   path      String
   mimeType  String
-  size      Int
+  tamano    Int
   usuarioId String
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
   createdAt DateTime @default(now())
