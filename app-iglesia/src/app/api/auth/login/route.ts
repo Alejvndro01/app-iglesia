@@ -69,13 +69,13 @@ export async function POST(request: Request) {
     });
 
     response.cookies.set({
-      name: 'auth_token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 8, // 8 horas
-      path: '/',
+    name: 'auth_token',
+    value: token,
+    httpOnly: true,
+    secure: false, // <--- CAMBIAR A false PARA IP LOCAL HTTP
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 8, // 8 horas
+    path: '/',
     });
 
     return response;
