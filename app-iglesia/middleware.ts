@@ -7,24 +7,36 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
   const token = request.cookies.get('auth_token')?.value;
 
-  // Si intenta acceder a rutas protegidas sin token
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Si ya tiene token e intenta ir a /login, redirigir al dashboard
+  if (token && pathname === '/login') {
+    try {
+      await jwtVerify(token, JWT_SECRET);
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } catch {
+      // Token inválido, continuar a login
+    }
   }
 
-  try {
-    // Validar firma y expiración del JWT
-    await jwtVerify(token, JWT_SECRET);
-    return NextResponse.next();
-  } catch (error) {
-    // Token inválido o expirado -> Redirigir a login
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Proteger solo rutas /dashboard y /admin
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    try {
+      await jwtVerify(token, JWT_SECRET);
+      return NextResponse.next();
+    } catch (error) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
+
+  return NextResponse.next();
 }
 
-// Especificar qué rutas proteger
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/login'],
 };

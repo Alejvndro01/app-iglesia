@@ -25,10 +25,10 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Ocurrió un error al iniciar sesión');
+        throw new Error(data.error || 'Error al iniciar sesión');
       }
 
-      // Redirigir al panel o inicio
+      // Forzar navegación al dashboard
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
@@ -45,7 +45,7 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: '400px', margin: '80px auto', padding: '20px', fontFamily: 'sans-serif' }}>
       <h2>Iniciar Sesión - IASD</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'red', marginBottom: '10px' }}>{error}</p>}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '5px' }}>Correo Electrónico:</label>
@@ -68,7 +68,7 @@ export default function LoginPage() {
           />
         </div>
         <button type="submit" disabled={loading} style={{ padding: '10px', cursor: 'pointer' }}>
-          {loading ? 'Cargando...' : 'Entrar'}
+          {loading ? 'Ingresando...' : 'Entrar'}
         </button>
       </form>
     </div>
