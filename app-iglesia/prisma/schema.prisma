@@ -9,11 +9,12 @@ generator client {
 }
 
 model Usuario {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
+  email     String   @unique
   nombre    String
-  email     String    @unique
   password  String
-  createdAt DateTime  @default(now())
+  rol       String   @default("USER") // <--- Agregar esta línea si falta
+  createdAt DateTime @default(now())
   archivos  Archivo[]
 }
 
