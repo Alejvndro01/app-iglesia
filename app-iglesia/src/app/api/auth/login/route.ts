@@ -13,6 +13,10 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Correo y contraseña requeridos' }, { status: 400 });
+    }
+
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
@@ -23,26 +27,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret_key');
-    const token = await new SignJWT({ id: usuario.id, email: usuario.email, role: usuario.role })
+    // Detectar dinámicamente 'role' o 'rol' para evitar excepciones
+    const userRole = (usuario as unknown as { role?: string; rol?: string }).role || 
+                     (usuario as unknown as { role?: string; rol?: string }).rol || 
+                     'USER';
+
+    const jwtSecret = process.env.JWT_SECRET || 'iasd_central_hualqui_secret_2026';
+    const secret = new TextEncoder().encode(jwtSecret);
+
+    const token = await new SignJWT({
+      id: usuario.id,
+      email: usuario.email,
+      role: userRole,
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
       .sign(secret);
 
     const response = NextResponse.json({
       message: 'Login exitoso',
-      user: { nombre: usuario.nombre, email: usuario.email, role: usuario.role },
+      user: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        role: userRole,
+      },
     });
 
     response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Permitir en HTTP local (192.168.70.183)
       sameSite: 'lax',
       path: '/',
     });
 
     return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Error en el servidor' }, { status: 500 });
+    console.error('Error detallado en /api/auth/login:', error);
+    return NextResponse.json({ error: 'Error en el servidor al autenticar' }, { status: 500 });
   }
 }
