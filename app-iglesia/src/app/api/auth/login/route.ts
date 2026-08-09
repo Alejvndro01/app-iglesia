@@ -24,14 +24,14 @@ export async function POST(request: Request) {
     }
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret_key');
-    const token = await new SignJWT({ id: usuario.id, email: usuario.email, rol: usuario.rol })
+    const token = await new SignJWT({ id: usuario.id, email: usuario.email, role: usuario.role })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
       .sign(secret);
 
     const response = NextResponse.json({
       message: 'Login exitoso',
-      user: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+      user: { nombre: usuario.nombre, email: usuario.email, role: usuario.role },
     });
 
     response.cookies.set('auth_token', token, {

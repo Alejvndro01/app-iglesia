@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const nuevoArchivo = await prisma.archivo.create({
       data: {
-        nombre: filename,
+        titulo: filename,
         path: filePath,
         mimeType: file.type || 'application/octet-stream',
         tamano: file.size,
