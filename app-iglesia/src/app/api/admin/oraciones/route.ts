@@ -1,42 +1,30 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { jwtVerify } from 'jose'; // O jsonwebtoken según tu paquete
+import { cookies } from 'next/headers';
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
-
-// GET: Obtener oraciones para el panel
 export async function GET() {
   try {
-    const oraciones = await prisma.oracion.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json({ oraciones });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al consultar oraciones' }, { status: 500 });
-  }
-}
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
 
-// PATCH: Cambiar estado de la oración (ej. a "Respondida")
-export async function PATCH(request: Request) {
-  try {
-    const body = await request.json();
-    const { id, status } = body;
-
-    if (!id || !status) {
-      return NextResponse.json({ error: 'ID y estado son requeridos' }, { status: 400 });
+    if (!token) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const oracionActualizada = await prisma.oracion.update({
-      where: { id },
-      data: { status },
-    });
+    // Verificar el Token JWT
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
 
-    return NextResponse.json({ message: 'Estado actualizado', oracion: oracionActualizada });
+    // Validar el Rol
+    if (payload.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Acceso denegado: Requiere rol ADMIN' }, { status: 403 });
+    }
+
+    // Si es ADMIN, responder con los datos
+    const oraciones = await prisma.oracion.findMany({ orderBy: { createdAt: 'desc' } });
+    return NextResponse.json({ oraciones });
+
   } catch (error) {
-    return NextResponse.json({ error: 'Error al actualizar estado' }, { status: 500 });
+    return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
   }
 }

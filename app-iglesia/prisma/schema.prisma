@@ -8,19 +8,24 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model Usuario {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String    @id @default(uuid())
   nombre    String
+  email     String    @unique
   password  String
-  rol       String   @default("USER") // <--- Agregar esta línea si falta
-  createdAt DateTime @default(now())
-  archivos  Archivo[]
+  role      Role      @default(USER)
+  archivos  Archivo[] // <-- AGREGAR ESTA LÍNEA (Relación opuesta)
+  createdAt DateTime  @default(now())
 }
 
 model Archivo {
   id        String   @id @default(uuid())
-  nombre    String
+  titulo    String
   path      String
   mimeType  String
   tamano    Int
