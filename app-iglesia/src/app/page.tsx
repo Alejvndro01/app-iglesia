@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
+import { HomeView } from '@/components/views/HomeView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
@@ -37,14 +38,7 @@ export default function MainPage() {
 
       <main className="flex-1">
         {currentPage === 'home' && (
-          <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-            <h1 className="text-3xl font-black text-[#486379]">
-              Bienvenido a IASD Central Hualqui
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Comuna de Hualqui, Región del Bío-Bío.
-            </p>
-          </div>
+          <HomeView navigateTo={setCurrentPage} showToast={showToast} />
         )}
         {currentPage === 'himnario' && <HimnarioPageView showToast={showToast} />}
         {currentPage === 'leccion' && <SabbathLessonPageView showToast={showToast} />}
