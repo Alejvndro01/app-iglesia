@@ -14,13 +14,13 @@ enum Role {
 }
 
 model Usuario {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   nombre    String
-  email     String    @unique
+  email     String   @unique
   password  String
-  role      Role      @default(USER)
-  archivos  Archivo[] // <-- AGREGAR ESTA LÍNEA (Relación opuesta)
-  createdAt DateTime  @default(now())
+  rol       Role     @default(USER) // <-- Usar 'rol' para coincidir con PostgreSQL
+  createdAt DateTime @default(now())
+  archivos  Archivo[]
 }
 
 model Archivo {

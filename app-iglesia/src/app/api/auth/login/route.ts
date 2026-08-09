@@ -27,18 +27,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
     }
 
-    // Detectar dinámicamente 'role' o 'rol' para evitar excepciones
-    const userRole = (usuario as unknown as { role?: string; rol?: string }).role || 
-                     (usuario as unknown as { role?: string; rol?: string }).rol || 
-                     'USER';
-
     const jwtSecret = process.env.JWT_SECRET || 'iasd_central_hualqui_secret_2026';
     const secret = new TextEncoder().encode(jwtSecret);
 
     const token = await new SignJWT({
       id: usuario.id,
       email: usuario.email,
-      role: userRole,
+      rol: usuario.role,
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
@@ -50,20 +45,20 @@ export async function POST(request: Request) {
         id: usuario.id,
         nombre: usuario.nombre,
         email: usuario.email,
-        role: userRole,
+        rol: usuario.role,
       },
     });
 
     response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: false, // Permitir en HTTP local (192.168.70.183)
+      secure: false,
       sameSite: 'lax',
       path: '/',
     });
 
     return response;
   } catch (error) {
-    console.error('Error detallado en /api/auth/login:', error);
+    console.error('Error en /api/auth/login:', error);
     return NextResponse.json({ error: 'Error en el servidor al autenticar' }, { status: 500 });
   }
 }
