@@ -50,6 +50,16 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   const [loadingUpload, setLoadingUpload] = useState(false);
   const [materialSearch, setMaterialSearch] = useState('');
 
+  // Helper para obtener etiqueta de extensión limpia
+  const getExtensionLabel = (mimeType: string, path: string) => {
+    if (mimeType.includes('pdf') || path.endsWith('.pdf')) return 'PDF';
+    if (mimeType.includes('word') || mimeType.includes('officedocument') || path.endsWith('.docx')) return 'DOCX';
+    if (mimeType.includes('presentation') || path.endsWith('.pptx')) return 'PPTX';
+    if (mimeType.includes('plain') || path.endsWith('.txt')) return 'TXT';
+    if (mimeType.includes('mpeg') || mimeType.includes('mp3')) return 'MP3';
+    return 'DOCUMENTO';
+  };
+
   // Cargar Testimonios
   const fetchTestimonies = async () => {
     try {
@@ -359,24 +369,24 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               <div key={m.id} className="bg-white rounded-3xl p-5 border border-sky-100 shadow-xs flex flex-col justify-between space-y-3">
                 <div>
                   <span className="bg-[#d0e2f1] text-[#486379] text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-                    {m.mimeType.split('/')[1] || 'DOC'}
+                    {getExtensionLabel(m.mimeType, m.path)}
                   </span>
                   <h4 className="text-sm font-bold text-[#486379] mt-2">{m.titulo}</h4>
                   <p className="text-xs text-slate-400 mt-1">Subido por: {m.usuario?.nombre || 'Miembro'}</p>
                 </div>
                 <button
-                type="button"
-                onClick={() => {
+                  type="button"
+                  onClick={() => {
                     const link = document.createElement('a');
                     link.href = m.path;
                     link.download = m.titulo || 'archivo-descarga';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                }}
-                className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
+                  }}
+                  className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
                 >
-                Descargar Archivo
+                  Descargar Archivo
                 </button>
               </div>
             ))

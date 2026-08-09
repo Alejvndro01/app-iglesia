@@ -22,22 +22,26 @@ export async function GET() {
 // POST: Crear un nuevo testimonio
 export async function POST(request: Request) {
   try {
-    const { autor, titulo, contenido } = await request.json();
+    const body = await request.json();
+    const author = body.autor || body.author;
+    const title = body.titulo || body.title;
+    const content = body.contenido || body.content;
 
-    if (!contenido) {
+    if (!content) {
       return NextResponse.json({ error: 'El contenido es obligatorio' }, { status: 400 });
     }
 
     const nuevoTestimonio = await prisma.testimonio.create({
       data: {
-        autor: autor?.trim() || 'Hermano de Iglesia',
-        titulo: titulo?.trim() || 'Agradecimiento al Señor',
-        contenido: contenido.trim(),
+        author: author?.trim() || 'Hermano de Iglesia',
+        title: title?.trim() || 'Agradecimiento al Señor',
+        content: content.trim(),
       },
     });
 
     return NextResponse.json(nuevoTestimonio, { status: 201 });
   } catch (error) {
+    console.error('Error al guardar testimonio:', error);
     return NextResponse.json({ error: 'Error al publicar testimonio' }, { status: 500 });
   }
 }
