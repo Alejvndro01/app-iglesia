@@ -14,12 +14,12 @@ enum Role {
 }
 
 model Usuario {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   nombre    String
-  email     String   @unique
+  email     String    @unique
   password  String
-  rol       Role     @default(USER) // <-- Usar 'rol' para coincidir con PostgreSQL
-  createdAt DateTime @default(now())
+  role      Role      @default(USER) @map("rol") // <-- MAPEA 'role' EN CÓDIGO A 'rol' EN POSTGRESQL
+  createdAt DateTime  @default(now())
   archivos  Archivo[]
 }
 
