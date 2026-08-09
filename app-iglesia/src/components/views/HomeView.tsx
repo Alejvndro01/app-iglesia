@@ -364,15 +364,20 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                   <h4 className="text-sm font-bold text-[#486379] mt-2">{m.titulo}</h4>
                   <p className="text-xs text-slate-400 mt-1">Subido por: {m.usuario?.nombre || 'Miembro'}</p>
                 </div>
-                <a
-                  href={m.path}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer"
+                <button
+                type="button"
+                onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = m.path;
+                    link.download = m.titulo || 'archivo-descarga';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }}
+                className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
                 >
-                  Descargar Archivo
-                </a>
+                Descargar Archivo
+                </button>
               </div>
             ))
           )}

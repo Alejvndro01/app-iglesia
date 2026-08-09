@@ -57,7 +57,8 @@ export async function POST(request: Request) {
     const filePath = path.join(uploadDir, uniqueName);
     await writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/${uniqueName}`;
+    // Apunta al endpoint de la API dinámica para evitar 404 estáticos en Next.js Standalone
+    const publicUrl = `/api/archivos/${uniqueName}`;
 
     const registroArchivo = await prisma.archivo.create({
       data: {
