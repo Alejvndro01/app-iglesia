@@ -28,3 +28,31 @@ model Archivo {
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
   createdAt DateTime @default(now())
 }
+
+model Oracion {
+  id        String   @id @default(uuid())
+  nombre    String   @default("Anónimo")
+  request   String
+  isPrivate Boolean  @default(false)
+  status    String   @default("En Oración")
+  createdAt DateTime @default(now())
+}
+
+model Testimonio {
+  id        String   @id @default(uuid())
+  author    String
+  title     String
+  content   String
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model SolicitudCurso {
+  id        String   @id @default(uuid())
+  curso     String
+  nombre    String
+  telefono  String
+  direccion String?
+  modalidad String
+  createdAt DateTime @default(now())
+}

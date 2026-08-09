@@ -14,11 +14,51 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
   const [address, setAddress] = useState('');
   const [modality, setModality] = useState('Presencial en Templo');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    showToast('¡Solicitud recibida! Nos pondremos en contacto.');
+    if (!selectedCourse) return;
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/cursos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          curso: selectedCourse.title,
+          nombre: fullName,
+          telefono: phone,
+          direccion: address,
+          modalidad: modality,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Ocurrió un error al enviar la solicitud');
+      }
+
+      setSubmitted(true);
+      showToast('¡Solicitud guardada correctamente en la base de datos!');
+
+      // Limpiar campos del formulario
+      setFullName('');
+      setPhone('');
+      setAddress('');
+      setModality('Presencial en Templo');
+      setSelectedCourse(null);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast(err.message);
+      } else {
+        showToast('Error de conexión con el servidor');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,7 +133,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
             </p>
             <button
               onClick={() => setSubmitted(false)}
-              className="mt-4 px-5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-full"
+              className="mt-4 px-5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-full cursor-pointer hover:bg-emerald-700 transition-colors"
             >
               Enviar otra solicitud
             </button>
@@ -112,7 +152,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                     ? selectedCourse.title
                     : 'Selecciona un curso de la lista superior'
                 }
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 font-bold text-[#eca489]"
+                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 font-bold text-[#eca489] outline-none"
               />
             </div>
 
@@ -127,7 +167,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                   placeholder="Ej. Juan Pérez"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none"
+                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
                 />
               </div>
 
@@ -141,7 +181,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                   placeholder="+56 9 1234 5678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none"
+                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
                 />
               </div>
             </div>
@@ -155,7 +195,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                 placeholder="Ej. Calle Bulnes #123, Hualqui"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none"
+                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
               />
             </div>
 
@@ -166,7 +206,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
               <select
                 value={modality}
                 onChange={(e) => setModality(e.target.value)}
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none"
+                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
               >
                 <option value="Presencial en Templo">
                   Presencial en Templo Central (Bulnes 450)
@@ -180,10 +220,12 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
 
             <button
               type="submit"
-              disabled={!selectedCourse}
-              className="w-full py-4 bg-[#eca489] hover:bg-[#e49375] disabled:opacity-50 text-white font-bold text-xs rounded-full shadow-md"
+              disabled={!selectedCourse || loading}
+              className="w-full py-4 bg-[#eca489] hover:bg-[#e49375] disabled:opacity-50 text-white font-bold text-xs rounded-full shadow-md transition-all cursor-pointer"
             >
-              {selectedCourse
+              {loading
+                ? 'Guardando en base de datos...'
+                : selectedCourse
                 ? 'Confirmar y Solicitar Curso'
                 : 'Selecciona un curso arriba'}
             </button>
