@@ -29,7 +29,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Aplicar --chown directamente en los comandos COPY (Súper rápido)
+# Aplicar --chown directamente en los comandos COPY
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
@@ -38,7 +38,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# SE ELIMINÓ EL 'RUN chown -R' QUE CAUSABA EL LENTITUD
+# CREAR DIRECTORIO UPLOADS Y ASIGNAR PROPIEDAD A NEXTJS (RESUELVE EACCES)
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
 
 USER nextjs
 
