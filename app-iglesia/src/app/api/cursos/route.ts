@@ -8,6 +8,18 @@ const pool = new pg.Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+export async function GET() {
+  try {
+    const solicitudes = await prisma.solicitudCurso.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return NextResponse.json({ solicitudes });
+  } catch (error) {
+    console.error('Error al consultar solicitudes:', error);
+    return NextResponse.json({ error: 'Error al obtener las solicitudes' }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -23,6 +35,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Solicitud enviada con éxito', solicitud });
   } catch (error) {
+    console.error('Error al guardar solicitud:', error);
     return NextResponse.json({ error: 'Error al procesar solicitud' }, { status: 500 });
   }
 }

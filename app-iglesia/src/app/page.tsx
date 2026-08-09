@@ -7,6 +7,7 @@ import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
 import { LoginView, RegisterView } from '@/components/views/AuthViews';
+import { AdminPanelPageView } from '@/components/views/AdminView';
 
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -59,6 +60,9 @@ export default function MainPage() {
             showToast={showToast}
             setUserRole={setUserRole}
           />
+        )}
+        {currentPage === 'admin' && (
+          <AdminPanelPageView showToast={showToast} />
         )}
       </main>
     </div>
