@@ -6,6 +6,7 @@ import { HomeView } from '@/components/views/HomeView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
+import { LoginView, RegisterView } from '@/components/views/AuthViews';
 
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -44,6 +45,20 @@ export default function MainPage() {
         {currentPage === 'leccion' && <SabbathLessonPageView showToast={showToast} />}
         {currentPage === 'estudios-biblicos' && (
           <EstudiosBiblicosPageView showToast={showToast} />
+        )}
+        {currentPage === 'login' && (
+          <LoginView
+            navigateTo={setCurrentPage}
+            showToast={showToast}
+            setUserRole={setUserRole}
+          />
+        )}
+        {currentPage === 'register' && (
+          <RegisterView
+            navigateTo={setCurrentPage}
+            showToast={showToast}
+            setUserRole={setUserRole}
+          />
         )}
       </main>
     </div>
