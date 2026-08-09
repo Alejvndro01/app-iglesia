@@ -10,7 +10,7 @@ const prisma = new PrismaClient({ adapter });
 export async function GET() {
   try {
     const oraciones = await prisma.oracion.findMany({
-      where: { privado: false },
+      where: { isPrivate: false }, // <-- CAMBIADO DE 'privado' A 'isPrivate'
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(oraciones);
@@ -19,12 +19,12 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const nombre = body.nombre || body.author || 'Anónimo';
-    const peticion = body.peticion || body.motivo || body.content;
-    const esPrivado = body.esPrivado ?? body.privado ?? false;
+    const peticion = body.peticion || body.motivo || body.request || body.content;
+    const esPrivado = body.esPrivado ?? body.isPrivate ?? body.privado ?? false;
 
     if (!peticion) {
       return NextResponse.json({ error: 'El motivo de oración es requerido' }, { status: 400 });
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
     const nuevaOracion = await prisma.oracion.create({
       data: {
         nombre: nombre.trim(),
-        peticion: peticion.trim(),
-        privado: Boolean(esPrivado),
+        request: peticion.trim(),       // <-- CAMBIADO DE 'peticion' A 'request'
+        isPrivate: Boolean(esPrivado), // <-- CAMBIADO DE 'privado' A 'isPrivate'
       },
     });
 
