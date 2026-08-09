@@ -30,8 +30,11 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
         throw new Error(data.error || 'Error al iniciar sesión');
       }
 
-      setUserRole('member');
-      showToast('¡Sesión iniciada con éxito!');
+      // Asigna el rol real retornado por la API ('ADMIN' o 'USER')
+      const userRoleFromApi = data.user?.role || data.user?.rol || 'USER';
+      setUserRole(userRoleFromApi);
+
+      showToast(`¡Bienvenido de nuevo, ${data.user?.nombre || ''}!`);
       navigateTo('home');
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -89,7 +92,7 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
 
         <div className="mt-6 text-center text-xs text-slate-500">
           ¿No tienes una cuenta?{' '}
-          <button onClick={() => navigateTo('register')} className="font-bold text-[#eca489] hover:underline">
+          <button onClick={() => navigateTo('register')} className="font-bold text-[#eca489] hover:underline cursor-pointer">
             Regístrate aquí
           </button>
         </div>
@@ -98,7 +101,7 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
   );
 }
 
-export function RegisterView({ navigateTo, showToast, setUserRole }: AuthProps) {
+export function RegisterView({ navigateTo }: AuthProps) {
   return (
     <div className="min-h-[75vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-sky-100 text-center space-y-4">
