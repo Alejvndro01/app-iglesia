@@ -20,7 +20,7 @@ model Usuario {
 
 model Archivo {
   id        String   @id @default(uuid())
-  nombre    String   // <--- Asegúrate de que tenga este campo
+  nombre    String
   path      String
   mimeType  String
   tamano    Int
