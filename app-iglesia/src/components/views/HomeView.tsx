@@ -4,10 +4,13 @@ import React, { useState, useEffect } from 'react';
 
 interface Testimonio {
   id: string;
-  author: string;
-  title: string;
-  content: string;
-  likes: number;
+  autor?: string;
+  author?: string;
+  titulo?: string;
+  title?: string;
+  contenido?: string;
+  content?: string;
+  likes?: number;
 }
 
 interface Material {
@@ -419,11 +422,15 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               >
                 <div>
                   <span className="text-2xl block mb-2">✨</span>
-                  <h4 className="text-base font-bold text-[#486379]">{t.title}</h4>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">"{t.content}"</p>
+                  <h4 className="text-base font-bold text-[#486379]">
+                    {t.titulo || t.title || 'Agradecimiento al Señor'}
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                    "{t.contenido || t.content || 'Sin contenido'}"
+                  </p>
                 </div>
                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                  <span>👤 {t.author}</span>
+                  <span>👤 {t.autor || t.author || 'Hermano de Iglesia'}</span>
                 </div>
               </div>
             ))

@@ -3,41 +3,44 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 export async function GET() {
   try {
     const oraciones = await prisma.oracion.findMany({
+      where: { privado: false },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ oraciones });
+    return NextResponse.json(oraciones);
   } catch (error) {
-    return NextResponse.json({ error: 'Error al obtener oraciones' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al consultar oraciones' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { nombre, request: reqText, isPrivate } = body;
+    const nombre = body.nombre || body.author || 'Anónimo';
+    const peticion = body.peticion || body.motivo || body.content;
+    const esPrivado = body.esPrivado ?? body.privado ?? false;
 
-    if (!reqText) {
-      return NextResponse.json({ error: 'El motivo es requerido' }, { status: 400 });
+    if (!peticion) {
+      return NextResponse.json({ error: 'El motivo de oración es requerido' }, { status: 400 });
     }
 
     const nuevaOracion = await prisma.oracion.create({
       data: {
-        nombre: nombre || 'Anónimo',
-        request: reqText,
-        isPrivate: !!isPrivate,
+        nombre: nombre.trim(),
+        peticion: peticion.trim(),
+        privado: Boolean(esPrivado),
       },
     });
 
-    return NextResponse.json({ message: 'Oración registrada', oracion: nuevaOracion });
+    return NextResponse.json(nuevaOracion, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error al registrar oración' }, { status: 500 });
+    console.error('Error al guardar oración:', error);
+    return NextResponse.json({ error: 'Error al procesar la solicitud' }, { status: 500 });
   }
 }
