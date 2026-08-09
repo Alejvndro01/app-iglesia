@@ -23,16 +23,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
     }
 
-    // Firmar JWT incluyendo ID y ROL real del usuario
+    // Firmar el token JWT usando 'rol'
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret_key');
-    const token = await new SignJWT({ id: usuario.id, email: usuario.email, role: usuario.role })
+    const token = await new SignJWT({ id: usuario.id, email: usuario.email, rol: usuario.rol })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('8h')
       .sign(secret);
 
+    // Responder usando 'rol'
     const response = NextResponse.json({
       message: 'Login exitoso',
-      user: { nombre: usuario.nombre, email: usuario.email, role: usuario.role },
+      user: { nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
     });
 
     response.cookies.set('auth_token', token, {

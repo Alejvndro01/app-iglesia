@@ -7,6 +7,7 @@ interface HeaderProps {
   userRole: string;
   userName: string;
   navigateTo: (page: string) => void;
+  setUserRole: (role: string) => void; 
   setBulletinModalOpen: (open: boolean) => void;
   showToast: (msg: string) => void;
 }
