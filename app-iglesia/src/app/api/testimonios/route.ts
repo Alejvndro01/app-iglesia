@@ -33,9 +33,9 @@ export async function POST(request: Request) {
 
     const nuevoTestimonio = await prisma.testimonio.create({
       data: {
-        autor: author?.trim() || 'Hermano de Iglesia', // <-- CAMBIADO A 'autor'
-        title: title?.trim() || 'Agradecimiento al Señor',
-        content: content.trim(),
+        autor: author?.trim() || 'Hermano de Iglesia',
+        titulo: title?.trim() || 'Agradecimiento al Señor', // <-- CAMBIADO DE 'title' A 'titulo'
+        contenido: content.trim(),                         // <-- CAMBIADO DE 'content' A 'contenido'
       },
     });
 
