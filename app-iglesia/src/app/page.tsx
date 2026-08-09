@@ -8,6 +8,8 @@ import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
 import { LoginView, RegisterView } from '@/components/views/AuthViews';
 import { AdminPanelPageView } from '@/components/views/AdminView';
+import { AgendaView } from '@/components/views/AgendaView';
+import { StewardshipView } from '@/components/views/StewardshipView';
 
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -47,6 +49,8 @@ export default function MainPage() {
         {currentPage === 'estudios-biblicos' && (
           <EstudiosBiblicosPageView showToast={showToast} />
         )}
+        {currentPage === 'agenda' && <AgendaView showToast={showToast} />}
+        {currentPage === 'mayordomia' && <StewardshipView />}
         {currentPage === 'login' && (
           <LoginView
             navigateTo={setCurrentPage}

@@ -69,3 +69,11 @@ export const SABBATH_LESSON_WEEK = {
     { day: 'Domingo', topic: 'Venciendo el Temor y la Incertidumbre', content: 'Encontrando en la oración el valor para sostenerse en medio de las pruebas.' },
   ],
 };
+
+export const CHURCH_CALENDAR_EVENTS = [
+  { id: 'ev1', title: 'Sábado de Visita e Impacto Comunitario', date: '2026-08-22', type: 'Especial', time: '11:30 AM' },
+  { id: 'ev2', title: 'Camporí de Conquistadores Hualqui', date: '2026-08-28', type: 'Clubes', time: 'Todo el día' },
+  { id: 'ev3', title: 'Semana de Oración de la Mujer', date: '2026-09-05', type: 'Espiritual', time: '19:30 PM' },
+  { id: 'ev4', title: 'Cumpleaños Hna. Carmen Reyes', date: '2026-08-25', type: 'Cumpleaños', time: 'Día Completo' },
+  { id: 'ev5', title: 'Cumpleaños Pr. Alejandro Silva', date: '2026-08-30', type: 'Cumpleaños', time: 'Día Completo' },
+];

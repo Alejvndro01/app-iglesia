@@ -3,8 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
@@ -14,34 +13,51 @@ export async function GET() {
     const testimonios = await prisma.testimonio.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ testimonios });
+    return NextResponse.json(testimonios);
   } catch (error) {
-    console.error('Error al obtener testimonios:', error);
-    return NextResponse.json({ error: 'Error al consultar testimonios' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al obtener testimonios' }, { status: 500 });
   }
 }
 
 // POST: Crear un nuevo testimonio
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { author, title, content } = body;
+    const { autor, titulo, contenido } = await request.json();
 
-    if (!title || !content) {
-      return NextResponse.json({ error: 'Título y contenido son requeridos' }, { status: 400 });
+    if (!contenido) {
+      return NextResponse.json({ error: 'El contenido es obligatorio' }, { status: 400 });
     }
 
     const nuevoTestimonio = await prisma.testimonio.create({
       data: {
-        author: author || 'Hermano de Iglesia',
-        title,
-        content,
+        autor: autor?.trim() || 'Hermano de Iglesia',
+        titulo: titulo?.trim() || 'Agradecimiento al Señor',
+        contenido: contenido.trim(),
       },
     });
 
-    return NextResponse.json({ message: 'Testimonio publicado', testimonio: nuevoTestimonio });
+    return NextResponse.json(nuevoTestimonio, { status: 201 });
   } catch (error) {
-    console.error('Error al guardar testimonio:', error);
-    return NextResponse.json({ error: 'Error al guardar testimonio' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al publicar testimonio' }, { status: 500 });
+  }
+}
+
+// PATCH: Incrementar likes
+export async function PATCH(request: Request) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+    }
+
+    const actualizado = await prisma.testimonio.update({
+      where: { id },
+      data: { likes: { increment: 1 } },
+    });
+
+    return NextResponse.json(actualizado);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al actualizar reacción' }, { status: 500 });
   }
 }

@@ -45,9 +45,9 @@ model Oracion {
 
 model Testimonio {
   id        String   @id @default(uuid())
-  author    String
-  title     String
-  content   String
+  autor     String
+  titulo    String
+  contenido String
   likes     Int      @default(0)
   createdAt DateTime @default(now())
 }
