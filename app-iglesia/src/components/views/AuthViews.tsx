@@ -32,7 +32,7 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
 
       setUserRole('member');
       showToast('¡Sesión iniciada con éxito!');
-      window.location.href = '/dashboard';
+      navigateTo('home');
     } catch (err: unknown) {
       if (err instanceof Error) {
         showToast(err.message);
@@ -98,21 +98,21 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
   );
 }
 
-export function RegisterView({ navigateTo, showToast }: AuthProps) {
+export function RegisterView({ navigateTo, showToast, setUserRole }: AuthProps) {
   return (
     <div className="min-h-[75vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 border border-sky-100 text-center space-y-4">
         <span className="text-4xl block">📜</span>
         <h2 className="text-2xl font-black text-[#486379]">Crear Cuenta</h2>
         <p className="text-xs text-slate-500">Registro de nuevos miembros e invitados.</p>
-        
+
         <div className="p-4 bg-amber-50 rounded-2xl text-xs text-amber-800">
           Actualmente los nuevos registros son procesados por Secretaría de Iglesia.
         </div>
 
         <button
           onClick={() => navigateTo('login')}
-          className="w-full py-3 bg-[#486379] text-white font-bold text-xs rounded-full shadow-md"
+          className="w-full py-3 bg-[#486379] text-white font-bold text-xs rounded-full shadow-md cursor-pointer"
         >
           Ir a Iniciar Sesión
         </button>
