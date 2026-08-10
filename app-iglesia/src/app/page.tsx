@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
-// ❌ ELIMINA ESTE IMPORT: import { Footer } from '@/components/layout/Footer';
 import { HomeView } from '@/components/views/HomeView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
@@ -29,9 +28,9 @@ export default function MainPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7fafc] font-sans text-slate-700 flex flex-col relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-700 dark:text-slate-200 flex flex-col relative transition-colors duration-300">
       {toastMessage && (
-        <div className="fixed top-24 right-5 z-50 bg-[#486379] text-white px-5 py-3 rounded-2xl shadow-2xl">
+        <div className="fixed top-24 right-5 z-50 bg-[#486379] dark:bg-sky-700 text-white px-5 py-3 rounded-2xl shadow-2xl">
           ✨ {toastMessage}
         </div>
       )}
@@ -46,7 +45,7 @@ export default function MainPage() {
         showToast={showToast}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
         {currentPage === 'home' && (
           <HomeView navigateTo={handleNavigate} showToast={showToast} />
         )}

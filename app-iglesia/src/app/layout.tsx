@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col justify-between bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 bg-slate-50 dark:bg-slate-900">{children}</main>
           {/* ✅ Única instancia global del Footer */}
           <Footer />
           {/* ✅ Chatbot Esperanza Flotante 24/7 */}
