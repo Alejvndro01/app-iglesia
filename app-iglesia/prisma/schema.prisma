@@ -25,7 +25,8 @@ model Usuario {
 model Archivo {
   id        String   @id @default(uuid())
   titulo    String
-  path      String
+  path      String   // Mantendremos esto para compatibilidad
+  contenido String?  // <--- NUEVO: Almacena el contenido del archivo en Base64
   mimeType  String
   tamano    Int
   usuarioId String

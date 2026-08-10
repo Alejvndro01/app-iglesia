@@ -2,15 +2,21 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 // GET: Listar archivos guardados
 export async function GET() {
   try {
     const archivos = await prisma.archivo.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { usuario: { select: { nombre: true } } },
+      select: {
+        id: true,
+        titulo: true,
+        path: true,
+        mimeType: true,
+        tamano: true,
+        createdAt: true,
+        usuario: { select: { nombre: true } },
+      },
     });
     return NextResponse.json(archivos);
   } catch (error) {
@@ -18,7 +24,7 @@ export async function GET() {
   }
 }
 
-// POST: Guardar archivo en disco y registrar en BD
+// POST: Procesar archivo en memoria y guardar en Neon PostgreSQL
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -30,7 +36,7 @@ export async function POST(request: Request) {
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'iasd_central_hualqui_secret_2026');
     const { payload } = await jwtVerify(token, secret);
-    const userId = payload.id as string;
+    const userId = (payload.id || payload.sub) as string;
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -40,24 +46,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se adjuntó archivo' }, { status: 400 });
     }
 
+    // Convertir el archivo a Buffer y luego a cadena Base64 Data URL
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Guardar archivo en carpeta /public/uploads
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
-    const uniqueName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const filePath = path.join(uploadDir, uniqueName);
-    await writeFile(filePath, buffer);
-
-    // Apunta al endpoint de la API dinámica para evitar 404 estáticos en Next.js Standalone
-    const publicUrl = `/api/archivos/${uniqueName}`;
+    const base64Content = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
 
     const registroArchivo = await prisma.archivo.create({
       data: {
         titulo: tituloCustom || file.name,
-        path: publicUrl,
+        path: base64Content, // Se almacena como Data URL para descarga directa desde el navegador
+        contenido: base64Content,
         mimeType: file.type || 'application/octet-stream',
         tamano: file.size,
         usuarioId: userId,
