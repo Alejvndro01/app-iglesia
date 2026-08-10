@@ -5,6 +5,13 @@ import { jwtVerify } from 'jose';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client } from '@/lib/r2';
 
+// Configurar límite de tamaño para la API Route en Next.js
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
 
     await r2Client.send(uploadCommand);
 
-    // Generar la URL pública alojada en CDN gratuita
+    // Generar la URL pública
     const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
 
     // Guardar la URL en Neon PostgreSQL

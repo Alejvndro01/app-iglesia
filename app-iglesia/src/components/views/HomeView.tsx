@@ -157,38 +157,49 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   // Handler Subida de Archivos a Servidor
   const handleUploadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFile) {
-      showToast('Selecciona un archivo');
-      return;
+  e.preventDefault();
+  if (!selectedFile) {
+    showToast('Selecciona un archivo');
+    return;
+  }
+
+  // Validar tamaño en el frontend (máximo 4.5 MB en Vercel Serverless)
+  if (selectedFile.size > 4.5 * 1024 * 1024) {
+    showToast('El archivo excede el límite máximo permitido de 4.5 MB');
+    return;
+  }
+
+  setLoadingUpload(true);
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('titulo', uploadTitle || selectedFile.name);
+
+    const res = await fetch('/api/archivos', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Validar si la respuesta es exitosa antes de hacer res.json()
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || 'Error en el servidor');
     }
 
-    setLoadingUpload(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('titulo', uploadTitle || selectedFile.name);
+    const data = await res.json();
 
-      const res = await fetch('/api/archivos', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al subir archivo');
-
-      showToast('¡Material subido correctamente!');
-      setUploadModalOpen(false);
-      setUploadTitle('');
-      setSelectedFile(null);
-      await fetchMaterials();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al subir archivo';
-      showToast(msg);
-    } finally {
-      setLoadingUpload(false);
-    }
-  };
+    showToast('¡Material subido correctamente a Cloudflare R2!');
+    setUploadModalOpen(false);
+    setUploadTitle('');
+    setSelectedFile(null);
+    await fetchMaterials();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al subir archivo';
+    showToast(msg.includes('Request Entity Too Large') ? 'El archivo es demasiado grande (Máx 4.5 MB)' : msg);
+  } finally {
+    setLoadingUpload(false);
+  }
+};
 
   // Helper para descarga robusta (Soporta Base64/Data URLs y URLs tradicionales)
   const handleDownload = (m: Material) => {
