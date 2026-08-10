@@ -3,37 +3,35 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q')?.toLowerCase().trim() || '';
+    const query = searchParams.get('q')?.trim() || '';
 
-    // Consumir la API de jh0rman / Adventist-Software-Developers
-    const url = query
-      ? `https://himnario-adventista-api.vercel.app/api/hymns?search=${encodeURIComponent(query)}`
-      : 'https://himnario-adventista-api.vercel.app/api/hymns';
+    // Construir endpoint según especificación
+    const endpoint = query
+      ? `https://himnario-api.qhar.in/hymn?search=${encodeURIComponent(query)}`
+      : 'https://himnario-api.qhar.in/hymn';
 
-    const res = await fetch(url, {
+    const res = await fetch(endpoint, {
       headers: { 'Content-Type': 'application/json' },
-      next: { revalidate: 86400 }, // Caché de 24 horas
+      next: { revalidate: 86400 },
     });
 
     if (!res.ok) {
-      throw new Error(`API respondió con estado ${res.status}`);
+      return NextResponse.json({ error: 'Error consultando API externa' }, { status: res.status });
     }
 
     const data = await res.json();
-    const list = Array.isArray(data) ? data : data.hymns || data.data || [];
+    const list = Array.isArray(data) ? data : [];
 
-    // Normalizar la respuesta al formato que usa tu interfaz
+    // Normalizar esquema Hymn
     const himnos = list.map((h: any) => ({
-      number: parseInt(h.number || h.id || h.no, 10),
-      title: h.title || h.name || `Himno #${h.number}`,
+      number: h.number || h.id,
+      title: h.title,
+      bibleReference: h.bibleReference || '',
     }));
 
-    return NextResponse.json(himnos.slice(0, 50));
+    return NextResponse.json(himnos);
   } catch (error) {
-    console.error('Error al consultar himnario API:', error);
-    return NextResponse.json(
-      { error: 'Error al consultar la API de himnos' },
-      { status: 500 }
-    );
+    console.error('Error en API himnario route:', error);
+    return NextResponse.json({ error: 'No se pudo conectar con la API de Himnario' }, { status: 500 });
   }
 }
