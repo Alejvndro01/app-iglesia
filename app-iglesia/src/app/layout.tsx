@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/layout/Footer";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col justify-between bg-slate-50">
+      <body className="min-h-full flex flex-col justify-between bg-slate-50 relative">
         <main className="flex-1">{children}</main>
         {/* ✅ Única instancia global del Footer */}
         <Footer />
+        {/* ✅ Chatbot Esperanza Flotante 24/7 */}
+        <ChatWidget />
       </body>
     </html>
   );
