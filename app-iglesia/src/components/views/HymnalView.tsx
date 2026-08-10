@@ -39,6 +39,16 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
       .catch(() => setLoadingDetail(false));
   };
 
+  // Helper para convertir enlaces de Google Drive a URLs de streaming directas
+  const getAudioStreamUrl = (url?: string) => {
+    if (!url) return '';
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://docs.google.com/uc?export=download&id=${match[1]}`;
+    }
+    return url;
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div className="text-center max-w-xl mx-auto space-y-2">
@@ -108,18 +118,36 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
 
               {/* Reproductores de Audio */}
               {(selectedHymn.mp3Url || selectedHymn.mp3UrlInstr) && (
-                <div className="bg-[#f0f6fb] p-4 rounded-2xl border border-sky-100 space-y-3">
+                <div className="bg-[#f0f6fb] p-4 rounded-2xl border border-sky-100 space-y-4">
                   <h4 className="text-xs font-bold text-[#486379]">🎵 Reproductor de Audio</h4>
+                  
                   {selectedHymn.mp3Url && (
-                    <div>
-                      <p className="text-[10px] text-slate-500 font-bold mb-1">Cantado:</p>
-                      <audio controls className="w-full h-8" src={selectedHymn.mp3Url} />
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-500 font-bold">Audio Cantado:</p>
+                      <audio
+                        key={`cantado-${selectedHymn.number}`}
+                        controls
+                        preload="metadata"
+                        className="w-full h-9 rounded-lg"
+                      >
+                        <source src={getAudioStreamUrl(selectedHymn.mp3Url)} type="audio/mpeg" />
+                        Tu navegador no soporta el reproductor de audio.
+                      </audio>
                     </div>
                   )}
+
                   {selectedHymn.mp3UrlInstr && (
-                    <div>
-                      <p className="text-[10px] text-slate-500 font-bold mb-1">Instrumental / Pista:</p>
-                      <audio controls className="w-full h-8" src={selectedHymn.mp3UrlInstr} />
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-slate-500 font-bold">Pista / Instrumental:</p>
+                      <audio
+                        key={`instr-${selectedHymn.number}`}
+                        controls
+                        preload="metadata"
+                        className="w-full h-9 rounded-lg"
+                      >
+                        <source src={getAudioStreamUrl(selectedHymn.mp3UrlInstr)} type="audio/mpeg" />
+                        Tu navegador no soporta el reproductor de audio.
+                      </audio>
                     </div>
                   )}
                 </div>
