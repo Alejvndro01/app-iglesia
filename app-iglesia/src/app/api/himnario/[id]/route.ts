@@ -4,42 +4,60 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let num = 1;
+  let hymnNum = 1;
+
   try {
     const resolvedParams = await params;
-    num = parseInt(resolvedParams.id, 10) || 1;
+    hymnNum = parseInt(resolvedParams.id, 10) || 1;
 
-    // Fetch directo a la ruta JSON de Adventech
-    const res = await fetch(
-      `https://raw.githubusercontent.com/adventech/sabbath-school-resources/master/es/hymns/${num}/index.json`
-    );
+    // Intentar consultar API de Himnos
+    const res = await fetch(`https://api.adventistas.io/v1/himnos/${hymnNum}`, {
+      next: { revalidate: 86400 },
+    });
 
     if (res.ok) {
-      const himno = await res.json();
-      const verses = (himno.verses || himno.stanzas || []).map((v: any, idx: number) => ({
-        type: v.type || (v.isChorus ? 'chorus' : 'verse'),
-        number: v.number || idx + 1,
-        text: v.text || (Array.isArray(v.lines) ? v.lines.join('\n') : v.content || ''),
+      const data = await res.json();
+      const himno = data.himno || data;
+
+      const versesFormatted = (himno.estrofas || himno.verses || []).map((v: any, idx: number) => ({
+        type: v.coro || v.isChorus || v.type === 'chorus' ? 'chorus' : 'verse',
+        number: v.numero || v.number || idx + 1,
+        text: typeof v === 'string' ? v : v.texto || v.text || v.content || '',
       }));
 
       return NextResponse.json({
-        number: himno.number || num,
-        title: himno.title || `Himno #${num}`,
-        verses: verses.length > 0 ? verses : [{ type: 'verse', number: 1, text: himno.content || '' }],
+        number: himno.numero || himno.number || hymnNum,
+        title: himno.titulo || himno.title || `Himno #${hymnNum}`,
+        verses: versesFormatted.length > 0 ? versesFormatted : [{ type: 'verse', number: 1, text: himno.letra || himno.content || '' }],
       });
     }
-  } catch (err) {
-    console.error('Error al cargar himno:', err);
+
+    // Fallback a API secundaria si la primera falla
+    const altRes = await fetch(`https://raw.githubusercontent.com/IgrejaAdventista/himnario-adventista-json/main/himnos/${hymnNum}.json`);
+    if (altRes.ok) {
+      const himno = await altRes.json();
+      return NextResponse.json({
+        number: hymnNum,
+        title: himno.titulo || himno.title,
+        verses: (himno.estrofas || []).map((text: string, idx: number) => ({
+          type: 'verse',
+          number: idx + 1,
+          text,
+        })),
+      });
+    }
+  } catch (error) {
+    console.error('Error al obtener letra del himno:', error);
   }
 
   return NextResponse.json({
-    number: num,
-    title: `Himno #${num}`,
+    number: hymnNum,
+    title: `Himno #${hymnNum}`,
     verses: [
       {
         type: 'verse',
         number: 1,
-        text: 'Alaba al Creador con gozo y gratitud.\n(Contenido en proceso de sincronización).',
+        text: 'Servicio de letras en mantenimiento. Por favor reintenta en unos instantes.',
       },
     ],
   });
