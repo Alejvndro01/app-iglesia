@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
@@ -29,10 +27,9 @@ export async function POST(request: Request) {
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'Historial inválido' }, { status: 400 });
     }
 
-    // Formatear mensajes para OpenAI
     const formattedMessages = [
       { role: 'system', content: SYSTEM_INSTRUCTION },
       ...messages.map((msg: { role: string; content: string }) => ({
@@ -41,18 +38,18 @@ export async function POST(request: Request) {
       })),
     ];
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+    const chatCompletion = await groq.chat.completions.create({
       messages: formattedMessages as any,
+      model: 'llama-3.1-8b-instant',
       temperature: 0.7,
-      max_tokens: 350,
+      max_tokens: 300,
     });
 
-    const reply = completion.choices[0]?.message?.content || 'No pude procesar la respuesta.';
+    const reply = chatCompletion.choices[0]?.message?.content || 'No pude procesar la respuesta.';
 
     return NextResponse.json({ reply });
   } catch (error: any) {
-    console.error('Error en OpenAI Chat API:', error?.message || error);
+    console.error('Error en Groq API:', error);
     return NextResponse.json(
       { error: 'Esperanza no está disponible en este momento.' },
       { status: 500 }
