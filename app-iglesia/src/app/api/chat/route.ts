@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
 Tu misión es orientar con amor, respeto y fundamento bíblico adventista a las personas que visitan la página web.
@@ -24,18 +22,32 @@ Reglas de Comportamiento:
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.GROQ_API_KEY?.trim();
+
+    if (!apiKey) {
+      console.error('[GROQ_ERROR] La variable GROQ_API_KEY no está configurada en las variables de entorno.');
+      return NextResponse.json(
+        { error: 'Clave de Groq API no configurada en el servidor' },
+        { status: 500 }
+      );
+    }
+
+    const groq = new Groq({ apiKey });
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Historial inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
     }
 
+    // Filtrar y estructurar mensajes para Groq
     const formattedMessages = [
       { role: 'system', content: SYSTEM_INSTRUCTION },
-      ...messages.map((msg: { role: string; content: string }) => ({
-        role: msg.role === 'assistant' ? 'assistant' : 'user',
-        content: msg.content,
-      })),
+      ...messages
+        .filter((msg: { role: string; content: string }) => msg.content)
+        .map((msg: { role: string; content: string }) => ({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: msg.content,
+        })),
     ];
 
     const chatCompletion = await groq.chat.completions.create({
@@ -45,11 +57,18 @@ export async function POST(request: Request) {
       max_tokens: 300,
     });
 
-    const reply = chatCompletion.choices[0]?.message?.content || 'No pude procesar la respuesta.';
+    const reply = chatCompletion.choices[0]?.message?.content;
+
+    if (!reply) {
+      return NextResponse.json(
+        { error: 'Groq no devolvió ningún texto en la respuesta' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ reply });
   } catch (error: any) {
-    console.error('Error en Groq API:', error);
+    console.error('[GROQ_CRASH]', error?.message || error);
     return NextResponse.json(
       { error: 'Esperanza no está disponible en este momento.' },
       { status: 500 }
