@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenAI } from '@google/genai';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
@@ -21,59 +24,32 @@ Reglas de Comportamiento:
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-      console.error('Falta la variable GEMINI_API_KEY');
-      return NextResponse.json(
-        { error: 'Clave API de Gemini no configurada' },
-        { status: 500 }
-      );
-    }
-
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
     }
 
-    // Formatear el mensaje del sistema + historial en la estructura de contenidos de Gemini
-    const contents = [
-      {
-        role: 'user',
-        parts: [{ text: `Instrucción del sistema: ${SYSTEM_INSTRUCTION}` }],
-      },
-      {
-        role: 'model',
-        parts: [{ text: 'Entendido. Asumiré la personalidad de Esperanza para asistir a los miembros y visitantes de la Iglesia Adventista de Hualqui.' }],
-      },
-      ...messages.map((msg: { role: string; content: string }) => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
-      })),
-    ];
+    // Formatear historial para el SDK de Gemini
+    const contents = messages.map((msg: { role: string; content: string }) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
 
-    // Endpoint directo usando el modelo estable gemini-1.5-flash
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents }),
+    // Generar respuesta usando Gemini 2.5 Flash
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: contents,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+      },
     });
 
-    if (!res.ok) {
-      const errData = await res.text();
-      console.error('Respuesta de error de Gemini API:', errData);
-      return NextResponse.json({ error: 'Error en la respuesta del motor de IA' }, { status: 500 });
-    }
-
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude procesar la respuesta.';
+    const reply = response.text || 'No pude procesar la respuesta.';
 
     return NextResponse.json({ reply });
   } catch (error) {
-    console.error('Error en API Chat Route:', error);
+    console.error('Error en API Chat Route con @google/genai:', error);
     return NextResponse.json(
       { error: 'Esperanza no está disponible en este momento.' },
       { status: 500 }
