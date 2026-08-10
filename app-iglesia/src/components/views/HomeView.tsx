@@ -163,43 +163,64 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     return;
   }
 
-  // Validar tamaño en el frontend (máximo 4.5 MB en Vercel Serverless)
-  if (selectedFile.size > 4.5 * 1024 * 1024) {
-    showToast('El archivo excede el límite máximo permitido de 4.5 MB');
-    return;
-  }
-
   setLoadingUpload(true);
   try {
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('titulo', uploadTitle || selectedFile.name);
+    // Paso 1: Pedir URL presignada a nuestro backend
+      const presignedRes = await fetch('/api/archivos/presigned', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          fileType: selectedFile.type || 'application/octet-stream',
+        }),
+      });
 
-    const res = await fetch('/api/archivos', {
-      method: 'POST',
-      body: formData,
-    });
+      if (!presignedRes.ok) {
+        const errData = await presignedRes.json();
+        throw new Error(errData.error || 'Error obteniendo permiso de subida');
+      }
 
-    // Validar si la respuesta es exitosa antes de hacer res.json()
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || 'Error en el servidor');
+      const { uploadUrl, publicUrl } = await presignedRes.json();
+
+      // Paso 2: Subir archivo DIRECTO a Cloudflare R2 desde el navegador (sin pasar por Vercel)
+      const uploadToR2Res = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': selectedFile.type || 'application/octet-stream',
+        },
+        body: selectedFile,
+      });
+
+      if (!uploadToR2Res.ok) {
+        throw new Error('Error al enviar archivo a Cloudflare R2');
+      }
+
+      // Paso 3: Guardar el registro en la base de datos Neon PostgreSQL
+      const dbRes = await fetch('/api/archivos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: uploadTitle || selectedFile.name,
+          path: publicUrl,
+          mimeType: selectedFile.type || 'application/octet-stream',
+          tamano: selectedFile.size,
+        }),
+      });
+
+      if (!dbRes.ok) throw new Error('Error al registrar archivo en la base de datos');
+
+      showToast('¡Material subido con éxito!');
+      setUploadModalOpen(false);
+      setUploadTitle('');
+      setSelectedFile(null);
+      await fetchMaterials();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al subir archivo';
+      showToast(msg);
+    } finally {
+      setLoadingUpload(false);
     }
-
-    const data = await res.json();
-
-    showToast('¡Material subido correctamente a Cloudflare R2!');
-    setUploadModalOpen(false);
-    setUploadTitle('');
-    setSelectedFile(null);
-    await fetchMaterials();
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error al subir archivo';
-    showToast(msg.includes('Request Entity Too Large') ? 'El archivo es demasiado grande (Máx 4.5 MB)' : msg);
-  } finally {
-    setLoadingUpload(false);
-  }
-};
+  };
 
   // Helper para descarga robusta (Soporta Base64/Data URLs y URLs tradicionales)
   const handleDownload = (m: Material) => {
