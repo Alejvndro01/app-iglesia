@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
@@ -21,55 +26,36 @@ Reglas de Comportamiento:
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY?.trim();
-
-    if (!apiKey) {
-      return NextResponse.json({ error: 'API Key no configurada' }, { status: 500 });
-    }
-
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Historial inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
     }
 
-    const formattedContents = messages
-      .map((msg: { role: string; content: string }) => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
-      }))
-      .filter((item, index) => index > 0 || item.role === 'user');
+    // Formatear mensajes para OpenAI
+    const formattedMessages = [
+      { role: 'system', content: SYSTEM_INSTRUCTION },
+      ...messages.map((msg: { role: string; content: string }) => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content,
+      })),
+    ];
 
-    if (formattedContents.length === 0) {
-      return NextResponse.json({ error: 'Sin mensajes válidos' }, { status: 400 });
-    }
-
-    // Endpoint directo al modelo gemini-2.0-flash (15 RPM en Free Tier)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-        contents: formattedContents,
-      }),
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: formattedMessages as any,
+      temperature: 0.7,
+      max_tokens: 350,
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('[Gemini 2.0 Error]:', errText);
-      return NextResponse.json(
-        { error: 'Por favor, espera unos segundos antes de enviar otro mensaje.' },
-        { status: res.status }
-      );
-    }
-
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reply = completion.choices[0]?.message?.content || 'No pude procesar la respuesta.';
 
     return NextResponse.json({ reply });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error interno en la respuesta.' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error en OpenAI Chat API:', error?.message || error);
+    return NextResponse.json(
+      { error: 'Esperanza no está disponible en este momento.' },
+      { status: 500 }
+    );
   }
 }
