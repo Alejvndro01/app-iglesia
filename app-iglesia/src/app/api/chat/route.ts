@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (!apiKey) {
       console.error('Falta la variable GEMINI_API_KEY');
       return NextResponse.json(
-        { error: 'Clave API de Gemini no configurada en el servidor' },
+        { error: 'Clave API de Gemini no configurada' },
         { status: 500 }
       );
     }
@@ -37,30 +37,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
     }
 
-    // Mapear historial al formato de la API REST de Gemini (user / model)
-    const contents = messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
+    // Formatear el mensaje del sistema + historial en la estructura de contenidos de Gemini
+    const contents = [
+      {
+        role: 'user',
+        parts: [{ text: `Instrucción del sistema: ${SYSTEM_INSTRUCTION}` }],
+      },
+      {
+        role: 'model',
+        parts: [{ text: 'Entendido. Asumiré la personalidad de Esperanza para asistir a los miembros y visitantes de la Iglesia Adventista de Hualqui.' }],
+      },
+      ...messages.map((msg: { role: string; content: string }) => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }],
+      })),
+    ];
 
-    // Endpoint directo v1beta de Gemini 1.5 Flash
+    // Endpoint directo usando el modelo estable gemini-1.5-flash
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: SYSTEM_INSTRUCTION }],
-        },
-        contents: contents,
-      }),
+      body: JSON.stringify({ contents }),
     });
 
     if (!res.ok) {
-      const errText = await res.text();
-      console.error('Error desde la API de Gemini:', errText);
-      return NextResponse.json({ error: 'Error en la API de Gemini' }, { status: 500 });
+      const errData = await res.text();
+      console.error('Respuesta de error de Gemini API:', errData);
+      return NextResponse.json({ error: 'Error en la respuesta del motor de IA' }, { status: 500 });
     }
 
     const data = await res.json();
