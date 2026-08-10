@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
-
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
     const oraciones = await prisma.oracion.findMany({
-      where: { isPrivate: false }, // <-- CAMBIADO DE 'privado' A 'isPrivate'
+      where: { isPrivate: false },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(oraciones);
@@ -33,8 +27,8 @@ export async function POST(req: Request) {
     const nuevaOracion = await prisma.oracion.create({
       data: {
         nombre: nombre.trim(),
-        request: peticion.trim(),       // <-- CAMBIADO DE 'peticion' A 'request'
-        isPrivate: Boolean(esPrivado), // <-- CAMBIADO DE 'privado' A 'isPrivate'
+        request: peticion.trim(),
+        isPrivate: Boolean(esPrivado),
       },
     });
 

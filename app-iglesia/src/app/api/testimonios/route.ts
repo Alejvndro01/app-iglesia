@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { prisma } from '@/lib/prisma';
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
-
-// GET: Obtener todos los testimonios ordenados por fecha
 export async function GET() {
   try {
     const testimonios = await prisma.testimonio.findMany({
@@ -19,7 +12,6 @@ export async function GET() {
   }
 }
 
-// POST: Crear un nuevo testimonio
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -34,8 +26,8 @@ export async function POST(request: Request) {
     const nuevoTestimonio = await prisma.testimonio.create({
       data: {
         autor: author?.trim() || 'Hermano de Iglesia',
-        titulo: title?.trim() || 'Agradecimiento al Señor', // <-- CAMBIADO DE 'title' A 'titulo'
-        contenido: content.trim(),                         // <-- CAMBIADO DE 'content' A 'contenido'
+        titulo: title?.trim() || 'Agradecimiento al Señor',
+        contenido: content.trim(),
       },
     });
 
@@ -46,7 +38,6 @@ export async function POST(request: Request) {
   }
 }
 
-// PATCH: Incrementar likes
 export async function PATCH(request: Request) {
   try {
     const { id } = await request.json();
