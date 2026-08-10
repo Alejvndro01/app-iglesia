@@ -19,6 +19,31 @@ Reglas de Comportamiento:
 4. Invita fraternalmente a la persona a visitar la iglesia o solicitar un estudio bíblico si muestra interés.
 `;
 
+// Obtener dinámicamente un modelo activo disponible en tu API key
+async function getActiveModelName(apiKey: string): Promise<string> {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!res.ok) return 'gemini-2.0-flash';
+    
+    const data = await res.json();
+    const availableModels = data.models || [];
+
+    // Buscar un modelo flash o pro que soporte generateContent
+    const validModel = availableModels.find((m: any) => 
+      m.supportedGenerationMethods?.includes('generateContent') && 
+      (m.name.includes('flash') || m.name.includes('gemini'))
+    );
+
+    if (validModel?.name) {
+      // Reemplaza "models/gemini-xxx" por "gemini-xxx"
+      return validModel.name.replace('models/', '');
+    }
+  } catch (err) {
+    console.warn('No se pudo listar modelos, usando fallback predeterminado:', err);
+  }
+  return 'gemini-2.0-flash';
+}
+
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY?.trim();
@@ -34,59 +59,49 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Historial inválido' }, { status: 400 });
     }
 
-    // 1. Filtrar solo los mensajes enviados por el usuario o assistant, omitiendo saludos estáticos
+    // Filtrar y formatear asegurando que el primer mensaje siempre sea del rol "user"
     const formattedContents = messages
       .map((msg: { role: string; content: string }) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }],
       }))
-      // Regla estricta de Gemini: El primer elemento DEBE ser del rol 'user'
       .filter((item, index) => index > 0 || item.role === 'user');
 
     if (formattedContents.length === 0) {
-      return NextResponse.json({ error: 'Sin mensajes válidos del usuario' }, { status: 400 });
+      return NextResponse.json({ error: 'Sin mensajes del usuario' }, { status: 400 });
     }
 
-    // 2. Probar en orden los alias vigentes de la API v1beta
-    const modelsToTry = [
-      'gemini-1.5-flash-latest',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash-8b',
-    ];
+    // Identificar el modelo activo en tiempo real
+    const modelName = await getActiveModelName(apiKey);
+    console.log(`[Gemini Active Model Selected]: ${modelName}`);
 
-    let reply = '';
-    let lastError = '';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-    for (const modelName of modelsToTry) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: {
+          parts: [{ text: SYSTEM_INSTRUCTION }],
+        },
+        contents: formattedContents,
+      }),
+    });
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: SYSTEM_INSTRUCTION }],
-          },
-          contents: formattedContents,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (reply) break;
-      } else {
-        lastError = await res.text();
-        console.warn(`[Gemini Try Error - ${modelName}]:`, lastError);
-      }
-    }
-
-    if (!reply) {
-      console.error('[Gemini All Models Failed]:', lastError);
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[Gemini Call Failed on ${modelName}]:`, errText);
       return NextResponse.json(
-        { error: 'No se pudo conectar con el motor de IA.' },
+        { error: 'Inconveniente con el motor de IA.' },
         { status: 500 }
       );
+    }
+
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!reply) {
+      return NextResponse.json({ error: 'Respuesta vacía recibida' }, { status: 500 });
     }
 
     return NextResponse.json({ reply });
