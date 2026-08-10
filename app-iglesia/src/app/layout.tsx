@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Sitio web oficial de la Iglesia Adventista del Séptimo Día Central de Hualqui",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="es"
@@ -26,6 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col justify-between bg-slate-50">
         <main className="flex-1">{children}</main>
+        {/* ✅ Única instancia global del Footer */}
         <Footer />
       </body>
     </html>

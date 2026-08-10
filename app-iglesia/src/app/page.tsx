@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+// ❌ ELIMINA ESTE IMPORT: import { Footer } from '@/components/layout/Footer';
 import { HomeView } from '@/components/views/HomeView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
@@ -19,7 +19,6 @@ export default function MainPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleNavigate = (page: string) => {
-    // Normalizar si algún componente emite 'inicio'
     const targetPage = page === 'inicio' ? 'home' : page;
     setCurrentPage(targetPage);
   };
@@ -76,11 +75,6 @@ export default function MainPage() {
           <AdminPanelPageView showToast={showToast} />
         )}
       </main>
-
-      <Footer
-        navigateTo={handleNavigate}
-        setBulletinModalOpen={setBulletinModalOpen}
-      />
     </div>
   );
 }
