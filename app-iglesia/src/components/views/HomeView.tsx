@@ -190,6 +190,21 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
+  // Helper para descarga robusta (Soporta Base64/Data URLs y URLs tradicionales)
+  const handleDownload = (m: Material) => {
+    try {
+      const link = document.createElement('a');
+      link.href = m.path;
+      link.download = m.titulo || 'archivo_descarga';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al descargar:', error);
+      showToast('Error al iniciar la descarga');
+    }
+  };
+
   const sermons = [
     {
       id: '1',
@@ -379,14 +394,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = m.path;
-                    link.download = m.titulo || 'archivo-descarga';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
+                  onClick={() => handleDownload(m)}
                   className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
                 >
                   Descargar Archivo
