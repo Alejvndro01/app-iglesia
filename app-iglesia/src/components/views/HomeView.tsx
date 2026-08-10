@@ -55,11 +55,11 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   // Helper para obtener etiqueta de extensión limpia
   const getExtensionLabel = (mimeType: string, path: string) => {
-    if (mimeType.includes('pdf') || path.endsWith('.pdf')) return 'PDF';
-    if (mimeType.includes('word') || mimeType.includes('officedocument') || path.endsWith('.docx')) return 'DOCX';
-    if (mimeType.includes('presentation') || path.endsWith('.pptx')) return 'PPTX';
-    if (mimeType.includes('plain') || path.endsWith('.txt')) return 'TXT';
-    if (mimeType.includes('mpeg') || mimeType.includes('mp3')) return 'MP3';
+    if (mimeType?.includes('pdf') || path?.endsWith('.pdf')) return 'PDF';
+    if (mimeType?.includes('word') || mimeType?.includes('officedocument') || path?.endsWith('.docx')) return 'DOCX';
+    if (mimeType?.includes('presentation') || path?.endsWith('.pptx')) return 'PPTX';
+    if (mimeType?.includes('plain') || path?.endsWith('.txt')) return 'TXT';
+    if (mimeType?.includes('mpeg') || mimeType?.includes('mp3') || path?.endsWith('.mp3')) return 'MP3';
     return 'DOCUMENTO';
   };
 
@@ -76,13 +76,19 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
-  // Cargar Archivos
+  // Cargar Archivos con soporte para arrays y objetos anidados
   const fetchMaterials = async () => {
     try {
       const res = await fetch('/api/archivos');
       if (res.ok) {
         const data = await res.json();
-        setMaterials(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setMaterials(data);
+        } else if (data.archivos && Array.isArray(data.archivos)) {
+          setMaterials(data.archivos);
+        } else {
+          setMaterials([]);
+        }
       }
     } catch (err) {
       console.error('Error cargando archivos:', err);
@@ -155,17 +161,17 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
-  // Handler Subida de Archivos a Servidor
+  // Handler Subida Presignada Directa a Cloudflare R2
   const handleUploadSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!selectedFile) {
-    showToast('Selecciona un archivo');
-    return;
-  }
+    e.preventDefault();
+    if (!selectedFile) {
+      showToast('Selecciona un archivo');
+      return;
+    }
 
-  setLoadingUpload(true);
-  try {
-    // Paso 1: Pedir URL presignada a nuestro backend
+    setLoadingUpload(true);
+    try {
+      // 1. Obtener URL presignada del backend
       const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -182,7 +188,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
       const { uploadUrl, publicUrl } = await presignedRes.json();
 
-      // Paso 2: Subir archivo DIRECTO a Cloudflare R2 desde el navegador (sin pasar por Vercel)
+      // 2. Subir directo a Cloudflare R2 desde el navegador
       const uploadToR2Res = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
@@ -195,7 +201,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         throw new Error('Error al enviar archivo a Cloudflare R2');
       }
 
-      // Paso 3: Guardar el registro en la base de datos Neon PostgreSQL
+      // 3. Guardar registro en PostgreSQL a través de Prisma
       const dbRes = await fetch('/api/archivos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,18 +228,13 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
-  // Helper para descarga robusta (Soporta Base64/Data URLs y URLs tradicionales)
+  // Helper para descarga desde CDN o abrir enlace público
   const handleDownload = (m: Material) => {
     try {
-      const link = document.createElement('a');
-      link.href = m.path;
-      link.download = m.titulo || 'archivo_descarga';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      window.open(m.path, '_blank');
     } catch (error) {
       console.error('Error al descargar:', error);
-      showToast('Error al iniciar la descarga');
+      showToast('Error al abrir la descarga');
     }
   };
 
@@ -262,7 +263,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   ];
 
   const filteredMaterials = materials.filter(item =>
-    item.titulo.toLowerCase().includes(materialSearch.toLowerCase())
+    item.titulo?.toLowerCase().includes(materialSearch.toLowerCase())
   );
 
   return (
@@ -605,7 +606,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 disabled={loadingUpload}
                 className="w-full py-3 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md disabled:opacity-50 cursor-pointer"
               >
-                {loadingUpload ? 'Guardando en Servidor...' : 'Publicar Archivo'}
+                {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
               </button>
             </form>
           </div>

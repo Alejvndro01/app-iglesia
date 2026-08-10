@@ -3,6 +3,26 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
+export async function GET() {
+  try {
+    const archivos = await prisma.archivo.findMany({
+      include: {
+        usuario: {
+          select: { nombre: true },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(archivos);
+  } catch (error) {
+    console.error('Error al obtener archivos:', error);
+    return NextResponse.json({ error: 'Error al consultar archivos' }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -27,7 +47,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Registra la URL enviada por el cliente directamente en Neon PostgreSQL
     const registroArchivo = await prisma.archivo.create({
       data: {
         titulo,
