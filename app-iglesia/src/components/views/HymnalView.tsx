@@ -39,16 +39,6 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
       .catch(() => setLoadingDetail(false));
   };
 
-  // Helper para convertir enlaces de Google Drive a URLs de streaming directas
-  const getAudioStreamUrl = (url?: string) => {
-    if (!url) return '';
-    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) {
-      return `https://docs.google.com/uc?export=download&id=${match[1]}`;
-    }
-    return url;
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div className="text-center max-w-xl mx-auto space-y-2">
@@ -129,8 +119,8 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                         controls
                         preload="metadata"
                         className="w-full h-9 rounded-lg"
+                        src={selectedHymn.mp3Url}
                       >
-                        <source src={getAudioStreamUrl(selectedHymn.mp3Url)} type="audio/mpeg" />
                         Tu navegador no soporta el reproductor de audio.
                       </audio>
                     </div>
@@ -144,8 +134,8 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                         controls
                         preload="metadata"
                         className="w-full h-9 rounded-lg"
+                        src={selectedHymn.mp3UrlInstr}
                       >
-                        <source src={getAudioStreamUrl(selectedHymn.mp3UrlInstr)} type="audio/mpeg" />
                         Tu navegador no soporta el reproductor de audio.
                       </audio>
                     </div>

@@ -6,16 +6,13 @@ interface FormattedVerse {
   text: string;
 }
 
-// Convierte links de Google Drive a stream de reproducción directa de audio
-function formatDriveUrl(url?: string): string | null {
+// Extrae el ID de Google Drive y construye la URL hacia nuestro Proxy local
+function getProxyAudioUrl(url?: string): string | null {
   if (!url) return null;
-
-  // Extraer el ID de Google Drive desde varios formatos posibles
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
-    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    return `/api/audio-proxy?id=${match[1]}`;
   }
-
   return url;
 }
 
@@ -39,10 +36,7 @@ export async function GET(
     const himno = await res.json();
 
     const versesFormatted: FormattedVerse[] = (himno.verses || []).map((v: any) => {
-      const stanzaText = (v.contents || [])
-        .map((c: any) => c.content)
-        .join('\n');
-
+      const stanzaText = (v.contents || []).map((c: any) => c.content).join('\n');
       return {
         type: v.number === 0 ? 'chorus' : 'verse',
         number: v.number,
@@ -54,10 +48,9 @@ export async function GET(
       number: himno.number,
       title: himno.title,
       bibleReference: himno.bibleReference,
-      mp3Url: formatDriveUrl(himno.mp3Url),
-      mp3UrlInstr: formatDriveUrl(himno.mp3UrlInstr),
+      mp3Url: getProxyAudioUrl(himno.mp3Url),
+      mp3UrlInstr: getProxyAudioUrl(himno.mp3UrlInstr),
       verses: versesFormatted,
-      sequence: himno.sequence || [],
     });
   } catch (error) {
     console.error('Error al obtener canción:', error);
