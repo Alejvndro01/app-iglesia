@@ -15,6 +15,7 @@ export function Footer({ navigateTo, setBulletinModalOpen }: FooterProps) {
       setBulletinModalOpen(true);
     } else if (navigateTo) {
       navigateTo(pageId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -52,7 +53,7 @@ export function Footer({ navigateTo, setBulletinModalOpen }: FooterProps) {
             <ul className="space-y-1.5 text-xs text-slate-500 font-medium">
               <li>
                 <button 
-                  onClick={() => handleNav('inicio')} 
+                  onClick={() => handleNav('home')} 
                   className="hover:text-[#486379] transition-colors cursor-pointer text-left"
                 >
                   Inicio

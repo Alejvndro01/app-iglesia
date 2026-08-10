@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 import { HomeView } from '@/components/views/HomeView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
@@ -16,6 +17,12 @@ export default function MainPage() {
   const [userRole, setUserRole] = useState('guest');
   const [bulletinModalOpen, setBulletinModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleNavigate = (page: string) => {
+    // Normalizar si algún componente emite 'inicio'
+    const targetPage = page === 'inicio' ? 'home' : page;
+    setCurrentPage(targetPage);
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -34,7 +41,7 @@ export default function MainPage() {
         currentPage={currentPage}
         userRole={userRole}
         userName="Alejvndro01"
-        navigateTo={setCurrentPage}
+        navigateTo={handleNavigate}
         setUserRole={setUserRole}
         setBulletinModalOpen={setBulletinModalOpen}
         showToast={showToast}
@@ -42,7 +49,7 @@ export default function MainPage() {
 
       <main className="flex-1">
         {currentPage === 'home' && (
-          <HomeView navigateTo={setCurrentPage} showToast={showToast} />
+          <HomeView navigateTo={handleNavigate} showToast={showToast} />
         )}
         {currentPage === 'himnario' && <HimnarioPageView showToast={showToast} />}
         {currentPage === 'leccion' && <SabbathLessonPageView showToast={showToast} />}
@@ -53,14 +60,14 @@ export default function MainPage() {
         {currentPage === 'mayordomia' && <StewardshipView />}
         {currentPage === 'login' && (
           <LoginView
-            navigateTo={setCurrentPage}
+            navigateTo={handleNavigate}
             showToast={showToast}
             setUserRole={setUserRole}
           />
         )}
         {currentPage === 'register' && (
           <RegisterView
-            navigateTo={setCurrentPage}
+            navigateTo={handleNavigate}
             showToast={showToast}
             setUserRole={setUserRole}
           />
@@ -69,6 +76,11 @@ export default function MainPage() {
           <AdminPanelPageView showToast={showToast} />
         )}
       </main>
+
+      <Footer
+        navigateTo={handleNavigate}
+        setBulletinModalOpen={setBulletinModalOpen}
+      />
     </div>
   );
 }
