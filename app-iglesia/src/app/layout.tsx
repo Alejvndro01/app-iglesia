@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IASD Central de Hualqui",
   description: "Sitio web oficial de la Iglesia Adventista del Séptimo Día Central de Hualqui",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
