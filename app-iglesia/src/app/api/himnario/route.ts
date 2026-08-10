@@ -5,45 +5,37 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q')?.toLowerCase().trim() || '';
 
+    // URL oficial del índice del Himnario Adventista en Adventech
     const res = await fetch(
-      'https://raw.githubusercontent.com/Adventech/sabbath-school-resources/master/hymns/es/index.json',
+      'https://raw.githubusercontent.com/Adventech/sabbath-school-resources/master/es/hymns/index.json',
       { next: { revalidate: 86400 } }
     );
 
-    let rawData = [];
-    if (res.ok) {
-      rawData = await res.json();
+    if (!res.ok) {
+      throw new Error(`Adventech respondió con status ${res.status}`);
     }
 
-    // Asegurar parseo flexible de campos de Adventech
+    const rawData = await res.json();
     const list = Array.isArray(rawData) ? rawData : [];
-    const himnos = list.map((h: any, index: number) => ({
-      number: h.number || h.no || h.id || index + 1,
-      title: h.title || h.name || `Himno ${h.number || h.no || index + 1}`,
-    }));
 
-    // Si la lista remota falló, generar catálogo dinámico del 1 al 613
-    const finalCatalog = himnos.length > 0 ? himnos : Array.from({ length: 613 }, (_, i) => ({
-      number: i + 1,
-      title: `Himno #${i + 1}`,
+    // Formatear catálogo oficial
+    const himnos = list.map((h: any, index: number) => ({
+      number: parseInt(h.number || h.no || h.id || index + 1, 10),
+      title: h.title || h.name || `Himno #${index + 1}`,
     }));
 
     if (!query) {
-      return NextResponse.json(finalCatalog.slice(0, 40));
+      return NextResponse.json(himnos.slice(0, 40));
     }
 
-    const filtrados = finalCatalog.filter((h: any) =>
+    const filtrados = himnos.filter((h: any) =>
       h.number.toString().includes(query) ||
       h.title.toLowerCase().includes(query)
     );
 
     return NextResponse.json(filtrados.slice(0, 40));
   } catch (error) {
-    // Fallback de emergencia local en caso de timeout
-    const fallback = Array.from({ length: 50 }, (_, i) => ({
-      number: i + 1,
-      title: `Himno #${i + 1}`,
-    }));
-    return NextResponse.json(fallback);
+    console.error('Error al obtener lista de himnos:', error);
+    return NextResponse.json({ error: 'Error al consultar himnos' }, { status: 500 });
   }
 }
