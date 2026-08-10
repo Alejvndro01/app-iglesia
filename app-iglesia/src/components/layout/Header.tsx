@@ -34,7 +34,7 @@ export function Header({
     { id: 'boletin', label: '📜 Boletín Sabático', action: () => setBulletinOpen(true) },
   ];
 
-  const handleNavClick = (item: any) => {
+  const handleNavClick = (item: { id: string; label: string; action?: () => void }) => {
     if (item.action) {
       item.action();
     } else {

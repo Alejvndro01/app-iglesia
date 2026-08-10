@@ -2,8 +2,21 @@
 
 import React from 'react';
 
-export function Footer() {
+interface FooterProps {
+  navigateTo?: (page: string) => void;
+  setBulletinModalOpen?: (open: boolean) => void;
+}
+
+export function Footer({ navigateTo, setBulletinModalOpen }: FooterProps) {
   const currentYear = new Date().getFullYear();
+
+  const handleNav = (pageId: string) => {
+    if (pageId === 'boletin' && setBulletinModalOpen) {
+      setBulletinModalOpen(true);
+    } else if (navigateTo) {
+      navigateTo(pageId);
+    }
+  };
 
   return (
     <footer className="bg-white border-t border-sky-100 text-[#486379] mt-16 transition-colors">
@@ -31,31 +44,43 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Enlaces Rápidos */}
+          {/* Enlaces Rápidos sin recarga de página */}
           <div className="space-y-2">
             <h4 className="text-xs font-black text-[#eca489] uppercase tracking-wider">
               Navegación
             </h4>
             <ul className="space-y-1.5 text-xs text-slate-500 font-medium">
               <li>
-                <a href="/" className="hover:text-[#486379] transition-colors">
+                <button 
+                  onClick={() => handleNav('inicio')} 
+                  className="hover:text-[#486379] transition-colors cursor-pointer text-left"
+                >
                   Inicio
-                </a>
+                </button>
               </li>
               <li>
-                <a href="/leccion" className="hover:text-[#486379] transition-colors">
+                <button 
+                  onClick={() => handleNav('leccion')} 
+                  className="hover:text-[#486379] transition-colors cursor-pointer text-left"
+                >
                   Lección Diaria
-                </a>
+                </button>
               </li>
               <li>
-                <a href="/himnario" className="hover:text-[#486379] transition-colors">
+                <button 
+                  onClick={() => handleNav('himnario')} 
+                  className="hover:text-[#486379] transition-colors cursor-pointer text-left"
+                >
                   Himnario Adventista
-                </a>
+                </button>
               </li>
               <li>
-                <a href="/boletin" className="hover:text-[#486379] transition-colors">
+                <button 
+                  onClick={() => handleNav('boletin')} 
+                  className="hover:text-[#486379] transition-colors cursor-pointer text-left"
+                >
                   Boletín Sabático
-                </a>
+                </button>
               </li>
             </ul>
           </div>
