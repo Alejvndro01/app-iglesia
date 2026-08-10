@@ -45,8 +45,8 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
         <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
           Alabanza y Adoración
         </span>
-        <h2 className="text-3xl font-black text-[#486379]">Himnario Adventista</h2>
-        <p className="text-xs text-slate-500">Busca por número o título del himno</p>
+        <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300">Himnario Adventista</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Busca por número o título del himno</p>
       </div>
 
       <div className="relative max-w-md mx-auto">
@@ -55,7 +55,7 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
           placeholder="🔍 Escribe el número o título (ej. 250 o Grande es tu fidelidad)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white text-xs px-5 py-3.5 rounded-full border border-sky-100 shadow-xs outline-none focus:border-[#eca489] transition-colors"
+          className="w-full bg-white dark:bg-slate-800 text-xs px-5 py-3.5 rounded-full border border-sky-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 shadow-xs outline-none focus:border-[#eca489] transition-colors"
         />
       </div>
 
@@ -74,14 +74,14 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                 className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all flex items-center space-x-3 ${
                   selectedHymn?.number === h.number
                     ? 'bg-[#eca489] text-white border-[#eca489] shadow-xs'
-                    : 'bg-white border-sky-100 text-[#486379] hover:bg-slate-50'
+                    : 'bg-white dark:bg-slate-800 border-sky-100 dark:border-slate-700 text-[#486379] dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 <span
                   className={`text-xs font-black px-2.5 py-1 rounded-xl ${
                     selectedHymn?.number === h.number
                       ? 'bg-white/20 text-white'
-                      : 'bg-[#f0f6fb] text-[#eca489]'
+                      : 'bg-[#f0f6fb] dark:bg-slate-700 text-[#eca489] dark:text-amber-400'
                   }`}
                 >
                   #{h.number}
@@ -93,14 +93,14 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
         </div>
 
         {/* Visor de Himno */}
-        <div className="md:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-sky-100 shadow-xs min-h-[400px]">
+        <div className="md:col-span-2 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs min-h-[400px] transition-colors">
           {loadingDetail ? (
             <div className="text-center py-20 text-slate-400 text-xs">Cargando himno desde la API...</div>
           ) : selectedHymn && !selectedHymn.error ? (
             <div className="space-y-6">
-              <div className="border-b pb-4 space-y-1">
-                <span className="text-xs font-black text-[#eca489]">HIMNO #{selectedHymn.number}</span>
-                <h3 className="text-2xl font-black text-[#486379]">{selectedHymn.title}</h3>
+              <div className="border-b dark:border-slate-800 pb-4 space-y-1">
+                <span className="text-xs font-black text-[#eca489] dark:text-amber-400">HIMNO #{selectedHymn.number}</span>
+                <h3 className="text-2xl font-black text-[#486379] dark:text-sky-300">{selectedHymn.title}</h3>
                 {selectedHymn.bibleReference && (
                   <p className="text-xs text-slate-400 font-bold">📖 {selectedHymn.bibleReference}</p>
                 )}
@@ -108,12 +108,12 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
 
               {/* Reproductores de Audio */}
               {(selectedHymn.mp3Url || selectedHymn.mp3UrlInstr) && (
-                <div className="bg-[#f0f6fb] p-4 rounded-2xl border border-sky-100 space-y-4">
-                  <h4 className="text-xs font-bold text-[#486379]">🎵 Reproductor de Audio</h4>
+                <div className="bg-[#f0f6fb] dark:bg-slate-800 p-4 rounded-2xl border border-sky-100 dark:border-slate-700 space-y-4">
+                  <h4 className="text-xs font-bold text-[#486379] dark:text-sky-300">🎵 Reproductor de Audio</h4>
                   
                   {selectedHymn.mp3Url && (
                     <div className="space-y-1">
-                      <p className="text-[10px] text-slate-500 font-bold">Audio Cantado:</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Audio Cantado:</p>
                       <audio
                         key={`cantado-${selectedHymn.number}`}
                         controls
@@ -128,7 +128,7 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
 
                   {selectedHymn.mp3UrlInstr && (
                     <div className="space-y-1">
-                      <p className="text-[10px] text-slate-500 font-bold">Pista / Instrumental:</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Pista / Instrumental:</p>
                       <audio
                         key={`instr-${selectedHymn.number}`}
                         controls
@@ -144,17 +144,17 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
               )}
 
               {/* Estrofas */}
-              <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed">
+              <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                 {selectedHymn.verses?.map((verse: any, index: number) => (
                   <div
                     key={index}
                     className={`p-4 rounded-2xl border ${
                       verse.type === 'chorus'
-                        ? 'bg-[#fbf6ee] border-amber-200'
-                        : 'bg-[#f0f6fb] border-sky-100'
+                        ? 'bg-[#fbf6ee] dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
+                        : 'bg-[#f0f6fb] dark:bg-slate-800 border-sky-100 dark:border-slate-700'
                     }`}
                   >
-                    <p className="text-[10px] font-extrabold text-[#eca489] uppercase mb-1">
+                    <p className="text-[10px] font-extrabold text-[#eca489] dark:text-amber-400 uppercase mb-1">
                       {verse.type === 'chorus' ? 'Coro' : `Estrofa ${verse.number}`}
                     </p>
                     <p className="whitespace-pre-line font-medium leading-relaxed">{verse.text}</p>

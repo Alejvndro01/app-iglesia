@@ -76,7 +76,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-xs font-bold text-[#486379]">
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-xs font-bold text-[#486379] dark:text-sky-300">
         Cargando datos del panel de control...
       </div>
     );
@@ -84,13 +84,13 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div className="bg-[#486379] text-white p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+      <div className="bg-[#486379] dark:bg-slate-800 text-white p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl border border-transparent dark:border-slate-700 transition-colors">
         <div>
           <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
             Gestión Eclesial
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black mt-1">Panel de Control de Liderazgo</h2>
-          <p className="text-xs text-slate-200">
+          <h2 className="text-2xl sm:text-3xl font-black mt-1 text-white dark:text-sky-300">Panel de Control de Liderazgo</h2>
+          <p className="text-xs text-slate-200 dark:text-slate-300">
             Administración de oraciones intercesoras y solicitudes de cursos bíblicos.
           </p>
         </div>
@@ -98,21 +98,21 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Moderación de Oraciones */}
-        <div className="bg-white p-6 rounded-3xl border border-sky-100 shadow-xs space-y-4">
-          <h3 className="font-black text-[#486379] text-base">🙏 Moderación de Oraciones</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
+          <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {prayers.length === 0 ? (
               <p className="text-xs text-slate-400">No hay oraciones registradas.</p>
             ) : (
               prayers.map((p) => (
-                <div key={p.id} className="p-4 bg-[#f0f6fb] rounded-2xl text-xs space-y-2">
-                  <div className="flex justify-between font-bold">
+                <div key={p.id} className="p-4 bg-[#f0f6fb] dark:bg-slate-800 rounded-2xl text-xs space-y-2 border border-transparent dark:border-slate-700">
+                  <div className="flex justify-between font-bold text-slate-800 dark:text-slate-200">
                     <span>👤 {p.nombre} {p.isPrivate && '(Privado)'}</span>
-                    <span className={p.status === 'Respondida' ? 'text-emerald-600' : 'text-[#eca489]'}>
+                    <span className={p.status === 'Respondida' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#eca489] dark:text-amber-400'}>
                       {p.status}
                     </span>
                   </div>
-                  <p className="text-slate-600">{p.request}</p>
+                  <p className="text-slate-600 dark:text-slate-300">{p.request}</p>
                   {p.status !== 'Respondida' && (
                     <button
                       onClick={() => handleMarkAsAnswered(p.id)}
@@ -128,18 +128,18 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         </div>
 
         {/* Solicitudes de Cursos Bíblicos */}
-        <div className="bg-white p-6 rounded-3xl border border-sky-100 shadow-xs space-y-4">
-          <h3 className="font-black text-[#486379] text-base">📖 Solicitudes de Cursos Bíblicos</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
+          <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {courses.length === 0 ? (
               <p className="text-xs text-slate-400">No hay solicitudes registradas.</p>
             ) : (
               courses.map((c) => (
-                <div key={c.id} className="p-4 bg-slate-50 rounded-2xl text-xs space-y-1 border border-slate-100">
-                  <p className="font-bold text-[#eca489]">{c.curso}</p>
-                  <p className="font-bold text-slate-700">👤 {c.nombre}</p>
-                  <p className="text-slate-500">📞 WhatsApp: {c.telefono}</p>
-                  <p className="text-slate-500">📍 {c.direccion || 'Sin dirección'} ({c.modalidad})</p>
+                <div key={c.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-xs space-y-1 border border-slate-100 dark:border-slate-700">
+                  <p className="font-bold text-[#eca489] dark:text-amber-400">{c.curso}</p>
+                  <p className="font-bold text-slate-700 dark:text-slate-200">👤 {c.nombre}</p>
+                  <p className="text-slate-500 dark:text-slate-400">📞 WhatsApp: {c.telefono}</p>
+                  <p className="text-slate-500 dark:text-slate-400">📍 {c.direccion || 'Sin dirección'} ({c.modalidad})</p>
                 </div>
               ))
             )}

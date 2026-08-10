@@ -44,7 +44,6 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
       setSubmitted(true);
       showToast('¡Solicitud guardada correctamente en la base de datos!');
 
-      // Limpiar campos del formulario
       setFullName('');
       setPhone('');
       setAddress('');
@@ -67,10 +66,10 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
         <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
           Creciendo en la Palabra
         </span>
-        <h2 className="text-3xl sm:text-4xl font-black text-[#486379] mt-2">
+        <h2 className="text-3xl sm:text-4xl font-black text-[#486379] dark:text-sky-300 mt-2">
           Solicitud de Estudios Bíblicos
         </h2>
-        <p className="text-sm text-slate-500 mt-2">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
           Descubre las hermosas promesas de Dios con la guía de un instructor en Hualqui.
         </p>
       </div>
@@ -82,8 +81,8 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
             onClick={() => setSelectedCourse(course)}
             className={`p-6 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between ${
               selectedCourse?.id === course.id
-                ? 'bg-[#486379] text-white border-[#eca489] shadow-lg scale-105'
-                : 'bg-white text-slate-700 border-sky-100 hover:border-sky-300 shadow-xs'
+                ? 'bg-[#486379] dark:bg-slate-800 text-white border-[#eca489] shadow-lg scale-105'
+                : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-sky-100 dark:border-slate-800 hover:border-sky-300 shadow-xs'
             }`}
           >
             <div>
@@ -93,7 +92,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                   className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                     selectedCourse?.id === course.id
                       ? 'bg-[#eca489] text-white'
-                      : 'bg-[#d0e2f1] text-[#486379]'
+                      : 'bg-[#d0e2f1] dark:bg-slate-800 text-[#486379] dark:text-sky-300'
                   }`}
                 >
                   {course.badge}
@@ -103,8 +102,8 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
               <p
                 className={`text-xs mt-2 leading-relaxed ${
                   selectedCourse?.id === course.id
-                    ? 'text-slate-200'
-                    : 'text-slate-500'
+                    ? 'text-slate-200 dark:text-slate-300'
+                    : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
                 {course.description}
@@ -119,13 +118,13 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
         ))}
       </div>
 
-      <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 border border-sky-100 shadow-xl">
-        <h3 className="text-xl font-black text-[#486379] mb-4 text-center">
+      <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-8 border border-sky-100 dark:border-slate-800 shadow-xl transition-colors">
+        <h3 className="text-xl font-black text-[#486379] dark:text-sky-300 mb-4 text-center">
           Formulario de Inscripción
         </h3>
 
         {submitted ? (
-          <div className="bg-emerald-50 text-emerald-800 p-6 rounded-2xl text-center space-y-2">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 p-6 rounded-2xl text-center space-y-2 border border-emerald-100 dark:border-emerald-800">
             <span className="text-4xl block">✨</span>
             <h4 className="font-bold text-lg">¡Solicitud Recibida!</h4>
             <p className="text-xs">
@@ -141,7 +140,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#486379] mb-1">
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                 Curso Bíblico Seleccionado
               </label>
               <input
@@ -152,13 +151,13 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                     ? selectedCourse.title
                     : 'Selecciona un curso de la lista superior'
                 }
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 font-bold text-[#eca489] outline-none"
+                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 font-bold text-[#eca489] dark:text-amber-400 outline-none"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#486379] mb-1">
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                   Nombre Completo *
                 </label>
                 <input
@@ -167,12 +166,12 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                   placeholder="Ej. Juan Pérez"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
+                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#486379] mb-1">
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                   WhatsApp / Teléfono *
                 </label>
                 <input
@@ -181,13 +180,13 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                   placeholder="+56 9 1234 5678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
+                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#486379] mb-1">
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                 Dirección en Hualqui (Opcional)
               </label>
               <input
@@ -195,18 +194,18 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                 placeholder="Ej. Calle Bulnes #123, Hualqui"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
+                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#486379] mb-1">
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                 Modalidad Preferida
               </label>
               <select
                 value={modality}
                 onChange={(e) => setModality(e.target.value)}
-                className="w-full bg-[#fbf6ee] text-xs p-3.5 rounded-2xl border border-amber-100 outline-none focus:border-[#eca489] transition-colors"
+                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
               >
                 <option value="Presencial en Templo">
                   Presencial en Templo Central (Bulnes 450)
