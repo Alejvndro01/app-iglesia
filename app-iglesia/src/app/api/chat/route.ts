@@ -21,77 +21,79 @@ Reglas de Comportamiento:
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
 
     if (!apiKey) {
-      console.error('Falta la variable GEMINI_API_KEY');
-      return NextResponse.json(
-        { error: 'Clave API de Gemini no configurada' },
-        { status: 500 }
-      );
+      console.error('Falta GEMINI_API_KEY');
+      return NextResponse.json({ error: 'API Key no configurada' }, { status: 500 });
     }
 
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
+      return NextResponse.json({ error: 'Historial inválido' }, { status: 400 });
     }
 
-    // Adaptar el historial para el API de Google Gemini
-    const contents = messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
+    // 1. Filtrar solo los mensajes enviados por el usuario o assistant, omitiendo saludos estáticos
+    const formattedContents = messages
+      .map((msg: { role: string; content: string }) => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }],
+      }))
+      // Regla estricta de Gemini: El primer elemento DEBE ser del rol 'user'
+      .filter((item, index) => index > 0 || item.role === 'user');
 
-    // Lista de endpoints candidatos a probar en orden de velocidad/estabilidad
-    const candidateModels = [
-      'gemini-1.5-flash',
-      'gemini-2.0-flash-exp',
-      'gemini-2.5-flash',
+    if (formattedContents.length === 0) {
+      return NextResponse.json({ error: 'Sin mensajes válidos del usuario' }, { status: 400 });
+    }
+
+    // 2. Probar en orden los alias vigentes de la API v1beta
+    const modelsToTry = [
+      'gemini-1.5-flash-latest',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-8b',
     ];
 
-    let replyText = '';
-    let lastErrorDetails = '';
+    let reply = '';
+    let lastError = '';
 
-    for (const model of candidateModels) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    for (const modelName of modelsToTry) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-      const apiResponse = await fetch(url, {
+      const res = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           system_instruction: {
             parts: [{ text: SYSTEM_INSTRUCTION }],
           },
-          contents: contents,
+          contents: formattedContents,
         }),
       });
 
-      if (apiResponse.ok) {
-        const data = await apiResponse.json();
-        replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (replyText) break;
+      if (res.ok) {
+        const data = await res.json();
+        reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (reply) break;
       } else {
-        lastErrorDetails = await apiResponse.text();
-        console.warn(`Modelo ${model} no respondió correctamente:`, lastErrorDetails);
+        lastError = await res.text();
+        console.warn(`[Gemini Try Error - ${modelName}]:`, lastError);
       }
     }
 
-    if (!replyText) {
-      console.error('Ningún modelo de Gemini pudo procesar la solicitud:', lastErrorDetails);
+    if (!reply) {
+      console.error('[Gemini All Models Failed]:', lastError);
       return NextResponse.json(
-        { error: 'Inconveniente al conectar con el motor de respuesta.' },
+        { error: 'No se pudo conectar con el motor de IA.' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ reply: replyText });
+    return NextResponse.json({ reply });
   } catch (error) {
-    console.error('Error interno en la ruta de chat:', error);
+    console.error('[Chat API Exception]:', error);
     return NextResponse.json(
-      { error: 'Esperanza no está disponible en este momento.' },
+      { error: 'Inconveniente interno al procesar la solicitud.' },
       { status: 500 }
     );
   }
