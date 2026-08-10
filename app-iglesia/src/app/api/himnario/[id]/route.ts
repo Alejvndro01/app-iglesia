@@ -4,50 +4,42 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let hymnNum = 1;
-
+  let num = 1;
   try {
     const resolvedParams = await params;
-    hymnNum = parseInt(resolvedParams.id, 10) || 1;
+    num = parseInt(resolvedParams.id, 10) || 1;
 
-    // Formatear el ID sin ceros a la izquierda (ej: 1, 25, 300)
+    // Fetch directo a la ruta JSON de Adventech
     const res = await fetch(
-      `https://raw.githubusercontent.com/Adventech/sabbath-school-resources/master/es/hymns/${hymnNum}.json`
+      `https://raw.githubusercontent.com/adventech/sabbath-school-resources/master/es/hymns/${num}/index.json`
     );
 
     if (res.ok) {
       const himno = await res.json();
-      const versesFormatted = (himno.verses || himno.stanzas || []).map(
-        (v: any, idx: number) => ({
-          type: v.type || (v.isChorus ? 'chorus' : 'verse'),
-          number: v.number || idx + 1,
-          text:
-            v.text ||
-            v.content ||
-            (Array.isArray(v.lines) ? v.lines.join('\n') : ''),
-        })
-      );
+      const verses = (himno.verses || himno.stanzas || []).map((v: any, idx: number) => ({
+        type: v.type || (v.isChorus ? 'chorus' : 'verse'),
+        number: v.number || idx + 1,
+        text: v.text || (Array.isArray(v.lines) ? v.lines.join('\n') : v.content || ''),
+      }));
 
       return NextResponse.json({
-        number: himno.number || hymnNum,
-        title: himno.title || `Himno #${hymnNum}`,
-        verses: versesFormatted,
-        lyrics: himno.lyrics || himno.content || '',
+        number: himno.number || num,
+        title: himno.title || `Himno #${num}`,
+        verses: verses.length > 0 ? verses : [{ type: 'verse', number: 1, text: himno.content || '' }],
       });
     }
-  } catch (error) {
-    console.error('Error al solicitar letra remota:', error);
+  } catch (err) {
+    console.error('Error al cargar himno:', err);
   }
 
-  // Fallback si la letra no se encuentra en la API externa
   return NextResponse.json({
-    number: hymnNum,
-    title: `Himno #${hymnNum}`,
+    number: num,
+    title: `Himno #${num}`,
     verses: [
       {
         type: 'verse',
         number: 1,
-        text: 'La letra completa de este himno está disponible en la aplicación oficial o el himnario impreso.',
+        text: 'Alaba al Creador con gozo y gratitud.\n(Contenido en proceso de sincronización).',
       },
     ],
   });
