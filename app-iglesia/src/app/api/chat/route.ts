@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
@@ -24,32 +21,75 @@ Reglas de Comportamiento:
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error('Falta la variable GEMINI_API_KEY');
+      return NextResponse.json(
+        { error: 'Clave API de Gemini no configurada' },
+        { status: 500 }
+      );
+    }
+
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
     }
 
-    // Formatear historial para el SDK de Gemini
+    // Adaptar el historial para el API de Google Gemini
     const contents = messages.map((msg: { role: string; content: string }) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
 
-    // Generar respuesta usando Gemini 2.5 Flash
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-      },
-    });
+    // Lista de endpoints candidatos a probar en orden de velocidad/estabilidad
+    const candidateModels = [
+      'gemini-1.5-flash',
+      'gemini-2.0-flash-exp',
+      'gemini-2.5-flash',
+    ];
 
-    const reply = response.text || 'No pude procesar la respuesta.';
+    let replyText = '';
+    let lastErrorDetails = '';
 
-    return NextResponse.json({ reply });
+    for (const model of candidateModels) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const apiResponse = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: SYSTEM_INSTRUCTION }],
+          },
+          contents: contents,
+        }),
+      });
+
+      if (apiResponse.ok) {
+        const data = await apiResponse.json();
+        replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (replyText) break;
+      } else {
+        lastErrorDetails = await apiResponse.text();
+        console.warn(`Modelo ${model} no respondió correctamente:`, lastErrorDetails);
+      }
+    }
+
+    if (!replyText) {
+      console.error('Ningún modelo de Gemini pudo procesar la solicitud:', lastErrorDetails);
+      return NextResponse.json(
+        { error: 'Inconveniente al conectar con el motor de respuesta.' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ reply: replyText });
   } catch (error) {
-    console.error('Error en API Chat Route con @google/genai:', error);
+    console.error('Error interno en la ruta de chat:', error);
     return NextResponse.json(
       { error: 'Esperanza no está disponible en este momento.' },
       { status: 500 }
