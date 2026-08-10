@@ -2,29 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { r2Client } from '@/lib/r2';
 
-// GET: Listar archivos guardados
-export async function GET() {
-  try {
-    const archivos = await prisma.archivo.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        titulo: true,
-        path: true,
-        mimeType: true,
-        tamano: true,
-        createdAt: true,
-        usuario: { select: { nombre: true } },
-      },
-    });
-    return NextResponse.json(archivos);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al consultar archivos' }, { status: 500 });
-  }
-}
-
-// POST: Procesar archivo en memoria y guardar en Neon PostgreSQL
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -34,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'iasd_central_hualqui_secret_2026');
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'ClaveSecretaParaTokens_IASD_2026_UltraSegura');
     const { payload } = await jwtVerify(token, secret);
     const userId = (payload.id || payload.sub) as string;
 
@@ -46,16 +26,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se adjuntó archivo' }, { status: 400 });
     }
 
-    // Convertir el archivo a Buffer y luego a cadena Base64 Data URL
+    // Convertir archivo a Buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64Content = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
 
+    // Formatear nombre único para el bucket
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const key = `recursos/${Date.now()}-${cleanFileName}`;
+
+    // Subir a Cloudflare R2
+    const uploadCommand = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type || 'application/octet-stream',
+    });
+
+    await r2Client.send(uploadCommand);
+
+    // Generar la URL pública alojada en CDN gratuita
+    const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+
+    // Guardar la URL en Neon PostgreSQL
     const registroArchivo = await prisma.archivo.create({
       data: {
         titulo: tituloCustom || file.name,
-        path: base64Content, // Se almacena como Data URL para descarga directa desde el navegador
-        contenido: base64Content,
+        path: publicUrl,
         mimeType: file.type || 'application/octet-stream',
         tamano: file.size,
         usuarioId: userId,
@@ -64,7 +60,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(registroArchivo, { status: 201 });
   } catch (error) {
-    console.error('Error al subir archivo:', error);
-    return NextResponse.json({ error: 'Error al procesar archivo en el servidor' }, { status: 500 });
+    console.error('Error al subir archivo a R2:', error);
+    return NextResponse.json({ error: 'Error al procesar archivo en Cloudflare R2' }, { status: 500 });
   }
 }
