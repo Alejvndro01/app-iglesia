@@ -29,9 +29,9 @@ export function Header({
     { id: 'leccion', label: 'Lección Diaria' },
     { id: 'himnario', label: 'Himnario' },
     { id: 'estudios-biblicos', label: 'Estudios Bíblicos' },
-    { id: 'boletin', label: '📜 Boletín Sabático', action: () => setBulletinOpen(true) },
     { id: 'mayordomia', label: 'Mayordomía' },
     { id: 'agenda', label: 'Agenda' },
+    { id: 'boletin', label: '📜 Boletín Sabático', action: () => setBulletinOpen(true) },
   ];
 
   const handleNavClick = (item: any) => {

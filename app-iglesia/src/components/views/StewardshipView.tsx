@@ -18,7 +18,7 @@ export function StewardshipView() {
         <div className="bg-[#486379] text-white p-8 rounded-3xl space-y-5 shadow-xl">
           <h3 className="text-2xl font-black">Sistema Oficial 7me</h3>
           <p className="text-xs text-slate-200 leading-relaxed">Puedes entregar tus diezmos y ofrendas de manera segura a través de la plataforma 7me.</p>
-          <a href="https://www.7me.app" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md">Ir a 7me ➔</a>
+          <a href="https://home.7me.app/esp/" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md">Ir a 7me ➔</a>
         </div>
 
         <div className="bg-white rounded-3xl p-8 border border-sky-100 shadow-xl space-y-4">
