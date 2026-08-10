@@ -4,13 +4,23 @@ import React, { useState } from 'react';
 import { BulletinModal } from '../modales/BulletinModal';
 
 interface HeaderProps {
-  activeTab: string;
+  currentPage: string;
+  userName?: string;
+  userRole?: string;
   navigateTo: (page: string) => void;
-  user?: any;
-  onLogout?: () => void;
+  setUserRole?: (role: string) => void;
+  setBulletinModalOpen?: (open: boolean) => void;
+  showToast?: (msg: string) => void;
 }
 
-export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
+export function Header({
+  currentPage,
+  userName,
+  userRole,
+  navigateTo,
+  setUserRole,
+  showToast,
+}: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bulletinOpen, setBulletinOpen] = useState(false);
 
@@ -31,6 +41,17 @@ export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
       navigateTo(item.id);
     }
     setMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUserRole?.('guest');
+      showToast?.('Sesión cerrada correctamente');
+      navigateTo('inicio');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   return (
@@ -58,7 +79,7 @@ export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === item.id
+                  currentPage === item.id
                     ? 'bg-[#d0e2f1] text-[#486379]'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
@@ -70,16 +91,16 @@ export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
 
           {/* Botones de Autenticación Desktop */}
           <div className="hidden lg:flex items-center space-x-2">
-            {user ? (
+            {userRole && userRole !== 'guest' ? (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => navigateTo('admin')}
                   className="px-4 py-1.5 bg-[#486379] text-white font-bold text-xs rounded-full shadow-xs cursor-pointer"
                 >
-                  ⚙️ Admin
+                  ⚙️ Admin ({userName || 'Usuario'})
                 </button>
                 <button
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="px-3 py-1.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-full hover:bg-slate-50 cursor-pointer"
                 >
                   Salir
@@ -120,7 +141,7 @@ export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-colors cursor-pointer ${
-                  activeTab === item.id
+                  currentPage === item.id
                     ? 'bg-[#d0e2f1] text-[#486379]'
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
@@ -130,16 +151,16 @@ export function Header({ activeTab, navigateTo, user, onLogout }: HeaderProps) {
             ))}
 
             <div className="pt-3 border-t border-slate-100 flex flex-col space-y-2">
-              {user ? (
+              {userRole && userRole !== 'guest' ? (
                 <>
                   <button
                     onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
                     className="w-full py-2.5 bg-[#486379] text-white font-bold text-xs rounded-2xl text-center"
                   >
-                    ⚙️ Panel de Administración
+                    ⚙️ Admin ({userName || 'Usuario'})
                   </button>
                   <button
-                    onClick={() => { onLogout?.(); setMobileMenuOpen(false); }}
+                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="w-full py-2.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-2xl text-center"
                   >
                     Cerrar Sesión
