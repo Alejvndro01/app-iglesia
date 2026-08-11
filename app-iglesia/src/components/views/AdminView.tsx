@@ -54,48 +54,33 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
     setUploading(true);
     try {
-      const fileType = selectedFile.type || 'application/octet-stream';
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
-      // 1. Obtener Presigned URL desde la API
-      const presignedRes = await fetch('/api/archivos/presigned', {
+      // 1. Carga directa mediante el Proxy API de Next.js (Evita CORS de Cloudflare R2)
+      const res = await fetch('/api/archivos/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          fileType: fileType,
-        }),
+        body: formData,
       });
 
-      if (!presignedRes.ok) {
-        throw new Error('Error al obtener URL de subida');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al procesar la subida del archivo');
       }
 
-      const { uploadUrl, publicUrl, key } = await presignedRes.json();
+      const { publicUrl, key, fileName, fileType, fileSize } = await res.json();
 
-      // 2. Subida directa a Cloudflare R2 (Content-Type debe coincidir exactamente)
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': fileType,
-        },
-        body: selectedFile,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error(`Fallo en la carga a R2 (${uploadRes.status})`);
-      }
-
-      // 3. Registrar metadata en base de datos
+      // 2. Registrar la metadata en la base de datos PostgreSQL/Neon
       const newFile = await apiClient.saveArchivoMetadata({
-        nombre: selectedFile.name,
+        nombre: fileName,
         url: publicUrl,
         key: key,
         tipo: fileType,
-        tamano: selectedFile.size,
+        tamano: fileSize,
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito');
+      showToast('Archivo subido con éxito a Cloudflare R2');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
