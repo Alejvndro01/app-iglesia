@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
 
-    // Ejecución directa de servidor a servidor (Autenticación nativa S3/R2)
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
@@ -41,6 +40,9 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('[UPLOAD_R2_ERROR]', error);
-    return NextResponse.json({ error: 'Error interno al subir el archivo a R2' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error interno al procesar la subida a Cloudflare R2' },
+      { status: 500 }
+    );
   }
 }
