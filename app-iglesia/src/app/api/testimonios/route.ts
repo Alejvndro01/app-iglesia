@@ -1,58 +1,38 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
-export async function GET() {
+const testimonioSchema = z.object({
+  autor: z.string().min(2, 'El autor debe tener al menos 2 caracteres').max(50),
+  titulo: z.string().min(3, 'El título es obligatorio').max(100),
+  contenido: z.string().min(10, 'El contenido debe tener al menos 10 caracteres').max(1000),
+});
+
+export async function POST(req: Request) {
   try {
-    const testimonios = await prisma.testimonio.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json(testimonios);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al obtener testimonios' }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const author = body.autor || body.author;
-    const title = body.titulo || body.title;
-    const content = body.contenido || body.content;
-
-    if (!content) {
-      return NextResponse.json({ error: 'El contenido es obligatorio' }, { status: 400 });
+    const body = await req.json();
+    
+    // Validar entradas con Zod
+    const validation = testimonioSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Datos de entrada inválidos', details: validation.error.format() },
+        { status: 400 }
+      );
     }
 
+    const { autor, titulo, contenido } = validation.data;
+
     const nuevoTestimonio = await prisma.testimonio.create({
-      data: {
-        autor: author?.trim() || 'Hermano de Iglesia',
-        titulo: title?.trim() || 'Agradecimiento al Señor',
-        contenido: content.trim(),
-      },
+      data: { autor, titulo, contenido },
     });
 
     return NextResponse.json(nuevoTestimonio, { status: 201 });
   } catch (error) {
-    console.error('Error al guardar testimonio:', error);
-    return NextResponse.json({ error: 'Error al publicar testimonio' }, { status: 500 });
-  }
-}
-
-export async function PATCH(request: Request) {
-  try {
-    const { id } = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
-    }
-
-    const actualizado = await prisma.testimonio.update({
-      where: { id },
-      data: { likes: { increment: 1 } },
-    });
-
-    return NextResponse.json(actualizado);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al actualizar reacción' }, { status: 500 });
+    console.error('[TESTIMONIOS_POST_ERROR]', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor al guardar el testimonio' },
+      { status: 500 }
+    );
   }
 }
