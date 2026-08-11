@@ -14,7 +14,7 @@ import { StewardshipView } from '@/components/views/StewardshipView';
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
   const [userRole, setUserRole] = useState('guest');
-  const [bulletinModalOpen, setBulletinModalOpen] = useState(false);
+  const [, setBulletinModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleNavigate = (page: string) => {
@@ -67,7 +67,6 @@ export default function MainPage() {
           <RegisterView
             navigateTo={handleNavigate}
             showToast={showToast}
-            setUserRole={setUserRole}
           />
         )}
         {currentPage === 'admin' && (
