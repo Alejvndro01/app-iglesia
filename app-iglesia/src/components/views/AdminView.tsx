@@ -55,7 +55,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
     // Validación de límite serverless de Vercel (4.5 MB)
     const MAX_SIZE_MB = 4.5;
     if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB.`);
+      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB para subida directa.`);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -65,7 +65,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // 1. Petición directa al Proxy API (NO usa presigned)
+      // Consumo directo al Proxy API
       const res = await fetch('/api/archivos/upload', {
         method: 'POST',
         body: formData,
@@ -77,7 +77,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       try {
         data = textResponse ? JSON.parse(textResponse) : {};
       } catch {
-        throw new Error(`Respuesta inválida del servidor (${res.status})`);
+        throw new Error(`Respuesta no válida del servidor (${res.status})`);
       }
 
       if (!res.ok) {
@@ -93,7 +93,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         fileSize: number;
       };
 
-      // 2. Persistencia en base de datos Neon
+      // Guardar metadata en BD Neon
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: fileName,
         url: publicUrl,
