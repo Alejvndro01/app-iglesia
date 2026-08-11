@@ -40,7 +40,7 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/' });
+    signIn('google', { redirectTo: '/' });
   };
 
   return (
@@ -175,7 +175,7 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
   };
 
   const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/' });
+    signIn('google', { redirectTo: '/' });
   };
 
   return (

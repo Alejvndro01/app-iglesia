@@ -4,6 +4,7 @@ import "./globals.css";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,13 +34,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col justify-between bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <main className="flex-1 bg-slate-50 dark:bg-slate-900">{children}</main>
-          {/* ✅ Única instancia global del Footer */}
-          <Footer />
-          {/* ✅ Chatbot Esperanza Flotante 24/7 */}
-          <ChatWidget />
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <main className="flex-1 bg-slate-50 dark:bg-slate-900">{children}</main>
+            {/* ✅ Única instancia global del Footer */}
+            <Footer />
+            {/* ✅ Chatbot Esperanza Flotante 24/7 */}
+            <ChatWidget />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
