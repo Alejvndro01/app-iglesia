@@ -57,7 +57,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // 1. Carga directa mediante el Proxy API de Next.js (Evita CORS de Cloudflare R2)
+      // LLAMADA AL PROXY API DE NEXT.JS (NO USA PRESIGNED URLS)
       const res = await fetch('/api/archivos/upload', {
         method: 'POST',
         body: formData,
@@ -70,7 +70,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
       const { publicUrl, key, fileName, fileType, fileSize } = await res.json();
 
-      // 2. Registrar la metadata en la base de datos PostgreSQL/Neon
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: fileName,
         url: publicUrl,
@@ -80,7 +79,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito a Cloudflare R2');
+      showToast('Archivo subido con éxito');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
@@ -114,7 +113,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         </div>
       </div>
 
-      {/* Sección Gestión de Archivos / Repositorio R2 */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">
@@ -170,7 +168,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Moderación de Oraciones */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -200,7 +197,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
           </div>
         </div>
 
-        {/* Cursos Bíblicos */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
