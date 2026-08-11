@@ -1,159 +1,141 @@
 'use client';
 
-import { useChat, type UIMessage } from '@ai-sdk/react';
-import { useState, useRef, useEffect, FormEvent } from 'react';
-import { MessageSquare, X, Send, Bot, User, RefreshCw, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export function ChatWidget() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [input, setInput] = useState<string>('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    regenerate,
-  } = useChat({
-    onError: (err: Error) => {
-      console.error('Error en la conexión con la asistente Esperanza:', err);
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: '¡Hola! Soy Esperanza 📖. ¿En qué te puedo ayudar hoy sobre la Biblia o nuestra iglesia en Hualqui?',
     },
-  });
-
-  const isLoading = status === 'streaming' || status === 'submitted';
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  ]);
+  const [loading, setLoading] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      scrollToBottom();
+      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, error, status]);
+  }, [messages, isOpen]);
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || loading) return;
 
-    const userText = input;
+    const userMsg: Message = { role: 'user', content: input };
+    const newHistory = [...messages, userMsg];
+    setMessages(newHistory);
     setInput('');
-    await sendMessage({ text: userText });
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newHistory }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.reply) {
+        setMessages([...newHistory, { role: 'assistant', content: data.reply }]);
+      } else {
+        setMessages([
+          ...newHistory,
+          { role: 'assistant', content: 'Lo siento, tuve un inconveniente al conectar. Intenta nuevamente.' },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {!isOpen && (
+    <div className="fixed bottom-6 right-6 z-50">
+      {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg transition-all hover:bg-blue-700"
+          className="w-14 h-14 bg-[#eca489] text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-105 transition-all cursor-pointer border-2 border-white dark:border-slate-800"
+          title="Hablar con Esperanza"
         >
-          <Bot className="h-6 w-6" />
-          <span className="font-medium">Hablar con Esperanza</span>
+          💬
         </button>
-      )}
-
-      {isOpen && (
-        <div className="flex h-[500px] w-[350px] sm:w-[400px] flex-col rounded-2xl bg-white shadow-2xl border border-gray-200 dark:bg-gray-900 dark:border-gray-800">
-          <div className="flex items-center justify-between rounded-t-2xl bg-blue-600 p-4 text-white">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
-                <Bot className="h-5 w-5" />
+      ) : (
+        <div className="w-80 sm:w-96 h-[500px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-sky-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 transition-colors">
+          {/* Header del Chat */}
+          <div className="bg-[#486379] dark:bg-slate-800 p-4 text-white flex justify-between items-center shadow-xs border-b border-transparent dark:border-slate-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-[#eca489] flex items-center justify-center text-white font-bold border-2 border-white dark:border-slate-700 text-base">
+                E
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Esperanza</h3>
-                <p className="text-xs text-blue-100">IASD Hualqui 24/7</p>
+                <h4 className="text-xs font-bold text-white dark:text-sky-300">Esperanza</h4>
+                <p className="text-[10px] text-emerald-300 flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse inline-block"></span>
+                  <span>IASD Hualqui 24/7</span>
+                </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-1 hover:bg-white/20 transition-colors"
+              className="text-slate-300 hover:text-white font-bold text-sm cursor-pointer px-2 py-1"
             >
-              <X className="h-5 w-5" />
+              ✕
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.length === 0 && (
-              <div className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200">
-                  <Bot className="h-4 w-4" />
-                </div>
-                <div className="rounded-2xl rounded-tl-none bg-gray-100 p-3 dark:bg-gray-800">
-                  ¡Hola! Soy Esperanza 📖. ¿En qué te puedo ayudar hoy sobre la Biblia o nuestra iglesia en Hualqui?
-                </div>
-              </div>
-            )}
-
-            {messages.map((m: UIMessage) => {
-              const textParts = m.parts?.filter((p) => p.type === 'text') || [];
-              const content = textParts.map((p) => (p as { text: string }).text).join('') || (m as unknown as { content?: string }).content || '';
-
-              return (
+          {/* Historial de Mensajes */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 dark:bg-slate-950/50 text-xs">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
-                  key={m.id}
-                  className={`flex gap-3 text-sm ${
-                    m.role === 'user' ? 'justify-end' : 'justify-start'
+                  className={`max-w-[85%] p-3.5 rounded-2xl leading-relaxed ${
+                    m.role === 'user'
+                      ? 'bg-[#eca489] text-white rounded-br-none shadow-xs font-medium'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-100 border border-sky-100 dark:border-slate-700 rounded-bl-none shadow-xs'
                   }`}
                 >
-                  {m.role !== 'user' && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200">
-                      <Bot className="h-4 w-4" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-2xl p-3 max-w-[80%] ${
-                      m.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-tr-none'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded-tl-none'
-                    }`}
-                  >
-                    {content}
-                  </div>
-                  {m.role === 'user' && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                      <User className="h-4 w-4" />
-                    </div>
-                  )}
+                  {m.content}
                 </div>
-              );
-            })}
-
-            {/* Única adición: Alerta discreta y botón de reintento si falla la API */}
-            {error && (
-              <div className="flex flex-col items-center gap-2 p-3 text-center bg-red-50 text-red-600 rounded-xl text-xs dark:bg-red-950/40 dark:text-red-400">
-                <span>Tuve un inconveniente al conectar con el servidor.</span>
-                <button
-                  type="button"
-                  onClick={() => regenerate()}
-                  className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-red-700"
-                >
-                  <RefreshCw className="h-3 w-3" /> Reintentar
-                </button>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-sky-100 dark:border-slate-700 p-3 rounded-2xl rounded-bl-none text-[11px] italic animate-pulse">
+                  Esperanza está escribiendo...
+                </div>
               </div>
             )}
-
-            <div ref={messagesEndRef} />
+            <div ref={chatBottomRef} />
           </div>
 
-          <form onSubmit={onSubmit} className="p-3 border-t border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Escribe tu consulta..."
-                disabled={isLoading}
-                className="flex-1 rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:bg-white focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
+          {/* Formulario de Entrada */}
+          <form onSubmit={sendMessage} className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex gap-2">
+            <input
+              type="text"
+              placeholder="Escribe tu consulta bíblica..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 p-3 rounded-full outline-none focus:ring-2 focus:ring-[#eca489]/50"
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="bg-[#eca489] hover:bg-[#e49375] text-white px-4 py-2 rounded-full text-xs font-bold cursor-pointer disabled:opacity-50 transition-colors"
+            >
+              Enviar
+            </button>
           </form>
         </div>
       )}
