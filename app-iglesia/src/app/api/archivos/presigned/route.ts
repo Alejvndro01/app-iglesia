@@ -14,19 +14,17 @@ export async function POST(request: Request) {
 
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
-    const contentType = fileType || 'application/octet-stream';
 
-    // Se especifica ContentType en el comando para que se incluya en los SignedHeaders
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
-      ContentType: contentType,
+      ContentType: fileType || 'application/octet-stream',
     });
 
-    // Generar la Presigned URL deshabilitando checksums automáticos de AWS SDK v3
+    // Forzar firmado exclusivo de 'host' para evitar el fallo 401 en R2
     const uploadUrl = await getSignedUrl(r2Client, command, {
       expiresIn: 900,
-      signableHeaders: new Set(['host', 'content-type']),
+      signableHeaders: new Set(['host']),
     });
 
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
