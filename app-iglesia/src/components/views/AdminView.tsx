@@ -26,7 +26,29 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
       setPrayers(dataPrayers.oraciones || []);
       setCourses(dataCourses.solicitudes || []);
-      setFiles(dataFiles.archivos || []);
+
+      // Normalizar respuesta de la API de archivos para garantizar acceso a nombre, url, tamaño y tipo
+      const rawFiles = (Array.isArray(dataFiles) ? dataFiles : dataFiles?.archivos || []) as unknown as Record<string, unknown>[];
+      
+      const normalizedFiles: Archivo[] = rawFiles.map((item, index) => {
+        const nombre = String(item.nombre || item.titulo || item.fileName || `Archivo ${index + 1}`);
+        const url = String(item.url || item.path || '#');
+        const key = String(item.key || item.id || `key-${index}`);
+        const tipo = String(item.tipo || item.mimeType || item.fileType || 'application/octet-stream');
+        const tamano = Number(item.tamano || item.size || item.fileSize || 0);
+
+        return {
+          id: String(item.id || key),
+          nombre,
+          url,
+          key,
+          tipo,
+          tamano,
+          createdAt: String(item.createdAt || new Date().toISOString()),
+        };
+      });
+
+      setFiles(normalizedFiles);
     } catch {
       showToast('Error al cargar datos del panel');
     } finally {
@@ -54,7 +76,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
     setUploading(true);
     try {
-      // 1. Obtener la Presigned URL desde la API
+      // 1. Solicitar Presigned URL
       const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +106,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         key: string;
       };
 
-      // 2. Subida directa vía PUT a Cloudflare R2
+      // 2. Subir directamente el archivo a R2 vía PUT
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
@@ -97,14 +119,24 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         throw new Error(`Error en almacenamiento R2 (HTTP ${uploadRes.status})`);
       }
 
-      // 3. Persistir metadata en base de datos
-      const newFile = await apiClient.saveArchivoMetadata({
+      // 3. Persistir metadata en la BD
+      const savedMetadata = await apiClient.saveArchivoMetadata({
         nombre: selectedFile.name,
         url: publicUrl,
         key: key,
         tipo: selectedFile.type || 'application/octet-stream',
         tamano: selectedFile.size,
       });
+
+      const newFile: Archivo = {
+        id: savedMetadata.id || key,
+        nombre: selectedFile.name,
+        url: publicUrl,
+        key: key,
+        tipo: selectedFile.type || 'application/octet-stream',
+        tamano: selectedFile.size,
+        createdAt: new Date().toISOString(),
+      };
 
       setFiles([newFile, ...files]);
       showToast('Archivo subido con éxito');
@@ -175,8 +207,10 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
                 key={file.id}
                 className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs border border-slate-100 dark:border-slate-700"
               >
-                <div className="truncate max-w-md">
-                  <p className="font-bold text-slate-700 dark:text-slate-200 truncate">{file.nombre}</p>
+                <div className="truncate max-w-md space-y-0.5">
+                  <p className="font-bold text-slate-700 dark:text-slate-200 truncate">
+                    📄 {file.nombre}
+                  </p>
                   <p className="text-[10px] text-slate-400">
                     {(file.tamano / 1024 / 1024).toFixed(2)} MB | {file.tipo}
                   </p>
@@ -185,9 +219,9 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold rounded-full"
+                  className="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold rounded-full transition-colors flex items-center space-x-1"
                 >
-                  Ver / Descargar
+                  <span>Ver / Descargar</span>
                 </a>
               </div>
             ))
