@@ -10,6 +10,8 @@ jobs:
   validate:
     name: Lint, Typecheck & Database Schema Validation
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/app_iglesia_ci
 
     steps:
       - name: Checkout código
@@ -20,17 +22,23 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: app-iglesia/package-lock.json
       - name: Instalar dependencias
         run: npm ci
+        working-directory: app-iglesia
 
       - name: Validar esquema de Prisma
         run: npx prisma validate
+        working-directory: app-iglesia
 
       - name: Generar cliente de Prisma
         run: npx prisma generate
+        working-directory: app-iglesia
 
       - name: Verificación de tipos TypeScript
         run: npx tsc --noEmit
+        working-directory: app-iglesia
 
       - name: Ejecutar Linter (ESLint)
         run: npm run lint
+        working-directory: app-iglesia
