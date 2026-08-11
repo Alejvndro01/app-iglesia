@@ -14,12 +14,11 @@ enum Role {
 
 model Usuario {
   id            String    @id @default(uuid())
-  nombre        String?
-  name          String?   // <--- Agregado para compatibilidad con Auth.js
+  name          String?   @map("nombre") // Mapea el campo 'name' de Auth.js a la columna 'nombre' en PostgreSQL
   email         String    @unique
-  emailVerified DateTime?
+  emailVerified DateTime? @map("email_verified")
   image         String?
-  password      String?   // Opcional para login con Google
+  password      String?   // Opcional para autenticación con Google
   role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
