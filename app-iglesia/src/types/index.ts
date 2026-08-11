@@ -5,6 +5,16 @@ export interface Usuario {
   role: 'ADMIN' | 'USER' | 'GUEST';
 }
 
+export interface Archivo {
+  id: string;
+  nombre: string;
+  url: string;
+  key: string;
+  tipo: string;
+  tamano: number;
+  createdAt?: string;
+}
+
 export interface Testimonio {
   id: string;
   autor: string;

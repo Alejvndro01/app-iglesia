@@ -4,7 +4,8 @@ import {
   Oracion, 
   SolicitudCurso, 
   HimnoDetail, 
-  Usuario 
+  Usuario,
+  Archivo 
 } from '@/types';
 
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
@@ -29,6 +30,23 @@ export const apiClient = {
 
   // Archivos / Materiales
   getMateriales: () => fetcher<Material[]>('/api/archivos'),
+  getArchivos: () => fetcher<{ archivos: Archivo[] }>('/api/archivos'),
+  saveArchivoMetadata: (data: {
+    nombre: string;
+    url: string;
+    key: string;
+    tipo: string;
+    tamano: number;
+  }) =>
+    fetcher<Archivo>('/api/archivos', {
+      method: 'POST',
+      body: JSON.stringify({
+        titulo: data.nombre,
+        path: data.url,
+        mimeType: data.tipo,
+        tamano: data.tamano,
+      }),
+    }),
 
   // Himnario
   searchHimnos: (query: string) => 
