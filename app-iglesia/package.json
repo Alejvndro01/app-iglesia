@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/react": "^4.0.62",
     "@aws-sdk/client-s3": "^3.1106.0",
     "@aws-sdk/s3-request-presigner": "^3.1106.0",
     "@google/genai": "^2.16.0",
@@ -16,6 +17,7 @@
     "@prisma/client": "^5.22.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
+    "ai": "^7.0.59",
     "bcryptjs": "^3.0.3",
     "groq-sdk": "^1.5.0",
     "jose": "^6.2.8",
