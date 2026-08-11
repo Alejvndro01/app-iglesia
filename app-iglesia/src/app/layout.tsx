@@ -37,9 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <main className="flex-1 bg-slate-50 dark:bg-slate-900">{children}</main>
-            {/* ✅ Única instancia global del Footer */}
             <Footer />
-            {/* ✅ Chatbot Esperanza Flotante 24/7 */}
             <ChatWidget />
           </ThemeProvider>
         </SessionProvider>
