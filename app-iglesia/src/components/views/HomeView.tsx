@@ -41,7 +41,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   const fetchTestimonies = async () => {
     try {
       const data = await apiClient.getTestimonios();
-      // Cast seguro con Record<string, unknown> para evitar errores de tipo 'never'
       const response = data as unknown as Record<string, unknown>;
       if (Array.isArray(data)) {
         setTestimonies(data);
@@ -58,7 +57,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   const fetchMaterials = async () => {
     try {
       const data = await apiClient.getMateriales();
-      // Cast seguro con Record<string, unknown> para evitar errores de tipo 'never'
       const response = data as unknown as Record<string, unknown>;
       if (Array.isArray(data)) {
         setMaterials(data);
@@ -121,6 +119,18 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       showToast('Error al publicar testimonio');
     } finally {
       setLoadingTestimony(false);
+    }
+  };
+
+  const handleLikeTestimonio = async (id: string) => {
+    try {
+      setTestimonies((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, likes: (t.likes || 0) + 1 } : t))
+      );
+      showToast('¡Amén!');
+      await apiClient.likeTestimonio(id);
+    } catch (err) {
+      console.error('Error enviando Amén:', err);
     }
   };
 
@@ -455,6 +465,12 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 </div>
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
                   <span>👤 {t.autor || 'Hermano de Iglesia'}</span>
+                  <button
+                    onClick={() => handleLikeTestimonio(t.id)}
+                    className="px-3 py-1 bg-amber-50 dark:bg-slate-700 hover:bg-amber-100 text-[#eca489] dark:text-amber-400 font-bold rounded-full text-[10px] cursor-pointer transition-colors"
+                  >
+                    ❤️ Amén ({t.likes || 0})
+                  </button>
                 </div>
               </div>
             ))

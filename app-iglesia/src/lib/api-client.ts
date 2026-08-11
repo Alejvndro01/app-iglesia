@@ -27,6 +27,8 @@ export const apiClient = {
   getTestimonios: () => fetcher<Testimonio[]>('/api/testimonios'),
   createTestimonio: (data: Omit<Testimonio, 'id' | 'createdAt'>) =>
     fetcher<Testimonio>('/api/testimonios', { method: 'POST', body: JSON.stringify(data) }),
+  likeTestimonio: (id: string) =>
+    fetcher<Testimonio>('/api/testimonios', { method: 'PATCH', body: JSON.stringify({ id }) }),
 
   // Archivos / Materiales
   getMateriales: () => fetcher<Material[]>('/api/archivos'),
