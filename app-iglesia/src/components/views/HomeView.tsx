@@ -1,48 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
-interface Testimonio {
-  id: string;
-  autor?: string;
-  author?: string;
-  titulo?: string;
-  title?: string;
-  contenido?: string;
-  content?: string;
-  likes?: number;
-}
-
-interface Material {
-  id: string;
-  titulo: string;
-  path: string;
-  mimeType: string;
-  tamano: number;
-  createdAt: string;
-  usuario?: {
-    nombre: string;
-  };
-}
+import { apiClient } from '@/lib/api-client';
+import { Testimonio, Material } from '@/types';
 
 interface HomeViewProps {
   navigateTo: (page: string) => void;
   showToast: (msg: string) => void;
-  setSelectedSermon?: (sermon: any) => void;
+  setSelectedSermon?: (sermon: unknown) => void;
 }
 
 export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewProps) {
+  // Estados tipados sin 'any'
   const [testimonies, setTestimonies] = useState<Testimonio[]>([]);
   const [testimonyTitle, setTestimonyTitle] = useState('');
   const [testimonyAuthor, setTestimonyAuthor] = useState('');
   const [testimonyContent, setTestimonyContent] = useState('');
   const [loadingTestimony, setLoadingTestimony] = useState(false);
 
+  // Estados de Oración
   const [prayerName, setPrayerName] = useState('');
   const [prayerRequest, setPrayerRequest] = useState('');
   const [prayerPrivate, setPrayerPrivate] = useState(false);
   const [loadingPrayer, setLoadingPrayer] = useState(false);
 
+  // Estados para Archivos / Materiales
   const [materials, setMaterials] = useState<Material[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -59,13 +41,11 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     return 'DOCUMENTO';
   };
 
+  // Cargar datos centralizados a través de apiClient
   const fetchTestimonies = async () => {
     try {
-      const res = await fetch('/api/testimonios');
-      if (res.ok) {
-        const data = await res.json();
-        setTestimonies(Array.isArray(data) ? data : data.testimonios || []);
-      }
+      const data = await apiClient.getTestimonios();
+      setTestimonies(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error cargando testimonios:', err);
     }
@@ -73,17 +53,8 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   const fetchMaterials = async () => {
     try {
-      const res = await fetch('/api/archivos');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setMaterials(data);
-        } else if (data.archivos && Array.isArray(data.archivos)) {
-          setMaterials(data.archivos);
-        } else {
-          setMaterials([]);
-        }
-      }
+      const data = await apiClient.getMateriales();
+      setMaterials(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error cargando archivos:', err);
     }
@@ -94,23 +65,18 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     fetchMaterials();
   }, []);
 
+  // Handler Oraciones mediante apiClient
   const handlePrayerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prayerRequest.trim()) return;
 
     setLoadingPrayer(true);
     try {
-      const res = await fetch('/api/oraciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: prayerName.trim() || 'Anónimo',
-          peticion: prayerRequest,
-          esPrivado: prayerPrivate,
-        }),
+      await apiClient.createOracion({
+        nombre: prayerName.trim() || 'Anónimo',
+        peticion: prayerRequest,
+        esPrivado: prayerPrivate,
       });
-
-      if (!res.ok) throw new Error();
 
       setPrayerName('');
       setPrayerRequest('');
@@ -123,23 +89,18 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
+  // Handler Testimonios mediante apiClient
   const handleTestimonySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testimonyContent.trim() || !testimonyTitle.trim()) return;
 
     setLoadingTestimony(true);
     try {
-      const res = await fetch('/api/testimonios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          autor: testimonyAuthor.trim() || 'Hermano de Iglesia',
-          titulo: testimonyTitle,
-          contenido: testimonyContent,
-        }),
+      await apiClient.createTestimonio({
+        autor: testimonyAuthor.trim() || 'Hermano de Iglesia',
+        titulo: testimonyTitle,
+        contenido: testimonyContent,
       });
-
-      if (!res.ok) throw new Error();
 
       setTestimonyTitle('');
       setTestimonyAuthor('');
@@ -153,6 +114,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     }
   };
 
+  // Handler Subida Presignada Directa a Cloudflare R2
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -249,7 +211,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     },
   ];
 
-  const filteredMaterials = materials.filter(item =>
+  const filteredMaterials = materials.filter((item) =>
     item.titulo?.toLowerCase().includes(materialSearch.toLowerCase())
   );
 
@@ -292,13 +254,16 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 src="/landscape.jpg"
                 alt="IASD Hualqui"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
+                  (e.target as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
                 }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-6">
                 <div className="text-white">
-                  <span className="bg-[#eca489] text-[10px] font-bold px-3 py-1 rounded-full uppercase">Bulnes 450, Hualqui</span>
+                  <span className="bg-[#eca489] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                    Bulnes 450, Hualqui
+                  </span>
                   <h3 className="text-lg font-bold mt-2">Templo Central Hualqui</h3>
                 </div>
               </div>
@@ -310,33 +275,45 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       {/* Horarios de Culto */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">Horarios de Culto</h3>
-          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Nuestras Reuniones Semanales</h2>
+          <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
+            Horarios de Culto
+          </h3>
+          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">
+            Nuestras Reuniones Semanales
+          </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
             <div className="text-3xl mb-3">📖</div>
             <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
             <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Escuela Sabática</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">10:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span></p>
+            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
+              10:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+            </p>
           </div>
           <div className="bg-[#486379] dark:bg-slate-800 text-white p-6 rounded-3xl border border-transparent dark:border-slate-700 shadow-md transition-colors">
             <div className="text-3xl mb-3">⛪</div>
             <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
             <h4 className="text-lg font-black text-white dark:text-sky-300">Culto Divino</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">11:30 <span className="text-xs text-slate-200 dark:text-slate-400">hrs</span></p>
+            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
+              11:30 <span className="text-xs text-slate-200 dark:text-slate-400">hrs</span>
+            </p>
           </div>
           <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
             <div className="text-3xl mb-3">🔥</div>
             <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
             <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto JA (Jóvenes)</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">18:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span></p>
+            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
+              18:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+            </p>
           </div>
           <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
             <div className="text-3xl mb-3">🙏</div>
             <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Miércoles</span>
             <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto de Oración</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">19:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span></p>
+            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
+              19:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+            </p>
           </div>
         </div>
       </section>
@@ -346,7 +323,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
-              <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">Predicaciones</h3>
+              <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
+                Predicaciones
+              </h3>
               <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Sermones Recientes</h2>
             </div>
           </div>
@@ -358,13 +337,21 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-sky-100 dark:border-slate-700 shadow-xs hover:shadow-md cursor-pointer group transition-colors"
               >
                 <div className="relative aspect-video bg-slate-800">
-                  <img src={s.thumbnail} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <img
+                    src={s.thumbnail}
+                    alt={s.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-[#eca489] text-white flex items-center justify-center">▶</div>
+                    <div className="w-10 h-10 rounded-full bg-[#eca489] text-white flex items-center justify-center">
+                      ▶
+                    </div>
                   </div>
                 </div>
                 <div className="p-5">
-                  <span className="text-[10px] font-bold text-[#eca489] dark:text-amber-400">{s.category}</span>
+                  <span className="text-[10px] font-bold text-[#eca489] dark:text-amber-400">
+                    {s.category}
+                  </span>
                   <h4 className="text-sm font-bold text-[#486379] dark:text-sky-300 mt-1">{s.title}</h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">👤 {s.speaker}</p>
                 </div>
@@ -378,7 +365,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">Descargas</h3>
+            <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
+              Descargas
+            </h3>
             <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Materiales y Recursos</h2>
           </div>
           <button
@@ -404,7 +393,10 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             <p className="text-xs text-slate-400 col-span-3 text-center">No hay archivos registrados.</p>
           ) : (
             filteredMaterials.map((m) => (
-              <div key={m.id} className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-sky-100 dark:border-slate-700 shadow-xs flex flex-col justify-between space-y-3 transition-colors">
+              <div
+                key={m.id}
+                className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-sky-100 dark:border-slate-700 shadow-xs flex flex-col justify-between space-y-3 transition-colors"
+              >
                 <div>
                   <span className="bg-[#d0e2f1] dark:bg-slate-700 text-[#486379] dark:text-sky-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
                     {getExtensionLabel(m.mimeType, m.path)}
@@ -451,14 +443,14 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 <div>
                   <span className="text-2xl block mb-2">✨</span>
                   <h4 className="text-base font-bold text-[#486379] dark:text-sky-300">
-                    {t.titulo || t.title || 'Agradecimiento al Señor'}
+                    {t.titulo || 'Agradecimiento al Señor'}
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-                    "{t.contenido || t.content || 'Sin contenido'}"
+                    "{t.contenido || 'Sin contenido'}"
                   </p>
                 </div>
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
-                  <span>👤 {t.autor || t.author || 'Hermano de Iglesia'}</span>
+                  <span>👤 {t.autor || 'Hermano de Iglesia'}</span>
                 </div>
               </div>
             ))
@@ -563,12 +555,16 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 space-y-4 border border-transparent dark:border-slate-700">
             <div className="flex justify-between items-center border-b dark:border-slate-700 pb-2">
               <h3 className="font-bold text-[#486379] dark:text-sky-300 text-sm">Subir Nuevo Material</h3>
-              <button onClick={() => setUploadModalOpen(false)} className="text-slate-400 font-bold cursor-pointer">✕</button>
+              <button onClick={() => setUploadModalOpen(false)} className="text-slate-400 font-bold cursor-pointer">
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleUploadSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">Título del Recurso</label>
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                  Título del Recurso
+                </label>
                 <input
                   type="text"
                   placeholder="Ej. Guía de Escuela Sabática"
@@ -579,7 +575,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">Seleccionar Archivo (PDF, PPTX, MP3)</label>
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                  Seleccionar Archivo (PDF, PPTX, MP3)
+                </label>
                 <input
                   type="file"
                   required
