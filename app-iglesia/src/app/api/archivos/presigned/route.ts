@@ -14,17 +14,18 @@ export async function POST(request: Request) {
 
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
+    const contentType = fileType || 'application/octet-stream';
 
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
-      ContentType: fileType || 'application/octet-stream',
+      ContentType: contentType,
     });
 
-    // Forzar firmado exclusivo de 'host' para evitar el fallo 401 en R2
+    // OBLIGATORIO PARA R2: Incluir 'content-type' en los encabezados firmados
     const uploadUrl = await getSignedUrl(r2Client, command, {
       expiresIn: 900,
-      signableHeaders: new Set(['host']),
+      signableHeaders: new Set(['host', 'content-type']),
     });
 
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
