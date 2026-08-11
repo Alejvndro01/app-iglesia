@@ -54,7 +54,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
     setUploading(true);
     try {
-      // 1. Solicitar Presigned URL al backend
+      // 1. Obtener la Presigned URL desde la API
       const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,7 +70,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       try {
         presignedData = presignedText ? JSON.parse(presignedText) : {};
       } catch {
-        throw new Error(`Respuesta no válida del servidor (${presignedRes.status})`);
+        throw new Error(`Respuesta inválida del servidor (${presignedRes.status})`);
       }
 
       if (!presignedRes.ok) {
@@ -84,7 +84,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         key: string;
       };
 
-      // 2. Subir directamente el binario a Cloudflare R2 vía PUT
+      // 2. Subida directa vía PUT a Cloudflare R2
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
@@ -94,10 +94,10 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       });
 
       if (!uploadRes.ok) {
-        throw new Error(`Error en el almacenamiento R2 (HTTP ${uploadRes.status})`);
+        throw new Error(`Error en almacenamiento R2 (HTTP ${uploadRes.status})`);
       }
 
-      // 3. Persistir metadata en la base de datos Neon
+      // 3. Persistir metadata en base de datos
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: selectedFile.name,
         url: publicUrl,
@@ -107,7 +107,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito a Cloudflare R2');
+      showToast('Archivo subido con éxito');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
