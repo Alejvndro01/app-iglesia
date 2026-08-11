@@ -25,21 +25,10 @@ export async function GET() {
       },
     });
 
-    // Mapear campos de la BD al contrato utilizado en la UI
-    const archivosFormateados = archivos.map((a) => ({
-      id: a.id,
-      nombre: a.titulo,
-      url: a.path,
-      key: a.id,
-      tipo: a.mimeType,
-      tamano: a.tamano,
-      createdAt: a.createdAt.toISOString(),
-    }));
-
-    return NextResponse.json({ archivos: archivosFormateados }, { status: 200 });
+    return NextResponse.json({ archivos }, { status: 200 });
   } catch (error) {
     console.error('[ARCHIVOS_GET_ERROR]', error);
-    return NextResponse.json({ error: 'Error al consultar archivos' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al consultar archivos', archivos: [] }, { status: 500 });
   }
 }
 
@@ -47,7 +36,6 @@ export async function POST(request: Request) {
   try {
     let userId: string | null = null;
 
-    // Obtener el usuario mediante la cookie de sesión JWT
     try {
       const cookieStore = await cookies();
       const token = cookieStore.get('auth_token')?.value;
@@ -64,7 +52,6 @@ export async function POST(request: Request) {
       console.warn('[ARCHIVOS_POST] Usuario no autenticado o token expirado:', e);
     }
 
-    // Si no hay token válido, asignar el primer usuario (Admin) registrado en la DB
     if (!userId) {
       const defaultUser = await prisma.usuario.findFirst();
       if (defaultUser) {
@@ -99,20 +86,14 @@ export async function POST(request: Request) {
         tamano,
         usuarioId: userId,
       },
+      include: {
+        usuario: {
+          select: { nombre: true },
+        },
+      },
     });
 
-    return NextResponse.json(
-      {
-        id: registroArchivo.id,
-        nombre: registroArchivo.titulo,
-        url: registroArchivo.path,
-        key: registroArchivo.id,
-        tipo: registroArchivo.mimeType,
-        tamano: registroArchivo.tamano,
-        createdAt: registroArchivo.createdAt.toISOString(),
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(registroArchivo, { status: 201 });
   } catch (error) {
     console.error('[ARCHIVOS_POST_ERROR]', error);
     return NextResponse.json(

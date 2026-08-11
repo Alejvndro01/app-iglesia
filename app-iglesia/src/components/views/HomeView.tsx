@@ -11,20 +11,17 @@ interface HomeViewProps {
 }
 
 export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewProps) {
-  // Estados tipados sin 'any'
   const [testimonies, setTestimonies] = useState<Testimonio[]>([]);
   const [testimonyTitle, setTestimonyTitle] = useState('');
   const [testimonyAuthor, setTestimonyAuthor] = useState('');
   const [testimonyContent, setTestimonyContent] = useState('');
   const [loadingTestimony, setLoadingTestimony] = useState(false);
 
-  // Estados de Oración
   const [prayerName, setPrayerName] = useState('');
   const [prayerRequest, setPrayerRequest] = useState('');
   const [prayerPrivate, setPrayerPrivate] = useState(false);
   const [loadingPrayer, setLoadingPrayer] = useState(false);
 
-  // Estados para Archivos / Materiales
   const [materials, setMaterials] = useState<Material[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -41,11 +38,18 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     return 'DOCUMENTO';
   };
 
-  // Cargar datos centralizados a través de apiClient
   const fetchTestimonies = async () => {
     try {
       const data = await apiClient.getTestimonios();
-      setTestimonies(Array.isArray(data) ? data : []);
+      // Cast seguro con Record<string, unknown> para evitar errores de tipo 'never'
+      const response = data as unknown as Record<string, unknown>;
+      if (Array.isArray(data)) {
+        setTestimonies(data);
+      } else if (Array.isArray(response?.testimonios)) {
+        setTestimonies(response.testimonios as Testimonio[]);
+      } else {
+        setTestimonies([]);
+      }
     } catch (err) {
       console.error('Error cargando testimonios:', err);
     }
@@ -54,7 +58,15 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   const fetchMaterials = async () => {
     try {
       const data = await apiClient.getMateriales();
-      setMaterials(Array.isArray(data) ? data : []);
+      // Cast seguro con Record<string, unknown> para evitar errores de tipo 'never'
+      const response = data as unknown as Record<string, unknown>;
+      if (Array.isArray(data)) {
+        setMaterials(data);
+      } else if (Array.isArray(response?.archivos)) {
+        setMaterials(response.archivos as Material[]);
+      } else {
+        setMaterials([]);
+      }
     } catch (err) {
       console.error('Error cargando archivos:', err);
     }
@@ -65,7 +77,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     fetchMaterials();
   }, []);
 
-  // Handler Oraciones mediante apiClient
   const handlePrayerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prayerRequest.trim()) return;
@@ -82,14 +93,13 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       setPrayerRequest('');
       setPrayerPrivate(false);
       showToast('¡Pedido de oración guardado!');
-    } catch (err) {
+    } catch {
       showToast('Error al enviar pedido de oración');
     } finally {
       setLoadingPrayer(false);
     }
   };
 
-  // Handler Testimonios mediante apiClient
   const handleTestimonySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testimonyContent.trim() || !testimonyTitle.trim()) return;
@@ -107,14 +117,13 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       setTestimonyContent('');
       showToast('¡Testimonio publicado con éxito!');
       await fetchTestimonies();
-    } catch (err) {
+    } catch {
       showToast('Error al publicar testimonio');
     } finally {
       setLoadingTestimony(false);
     }
   };
 
-  // Handler Subida Presignada Directa a Cloudflare R2
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -134,7 +143,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       });
 
       if (!presignedRes.ok) {
-        const errData = await presignedRes.json();
+        const errData = await presignedRes.json().catch(() => ({}));
         throw new Error(errData.error || 'Error obteniendo permiso de subida');
       }
 
@@ -217,7 +226,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   return (
     <div className="space-y-16 pb-12 transition-colors">
-      {/* Hero Banner */}
       <section className="bg-[#d0e2f1] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
@@ -272,7 +280,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Horarios de Culto */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
@@ -318,7 +325,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Predicaciones */}
       <section className="bg-[#f0f6fb] dark:bg-slate-900 py-14 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -361,7 +367,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Sección de Descargas / Materiales */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
@@ -417,7 +422,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Muro de Testimonios */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-8">
           <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
@@ -457,7 +461,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           )}
         </div>
 
-        {/* Formulario de Testimonio */}
         <div className="mt-8 bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 max-w-2xl mx-auto space-y-3 transition-colors">
           <h4 className="font-extrabold text-[#486379] dark:text-sky-300 text-sm text-center">
             ¿Tienes un testimonio o agradecimiento que compartir?
@@ -499,7 +502,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Formulario de Pedido de Oración */}
       <section className="max-w-3xl mx-auto px-4">
         <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-sky-100 dark:border-slate-700 transition-colors">
           <div className="text-center mb-6">
@@ -549,7 +551,6 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Modal para Subir Material */}
       {uploadModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 space-y-4 border border-transparent dark:border-slate-700">
