@@ -47,7 +47,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       showToast('Error al actualizar estado');
     }
   };
-
+  
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
@@ -57,7 +57,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // LLAMADA AL PROXY API DE NEXT.JS (NO USA PRESIGNED URLS)
+      // 1. Enviar el archivo al Proxy API
       const res = await fetch('/api/archivos/upload', {
         method: 'POST',
         body: formData,
@@ -70,6 +70,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
       const { publicUrl, key, fileName, fileType, fileSize } = await res.json();
 
+      // 2. Guardar la metadata en la base de datos Neon
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: fileName,
         url: publicUrl,
@@ -79,7 +80,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito');
+      showToast('Archivo subido con éxito a Cloudflare R2');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
