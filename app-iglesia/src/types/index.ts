@@ -20,7 +20,9 @@ export interface Testimonio {
   autor: string;
   titulo: string;
   contenido: string;
-  createdAt: string;
+  likes?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Material {
