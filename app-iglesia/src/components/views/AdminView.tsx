@@ -47,30 +47,54 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       showToast('Error al actualizar estado');
     }
   };
-  
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
+
+    // Límite de payload en Serverless Functions de Vercel (4.5 MB)
+    const MAX_SIZE_MB = 4.5;
+    if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB para subida directa.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // 1. Enviar el archivo al Proxy API
+      // 1. Carga a través del Proxy API
       const res = await fetch('/api/archivos/upload', {
         method: 'POST',
         body: formData,
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al procesar la subida del archivo');
+      // Manejo seguro del cuerpo de respuesta (evita Unexpected end of JSON input)
+      const textResponse = await res.text();
+      let data: Record<string, unknown> = {};
+
+      try {
+        data = textResponse ? JSON.parse(textResponse) : {};
+      } catch {
+        throw new Error(`El servidor devolvió una respuesta no válida (${res.status})`);
       }
 
-      const { publicUrl, key, fileName, fileType, fileSize } = await res.json();
+      if (!res.ok) {
+        const errorMsg = typeof data.error === 'string' ? data.error : `Error HTTP ${res.status}`;
+        throw new Error(errorMsg);
+      }
 
-      // 2. Guardar la metadata en la base de datos Neon
+      const { publicUrl, key, fileName, fileType, fileSize } = data as {
+        publicUrl: string;
+        key: string;
+        fileName: string;
+        fileType: string;
+        fileSize: number;
+      };
+
+      // 2. Persistir metadata en base de datos Neon
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: fileName,
         url: publicUrl,
@@ -114,6 +138,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         </div>
       </div>
 
+      {/* Sección Gestión de Archivos / Repositorio R2 */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">
@@ -169,6 +194,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Moderación de Oraciones */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -198,6 +224,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
           </div>
         </div>
 
+        {/* Cursos Bíblicos */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
