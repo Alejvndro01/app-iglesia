@@ -16,9 +16,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
       profile(profile) {
+        const defaultName = profile.name ?? profile.email.split("@")[0];
         return {
           id: profile.sub,
-          nombre: profile.name ?? profile.email.split("@")[0],
+          nombre: defaultName,
           email: profile.email,
           image: profile.picture,
           role: "USER",
@@ -50,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           id: usuario.id,
           email: usuario.email,
-          name: usuario.nombre ?? usuario.email.split("@")[0], // Corregido a usuario.nombre
+          name: usuario.nombre ?? usuario.email.split("@")[0], // Usa 'nombre'
           role: usuario.role,
         };
       },

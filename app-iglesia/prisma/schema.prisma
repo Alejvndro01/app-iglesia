@@ -14,12 +14,12 @@ enum Role {
 
 model Usuario {
   id            String    @id @default(uuid())
-  nombre        String?   @map("nombre")
-  name          String?   // Permite que Prisma Adapter escriba 'name' si lo requiere
+  nombre        String?
+  name          String?   // <--- Agregado para compatibilidad con Auth.js
   email         String    @unique
-  emailVerified DateTime? @map("email_verified")
+  emailVerified DateTime?
   image         String?
-  password      String?   // Opcional para logins con Google
+  password      String?   // Opcional para login con Google
   role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
