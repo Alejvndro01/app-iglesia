@@ -21,9 +21,18 @@ export async function POST(request: Request) {
       ContentType: fileType || 'application/octet-stream',
     });
 
-    // Generar la URL Presignada válida por 15 minutos (900s)
+    // EVITAR EL ERROR 401 EN CLOUDFLARE R2:
+    // Excluir headers checksum/content-type de la firma de la URL
     const uploadUrl = await getSignedUrl(r2Client, command, {
       expiresIn: 900,
+      unsignableHeaders: new Set([
+        'content-type',
+        'x-amz-sdk-checksum-algorithm',
+        'x-amz-checksum-crc32',
+        'x-amz-checksum-crc32c',
+        'x-amz-checksum-sha1',
+        'x-amz-checksum-sha256',
+      ]),
     });
 
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
