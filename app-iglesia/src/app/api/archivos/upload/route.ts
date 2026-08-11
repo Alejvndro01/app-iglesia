@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
 
+    // Ejecución directa de servidor a servidor (Autenticación nativa S3/R2)
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
@@ -28,9 +29,18 @@ export async function POST(request: Request) {
 
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
 
-    return NextResponse.json({ publicUrl, key, fileName: file.name, fileType: file.type, fileSize: file.size }, { status: 201 });
+    return NextResponse.json(
+      {
+        publicUrl,
+        key,
+        fileName: file.name,
+        fileType: file.type || 'application/octet-stream',
+        fileSize: file.size,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('[UPLOAD_ERROR]', error);
-    return NextResponse.json({ error: 'Error al procesar la subida del archivo' }, { status: 500 });
+    console.error('[UPLOAD_R2_ERROR]', error);
+    return NextResponse.json({ error: 'Error interno al subir el archivo a R2' }, { status: 500 });
   }
 }
