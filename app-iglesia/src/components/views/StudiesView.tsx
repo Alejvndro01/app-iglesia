@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { BIBLE_COURSES } from '@/data/mockData';
+import { apiClient } from '@/lib/api-client';
 
 interface StudiesViewProps {
   showToast: (msg: string) => void;
@@ -23,23 +24,13 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/cursos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          curso: selectedCourse.title,
-          nombre: fullName,
-          telefono: phone,
-          direccion: address,
-          modalidad: modality,
-        }),
+      await apiClient.createSolicitudCurso({
+        curso: selectedCourse.title,
+        nombre: fullName,
+        telefono: phone,
+        direccion: address,
+        modalidad: modality,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Ocurrió un error al enviar la solicitud');
-      }
 
       setSubmitted(true);
       showToast('¡Solicitud guardada correctamente en la base de datos!');

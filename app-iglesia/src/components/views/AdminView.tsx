@@ -1,25 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
-interface Oracion {
-  id: string;
-  nombre: string;
-  request: string;
-  isPrivate: boolean;
-  status: string;
-  createdAt: string;
-}
-
-interface SolicitudCurso {
-  id: string;
-  curso: string;
-  nombre: string;
-  telefono: string;
-  direccion?: string;
-  modalidad: string;
-  createdAt: string;
-}
+import { apiClient } from '@/lib/api-client';
+import { Oracion, SolicitudCurso } from '@/types';
 
 interface AdminViewProps {
   showToast: (msg: string) => void;
@@ -32,20 +15,13 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
   const fetchData = async () => {
     try {
-      const [resPrayers, resCourses] = await Promise.all([
-        fetch('/api/admin/oraciones'),
-        fetch('/api/cursos'),
+      const [dataPrayers, dataCourses] = await Promise.all([
+        apiClient.getOracionesAdmin(),
+        apiClient.getSolicitudesCursos(),
       ]);
 
-      if (resPrayers.ok) {
-        const dataPrayers = await resPrayers.json();
-        setPrayers(dataPrayers.oraciones || []);
-      }
-
-      if (resCourses.ok) {
-        const dataCourses = await resCourses.json();
-        setCourses(dataCourses.solicitudes || []);
-      }
+      setPrayers(dataPrayers.oraciones || []);
+      setCourses(dataCourses.solicitudes || []);
     } catch (err) {
       showToast('Error al cargar datos del panel');
     } finally {
@@ -59,14 +35,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
   const handleMarkAsAnswered = async (id: string) => {
     try {
-      const res = await fetch('/api/admin/oraciones', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'Respondida' }),
-      });
-
-      if (!res.ok) throw new Error();
-
+      await apiClient.patchOracionStatus(id, 'Respondida');
       showToast('Oración marcada como Respondida');
       setPrayers(prayers.map((p) => (p.id === id ? { ...p, status: 'Respondida' } : p)));
     } catch (err) {
@@ -97,7 +66,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Moderación de Oraciones */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -127,7 +95,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
           </div>
         </div>
 
-        {/* Solicitudes de Cursos Bíblicos */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">

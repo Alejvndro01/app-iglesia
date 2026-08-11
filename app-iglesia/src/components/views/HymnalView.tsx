@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
+import { HimnoDetail } from '@/types';
 
 interface HimnarioPageViewProps {
   showToast?: (msg: string) => void;
@@ -8,35 +10,38 @@ interface HimnarioPageViewProps {
 
 export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
   const [search, setSearch] = useState('');
-  const [hymns, setHymns] = useState<any[]>([]);
+  const [hymns, setHymns] = useState<HimnoDetail[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedHymn, setSelectedHymn] = useState<any>(null);
+  const [selectedHymn, setSelectedHymn] = useState<HimnoDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+    const delayDebounceFn = setTimeout(async () => {
       setLoading(true);
-      fetch(`/api/himnario?q=${encodeURIComponent(search)}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setHymns(Array.isArray(data) ? data : []);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+      try {
+        const data = await apiClient.searchHimnos(search);
+        setHymns(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Error al cargar himnos:', err);
+      } finally {
+        setLoading(false);
+      }
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  const handleSelectHymn = (number: number) => {
+  const handleSelectHymn = async (number: number) => {
     setLoadingDetail(true);
-    fetch(`/api/himnario/${number}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setSelectedHymn(data);
-        setLoadingDetail(false);
-      })
-      .catch(() => setLoadingDetail(false));
+    try {
+      const data = await apiClient.getHimno(number);
+      setSelectedHymn(data);
+    } catch (err) {
+      console.error('Error al obtener detalle del himno:', err);
+      showToast?.('Error al cargar el himno seleccionado');
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   return (
@@ -60,7 +65,6 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Lista de Resultados */}
         <div className="md:col-span-1 space-y-2 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin">
           {loading ? (
             <p className="text-xs text-slate-400 text-center py-6">Conectando con la API...</p>
@@ -92,7 +96,6 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
           )}
         </div>
 
-        {/* Visor de Himno */}
         <div className="md:col-span-2 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs min-h-[400px] transition-colors">
           {loadingDetail ? (
             <div className="text-center py-20 text-slate-400 text-xs">Cargando himno desde la API...</div>
@@ -106,7 +109,6 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                 )}
               </div>
 
-              {/* Reproductores de Audio */}
               {(selectedHymn.mp3Url || selectedHymn.mp3UrlInstr) && (
                 <div className="bg-[#f0f6fb] dark:bg-slate-800 p-4 rounded-2xl border border-sky-100 dark:border-slate-700 space-y-4">
                   <h4 className="text-xs font-bold text-[#486379] dark:text-sky-300">🎵 Reproductor de Audio</h4>
@@ -143,7 +145,6 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                 </div>
               )}
 
-              {/* Estrofas */}
               <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                 {selectedHymn.verses?.map((verse: any, index: number) => (
                   <div

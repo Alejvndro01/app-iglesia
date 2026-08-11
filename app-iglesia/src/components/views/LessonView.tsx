@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api-client';
 
 interface SabbathLessonPageViewProps {
   showToast?: (msg: string) => void;
@@ -13,13 +14,15 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
   useEffect(() => {
-    fetch('/api/leccion/actual')
-      .then((res) => res.json())
+    apiClient.getLeccionActual()
       .then((data) => {
         setLessonData(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error('Error cargando lección:', err);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
@@ -34,7 +37,6 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      {/* Cabecera de la Semana */}
       <div className="bg-[#486379] dark:bg-slate-800 text-white p-6 rounded-3xl shadow-md flex flex-col md:flex-row items-center gap-6 border border-transparent dark:border-slate-700 transition-colors">
         {lessonData?.portada && (
           <img
@@ -56,7 +58,6 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
         </div>
       </div>
 
-      {/* Selector de Días */}
       <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none">
         {lessonData?.dias?.map((day: any, index: number) => (
           <button
@@ -73,7 +74,6 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
         ))}
       </div>
 
-      {/* Contenido Diario */}
       {currentDay && (
         <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="text-xl font-black text-[#486379] dark:text-sky-300">
@@ -93,5 +93,4 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
   );
 }
 
-// Alias de compatibilidad por si se importa en otro módulo como LessonView
 export { SabbathLessonPageView as LessonView };

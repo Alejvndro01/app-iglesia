@@ -1,4 +1,11 @@
-import { Testimonio, Material, Oracion, SolicitudCurso, HimnoDetail } from '@/types';
+import { 
+  Testimonio, 
+  Material, 
+  Oracion, 
+  SolicitudCurso, 
+  HimnoDetail, 
+  Usuario 
+} from '@/types';
 
 async function fetcher<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -24,9 +31,35 @@ export const apiClient = {
   getMateriales: () => fetcher<Material[]>('/api/archivos'),
 
   // Himnario
-  getHimno: (numero: number) => fetcher<HimnoDetail>(`/api/himnario/${numero}`),
+  searchHimnos: (query: string) => 
+    fetcher<HimnoDetail[]>(`/api/himnario?q=${encodeURIComponent(query)}`),
+  getHimno: (numero: number) => 
+    fetcher<HimnoDetail>(`/api/himnario/${numero}`),
+
+  // Lección
+  getLeccionActual: () => 
+    fetcher<any>('/api/leccion/actual'),
+
+  // Cursos Bíblicos
+  getSolicitudesCursos: () => 
+    fetcher<{ solicitudes: SolicitudCurso[] }>('/api/cursos'),
+  createSolicitudCurso: (data: Omit<SolicitudCurso, 'id' | 'createdAt'>) =>
+    fetcher<{ message: string }>('/api/cursos', { method: 'POST', body: JSON.stringify(data) }),
 
   // Oraciones
+  getOracionesAdmin: () => 
+    fetcher<{ oraciones: Oracion[] }>('/api/admin/oraciones'),
   createOracion: (data: { nombre: string; peticion: string; esPrivado: boolean }) =>
     fetcher('/api/oraciones', { method: 'POST', body: JSON.stringify(data) }),
+  patchOracionStatus: (id: string, status: string) =>
+    fetcher('/api/admin/oraciones', { 
+      method: 'PATCH', 
+      body: JSON.stringify({ id, status }) 
+    }),
+
+  // Auth
+  login: (credentials: { email: string; password: string }) =>
+    fetcher<{ user: Usuario }>('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  logout: () => 
+    fetcher<{ message: string }>('/api/auth/logout', { method: 'POST' }),
 };

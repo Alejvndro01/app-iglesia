@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { apiClient } from '@/lib/api-client';
 
 interface AuthProps {
   navigateTo: (page: string) => void;
@@ -18,19 +19,9 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await apiClient.login({ email, password });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      const userRoleFromApi = data.user?.role || data.user?.rol || 'USER';
+      const userRoleFromApi = data.user?.role || 'USER';
       setUserRole(userRoleFromApi);
 
       showToast(`¡Bienvenido de nuevo, ${data.user?.nombre || ''}!`);
