@@ -45,14 +45,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           usuario.password
         );
 
-        return isValid
-          ? {
-              id: usuario.id,
-              email: usuario.email,
-              name: usuario.nombre,
-              role: usuario.role,
-            }
-          : null;
+        if (!isValid) return null;
+
+        return {
+          id: usuario.id,
+          email: usuario.email,
+          name: usuario.nombre ?? usuario.email.split("@")[0], // Corregido a usuario.nombre
+          role: usuario.role,
+        };
       },
     }),
   ],
