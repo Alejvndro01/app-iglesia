@@ -50,6 +50,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           id: usuario.id,
           email: usuario.email,
+          image: usuario.image,
           name: usuario.name ?? usuario.email.split("@")[0],
           role: usuario.role,
         };
