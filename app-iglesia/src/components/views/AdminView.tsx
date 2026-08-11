@@ -52,10 +52,10 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    // Límite de payload en Serverless Functions de Vercel (4.5 MB)
+    // Validación de límite serverless de Vercel (4.5 MB)
     const MAX_SIZE_MB = 4.5;
     if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB para subida directa.`);
+      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB.`);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -65,20 +65,19 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // 1. Carga a través del Proxy API
+      // 1. Petición directa al Proxy API (NO usa presigned)
       const res = await fetch('/api/archivos/upload', {
         method: 'POST',
         body: formData,
       });
 
-      // Manejo seguro del cuerpo de respuesta (evita Unexpected end of JSON input)
       const textResponse = await res.text();
       let data: Record<string, unknown> = {};
 
       try {
         data = textResponse ? JSON.parse(textResponse) : {};
       } catch {
-        throw new Error(`El servidor devolvió una respuesta no válida (${res.status})`);
+        throw new Error(`Respuesta inválida del servidor (${res.status})`);
       }
 
       if (!res.ok) {
@@ -94,7 +93,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         fileSize: number;
       };
 
-      // 2. Persistir metadata en base de datos Neon
+      // 2. Persistencia en base de datos Neon
       const newFile = await apiClient.saveArchivoMetadata({
         nombre: fileName,
         url: publicUrl,
@@ -104,7 +103,7 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito a Cloudflare R2');
+      showToast('Archivo subido con éxito');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
@@ -138,7 +137,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         </div>
       </div>
 
-      {/* Sección Gestión de Archivos / Repositorio R2 */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">
@@ -194,7 +192,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Moderación de Oraciones */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -224,7 +221,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
           </div>
         </div>
 
-        {/* Cursos Bíblicos */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
           <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">

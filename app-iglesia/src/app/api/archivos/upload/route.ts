@@ -9,20 +9,14 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No se adjuntó ningún archivo' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No se adjuntó ningún archivo' }, { status: 400 });
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
-    // Limpiar el nombre de caracteres especiales
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
 
-    // Subida directa de Servidor (Vercel) a Cloudflare R2
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
