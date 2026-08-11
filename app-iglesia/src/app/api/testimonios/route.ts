@@ -8,10 +8,28 @@ const testimonioSchema = z.object({
   contenido: z.string().min(10, 'El contenido debe tener al menos 10 caracteres').max(1000),
 });
 
+// GET: Obtener lista de testimonios
+export async function GET() {
+  try {
+    const testimonios = await prisma.testimonio.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json(testimonios, { status: 200 });
+  } catch (error) {
+    console.error('[TESTIMONIOS_GET_ERROR]', error);
+    return NextResponse.json(
+      { error: 'Error al obtener los testimonios de la base de datos' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST: Crear nuevo testimonio con validación Zod
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
+
     // Validar entradas con Zod
     const validation = testimonioSchema.safeParse(body);
     if (!validation.success) {
