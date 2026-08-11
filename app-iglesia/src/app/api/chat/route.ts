@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { env } from '@/env';
+import { limiter } from '@/lib/ratelimit';
+import { z } from 'zod';
 
 const SYSTEM_INSTRUCTION = `
 Eres Esperanza, la asistente virtual teológica y comunitaria de la Iglesia Adventista del Séptimo Día Central de Hualqui.
@@ -20,38 +23,75 @@ Reglas de Comportamiento:
 4. Invita fraternalmente a la persona a visitar la iglesia o solicitar un estudio bíblico si muestra interés.
 `;
 
+// Validación de entrada con Zod
+const chatPayloadSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant', 'system']),
+        content: z.string().min(1, 'El mensaje no puede estar vacío'),
+      })
+    )
+    .min(1, 'Debe enviar al menos un mensaje en el historial'),
+});
+
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GROQ_API_KEY?.trim();
+    // 1. Detección de IP y aplicación de Rate Limit por cliente
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      '127.0.0.1';
+
+    const limitResult = await limiter.limit(`chat_${ip}`);
+
+    if (!limitResult.success) {
+      return NextResponse.json(
+        {
+          error:
+            'Has alcanzado el límite de preguntas permitidas por minuto. Por favor, aguarda un momento antes de consultar a Esperanza nuevamente.',
+        },
+        { status: 429 }
+      );
+    }
+
+    // 2. Validación de credenciales del servidor mediante módulo `env`
+    const apiKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY;
 
     if (!apiKey) {
-      console.error('[GROQ_ERROR] La variable GROQ_API_KEY no está configurada en las variables de entorno.');
+      console.error('[GROQ_ERROR] GROQ_API_KEY no se encuentra configurada.');
       return NextResponse.json(
-        { error: 'Clave de Groq API no configurada en el servidor' },
+        { error: 'El servicio de IA no está configurado correctamente en el servidor' },
         { status: 500 }
       );
     }
 
-    const groq = new Groq({ apiKey });
-    const { messages } = await request.json();
+    // 3. Validar estructura de payload
+    const body = await request.json();
+    const validation = chatPayloadSchema.safeParse(body);
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Historial de mensajes inválido' }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Historial de mensajes inválido', details: validation.error.format() },
+        { status: 400 }
+      );
     }
 
-    // Filtrar y estructurar mensajes para Groq
-    const formattedMessages = [
+    const { messages } = validation.data;
+
+    // 4. Formatear historial con el Prompt del Sistema
+    const formattedMessages: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_INSTRUCTION },
-      ...messages
-        .filter((msg: { role: string; content: string }) => msg.content)
-        .map((msg: { role: string; content: string }) => ({
-          role: msg.role === 'assistant' ? 'assistant' : 'user',
-          content: msg.content,
-        })),
+      ...messages.map((msg) => ({
+        role: msg.role === 'assistant' ? ('assistant' as const) : ('user' as const),
+        content: msg.content,
+      })),
     ];
 
+    // 5. Invocación de la API de Groq
+    const groq = new Groq({ apiKey });
     const chatCompletion = await groq.chat.completions.create({
-      messages: formattedMessages as any,
+      messages: formattedMessages,
       model: 'llama-3.1-8b-instant',
       temperature: 0.7,
       max_tokens: 300,
@@ -66,9 +106,11 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ reply });
-  } catch (error: any) {
-    console.error('[GROQ_CRASH]', error?.message || error);
+    return NextResponse.json({ reply }, { status: 200 });
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+    console.error('[GROQ_CRASH]', errorMsg);
+
     return NextResponse.json(
       { error: 'Esperanza no está disponible en este momento.' },
       { status: 500 }

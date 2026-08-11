@@ -38,7 +38,7 @@ export const apiClient = {
 
   // Lección
   getLeccionActual: () => 
-    fetcher<any>('/api/leccion/actual'),
+    fetcher<Record<string, unknown>>('/api/leccion/actual'),
 
   // Cursos Bíblicos
   getSolicitudesCursos: () => 
@@ -50,11 +50,18 @@ export const apiClient = {
   getOracionesAdmin: () => 
     fetcher<{ oraciones: Oracion[] }>('/api/admin/oraciones'),
   createOracion: (data: { nombre: string; peticion: string; esPrivado: boolean }) =>
-    fetcher('/api/oraciones', { method: 'POST', body: JSON.stringify(data) }),
+    fetcher<Oracion>('/api/oraciones', { method: 'POST', body: JSON.stringify(data) }),
   patchOracionStatus: (id: string, status: string) =>
-    fetcher('/api/admin/oraciones', { 
+    fetcher<Oracion>('/api/admin/oraciones', { 
       method: 'PATCH', 
       body: JSON.stringify({ id, status }) 
+    }),
+
+  // Chatbot IA (Esperanza)
+  sendChatMessage: (messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>) =>
+    fetcher<{ reply: string }>('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
     }),
 
   // Auth
