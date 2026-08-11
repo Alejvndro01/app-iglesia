@@ -1,0 +1,37 @@
+name: CI / Quality Checks
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    name: Lint, Typecheck & Database Schema Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/use-node-version@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar esquema de Prisma
+        run: npx prisma validate
+
+      - name: Generar cliente de Prisma
+        run: npx prisma generate
+
+      - name: Verificación de tipos TypeScript
+        run: npx tsc --noEmit
+
+      - name: Ejecutar Linter (ESLint)
+        run: npm run lint
