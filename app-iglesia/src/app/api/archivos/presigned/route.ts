@@ -23,8 +23,7 @@ export async function POST(request: Request) {
 
     const secretKey = env.JWT_SECRET || process.env.JWT_SECRET;
     if (!secretKey) {
-      console.error('[PRESIGNED_ERROR] JWT_SECRET no está configurada');
-      return NextResponse.json({ error: 'Error de configuración en el servidor' }, { status: 500 });
+      return NextResponse.json({ error: 'Error de configuración' }, { status: 500 });
     }
 
     const secret = new TextEncoder().encode(secretKey);
@@ -41,7 +40,6 @@ export async function POST(request: Request) {
     }
 
     const { fileName, fileType } = validation.data;
-
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
 
@@ -51,14 +49,18 @@ export async function POST(request: Request) {
       ContentType: fileType,
     });
 
-    // Generar URL válida por 15 minutos para subir directo a Cloudflare
-    const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 900 });
+    // Forzar firma limpia sin checksums de AWS SDK v3
+    const uploadUrl = await getSignedUrl(r2Client, command, {
+      expiresIn: 900,
+      signableHeaders: new Set(['host']),
+    });
+
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
 
     return NextResponse.json({ uploadUrl, publicUrl, key }, { status: 200 });
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
-    console.error('[PRESIGNED_ERROR] Error generando Presigned URL:', errorMsg);
-    return NextResponse.json({ error: 'Error al autorizar la subida del archivo' }, { status: 500 });
+    console.error('[PRESIGNED_ERROR]', errorMsg);
+    return NextResponse.json({ error: 'Error al autorizar la subida' }, { status: 500 });
   }
 }
