@@ -106,8 +106,8 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     try {
       await apiClient.createTestimonio({
         autor: testimonyAuthor.trim() || 'Hermano de Iglesia',
-        titulo: testimonyTitle,
-        contenido: testimonyContent,
+        titulo: testimonyTitle.trim(),
+        contenido: testimonyContent.trim(),
       });
 
       setTestimonyTitle('');
@@ -115,8 +115,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       setTestimonyContent('');
       showToast('¡Testimonio publicado con éxito!');
       await fetchTestimonies();
-    } catch {
-      showToast('Error al publicar testimonio');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al publicar testimonio';
+      showToast(msg);
     } finally {
       setLoadingTestimony(false);
     }

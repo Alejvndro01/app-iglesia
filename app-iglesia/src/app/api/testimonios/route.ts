@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const testimonioSchema = z.object({
-  autor: z.string().min(2).max(50),
-  titulo: z.string().min(3).max(100),
-  contenido: z.string().min(10).max(1000),
+  autor: z.string().default('Hermano de Iglesia'),
+  titulo: z.string().min(1, 'El título es obligatorio'),
+  contenido: z.string().min(5, 'El contenido debe tener al menos 5 caracteres'),
 });
 
 export async function GET() {
@@ -15,33 +15,50 @@ export async function GET() {
     });
     return NextResponse.json(testimonios, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error al consultar testimonios' }, { status: 500 });
+    console.error('[TESTIMONIOS_GET_ERROR]', error);
+    return NextResponse.json(
+      { error: 'Error al consultar testimonios' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+
     const validation = testimonioSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
+      const issues = validation.error.issues.map((i) => i.message).join(', ');
+      return NextResponse.json({ error: `Datos inválidos: ${issues}` }, { status: 400 });
     }
 
+    const { autor, titulo, contenido } = validation.data;
+
     const nuevoTestimonio = await prisma.testimonio.create({
-      data: validation.data,
+      data: {
+        autor: autor.trim() || 'Hermano de Iglesia',
+        titulo: titulo.trim(),
+        contenido: contenido.trim(),
+        likes: 0,
+      },
     });
+
     return NextResponse.json(nuevoTestimonio, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error al crear testimonio' }, { status: 500 });
+    console.error('[TESTIMONIOS_POST_ERROR]', error);
+    return NextResponse.json(
+      { error: 'Error interno al guardar el testimonio en la base de datos' },
+      { status: 500 }
+    );
   }
 }
 
-// PATCH: Incrementar el contador de likes/amén en 1
 export async function PATCH(req: Request) {
   try {
     const { id } = await req.json();
     if (!id) {
-      return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+      return NextResponse.json({ error: 'ID es requerido' }, { status: 400 });
     }
 
     const testimonioActualizado = await prisma.testimonio.update({
@@ -53,6 +70,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(testimonioActualizado, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error al actualizar likes' }, { status: 500 });
+    console.error('[TESTIMONIOS_PATCH_ERROR]', error);
+    return NextResponse.json({ error: 'Error al actualizar amé' }, { status: 500 });
   }
 }
