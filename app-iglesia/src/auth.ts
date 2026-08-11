@@ -18,7 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       profile(profile) {
         return {
           id: profile.sub,
-          nombre: profile.name ?? profile.email.split("@")[0],
+          name: profile.name ?? profile.email.split("@")[0],
           email: profile.email,
           image: profile.picture,
           role: "USER",
@@ -45,14 +45,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           usuario.password
         );
 
-        return isValid
-          ? {
-              id: usuario.id,
-              email: usuario.email,
-              name: usuario.nombre,
-              role: usuario.role,
-            }
-          : null;
+        if (!isValid) return null;
+
+        return {
+          id: usuario.id,
+          email: usuario.email,
+          name: usuario.name ?? usuario.email.split("@")[0],
+          role: usuario.role,
+        };
       },
     }),
   ],

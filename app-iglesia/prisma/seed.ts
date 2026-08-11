@@ -9,12 +9,12 @@ async function main() {
   const admin = await prisma.usuario.upsert({
     where: { email: 'alejvndro.arevalo@gmail.com' },
     update: {
-      nombre: 'Alejvndro01',
-      password: hashedPassword, // <-- Agregado para sobrescribir la clave si el usuario ya existe
+      name: 'Alejvndro01', // Corregido: 'name' en lugar de 'nombre'
+      password: hashedPassword,
     },
     create: {
       email: 'alejvndro.arevalo@gmail.com',
-      nombre: 'Alejvndro01',
+      name: 'Alejvndro01', // Corregido: 'name' en lugar de 'nombre'
       password: hashedPassword,
     },
   });
