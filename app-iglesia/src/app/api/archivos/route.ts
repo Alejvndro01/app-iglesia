@@ -17,7 +17,7 @@ export async function GET() {
     const archivos = await prisma.archivo.findMany({
       include: {
         usuario: {
-          select: { nombre: true },
+          select: { name: true }, // Corregido: 'name' en lugar de 'nombre'
         },
       },
       orderBy: {
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       },
       include: {
         usuario: {
-          select: { nombre: true },
+          select: { name: true }, // Corregido: 'name' en lugar de 'nombre'
         },
       },
     });
