@@ -10,6 +10,7 @@ async function main() {
     where: { email: 'alejvndro.arevalo@gmail.com' },
     update: {
       nombre: 'Alejvndro01',
+      password: hashedPassword, // <-- Agregado para sobrescribir la clave si el usuario ya existe
     },
     create: {
       email: 'alejvndro.arevalo@gmail.com',
