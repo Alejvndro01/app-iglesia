@@ -52,58 +52,62 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    // Validación de límite serverless de Vercel (4.5 MB)
-    const MAX_SIZE_MB = 4.5;
-    if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      showToast(`El archivo supera el límite de ${MAX_SIZE_MB} MB para subida directa.`);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      // Consumo directo al Proxy API
-      const res = await fetch('/api/archivos/upload', {
+      // 1. Solicitar Presigned URL al backend
+      const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          fileType: selectedFile.type || 'application/octet-stream',
+        }),
       });
 
-      const textResponse = await res.text();
-      let data: Record<string, unknown> = {};
+      const presignedText = await presignedRes.text();
+      let presignedData: Record<string, unknown> = {};
 
       try {
-        data = textResponse ? JSON.parse(textResponse) : {};
+        presignedData = presignedText ? JSON.parse(presignedText) : {};
       } catch {
-        throw new Error(`Respuesta no válida del servidor (${res.status})`);
+        throw new Error(`Respuesta no válida del servidor (${presignedRes.status})`);
       }
 
-      if (!res.ok) {
-        const errorMsg = typeof data.error === 'string' ? data.error : `Error HTTP ${res.status}`;
+      if (!presignedRes.ok) {
+        const errorMsg = typeof presignedData.error === 'string' ? presignedData.error : `Error HTTP ${presignedRes.status}`;
         throw new Error(errorMsg);
       }
 
-      const { publicUrl, key, fileName, fileType, fileSize } = data as {
+      const { uploadUrl, publicUrl, key } = presignedData as {
+        uploadUrl: string;
         publicUrl: string;
         key: string;
-        fileName: string;
-        fileType: string;
-        fileSize: number;
       };
 
-      // Guardar metadata en BD Neon
+      // 2. Subir directamente el binario a Cloudflare R2 vía PUT
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': selectedFile.type || 'application/octet-stream',
+        },
+        body: selectedFile,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error(`Error en el almacenamiento R2 (HTTP ${uploadRes.status})`);
+      }
+
+      // 3. Persistir metadata en la base de datos Neon
       const newFile = await apiClient.saveArchivoMetadata({
-        nombre: fileName,
+        nombre: selectedFile.name,
         url: publicUrl,
         key: key,
-        tipo: fileType,
-        tamano: fileSize,
+        tipo: selectedFile.type || 'application/octet-stream',
+        tamano: selectedFile.size,
       });
 
       setFiles([newFile, ...files]);
-      showToast('Archivo subido con éxito');
+      showToast('Archivo subido con éxito a Cloudflare R2');
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir archivo';
