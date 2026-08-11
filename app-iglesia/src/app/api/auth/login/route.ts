@@ -12,7 +12,9 @@ export async function POST(request: Request) {
     }
 
     const usuario = await prisma.usuario.findUnique({ where: { email } });
-    if (!usuario) {
+    
+    // Validación explícita de existencia del usuario y su hash de contraseña (para cuentas de Google sin password)
+    if (!usuario || !usuario.password) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
     }
 
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 8, // Persistencia explícita por 8 horas
+      maxAge: 60 * 60 * 8,
     });
 
     return response;
