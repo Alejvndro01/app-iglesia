@@ -14,25 +14,19 @@ export async function POST(request: Request) {
 
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const key = `recursos/${Date.now()}-${cleanFileName}`;
+    const contentType = fileType || 'application/octet-stream';
 
+    // Se especifica ContentType en el comando para que se incluya en los SignedHeaders
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME || process.env.R2_BUCKET_NAME,
       Key: key,
-      ContentType: fileType || 'application/octet-stream',
+      ContentType: contentType,
     });
 
-    // EVITAR EL ERROR 401 EN CLOUDFLARE R2:
-    // Excluir headers checksum/content-type de la firma de la URL
+    // Generar la Presigned URL deshabilitando checksums automáticos de AWS SDK v3
     const uploadUrl = await getSignedUrl(r2Client, command, {
       expiresIn: 900,
-      unsignableHeaders: new Set([
-        'content-type',
-        'x-amz-sdk-checksum-algorithm',
-        'x-amz-checksum-crc32',
-        'x-amz-checksum-crc32c',
-        'x-amz-checksum-sha1',
-        'x-amz-checksum-sha256',
-      ]),
+      signableHeaders: new Set(['host', 'content-type']),
     });
 
     const publicUrl = `${env.R2_PUBLIC_URL || process.env.R2_PUBLIC_URL}/${key}`;
