@@ -2,7 +2,7 @@
 
 import { useChat, type UIMessage } from '@ai-sdk/react';
 import { useState, useRef, useEffect, FormEvent } from 'react';
-import { X, Send, Bot, User, RefreshCw, AlertCircle } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, User, RefreshCw, AlertCircle } from 'lucide-react';
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -44,22 +44,18 @@ export function ChatWidget() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Botón Flotante */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          aria-label="Abrir chat con Esperanza"
+          className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg transition-all hover:bg-blue-700"
         >
           <Bot className="h-6 w-6" />
           <span className="font-medium">Hablar con Esperanza</span>
         </button>
       )}
 
-      {/* Ventana del Chat */}
       {isOpen && (
-        <div className="flex h-[500px] w-[350px] sm:w-[400px] flex-col rounded-2xl bg-white shadow-2xl border border-gray-200 dark:bg-gray-900 dark:border-gray-800 transition-all">
-          {/* Header */}
+        <div className="flex h-[500px] w-[350px] sm:w-[400px] flex-col rounded-2xl bg-white shadow-2xl border border-gray-200 dark:bg-gray-900 dark:border-gray-800">
           <div className="flex items-center justify-between rounded-t-2xl bg-blue-600 p-4 text-white">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
@@ -73,13 +69,11 @@ export function ChatWidget() {
             <button
               onClick={() => setIsOpen(false)}
               className="rounded-lg p-1 hover:bg-white/20 transition-colors"
-              aria-label="Cerrar chat"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Mensajes */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <div className="flex gap-3 text-sm text-gray-600 dark:text-gray-300">
@@ -126,19 +120,16 @@ export function ChatWidget() {
               );
             })}
 
-            {/* Banner de Error y Botón de Reintento */}
+            {/* Única adición: Alerta discreta y botón de reintento si falla la API */}
             {error && (
-              <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-red-50 p-3 text-center border border-red-200 dark:bg-red-950/40 dark:border-red-900/50">
-                <div className="flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-400">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>Ocurrió un inconveniente al conectar con el servidor.</span>
-                </div>
+              <div className="flex flex-col items-center gap-2 p-3 text-center bg-red-50 text-red-600 rounded-xl text-xs dark:bg-red-950/40 dark:text-red-400">
+                <span>Tuve un inconveniente al conectar con el servidor.</span>
                 <button
+                  type="button"
                   onClick={() => regenerate()}
-                  className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 active:scale-95"
+                  className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-red-700"
                 >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Reintentar último mensaje
+                  <RefreshCw className="h-3 w-3" /> Reintentar
                 </button>
               </div>
             )}
@@ -146,7 +137,6 @@ export function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Formulario de Entrada */}
           <form onSubmit={onSubmit} className="p-3 border-t border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-2">
               <input
@@ -159,8 +149,7 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Enviar mensaje"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </button>
