@@ -23,6 +23,7 @@ export function Header({
 
   const navItems = [
     { id: 'inicio', label: 'Inicio' },
+    { id: 'biblia', label: '📖 Biblia' },
     { id: 'leccion', label: 'Lección Diaria' },
     { id: 'himnario', label: 'Himnario' },
     { id: 'estudios-biblicos', label: 'Estudios Bíblicos' },

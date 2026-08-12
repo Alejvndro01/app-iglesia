@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { HomeView } from '@/components/views/HomeView';
+import { BibleView } from '@/components/views/BibleView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
@@ -46,6 +47,7 @@ export default function MainPage() {
         {currentPage === 'home' && (
           <HomeView navigateTo={handleNavigate} showToast={showToast} />
         )}
+        {currentPage === 'biblia' && <BibleView />}
         {currentPage === 'himnario' && <HimnarioPageView showToast={showToast} />}
         {currentPage === 'leccion' && <SabbathLessonPageView showToast={showToast} />}
         {currentPage === 'estudios-biblicos' && (
