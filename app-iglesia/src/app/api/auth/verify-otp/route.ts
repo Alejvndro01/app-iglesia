@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+// Regex: >=8 caracteres, al menos 1 mayúscula y al menos 1 número
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+
 export async function POST(request: Request) {
   try {
     const { email, code, name, password } = await request.json();
@@ -12,7 +15,15 @@ export async function POST(request: Request) {
 
     const emailNormalized = email.toLowerCase().trim();
 
-    // 1. Buscar token en VerificationToken
+    // 1. Validar fortaleza de contraseña (sin exigir carácter especial)
+    if (!PASSWORD_REGEX.test(password)) {
+      return NextResponse.json(
+        { error: 'La contraseña no cumple con los requisitos de seguridad.' },
+        { status: 400 }
+      );
+    }
+
+    // 2. Buscar token en VerificationToken
     const records = await prisma.verificationToken.findMany({
       where: { identifier: emailNormalized },
     });
@@ -29,10 +40,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Hash de contraseña
+    // 3. Hash de contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Crear usuario definitivo
+    // 4. Crear usuario definitivo
     const newUser = await prisma.usuario.create({
       data: {
         email: emailNormalized,
@@ -42,7 +53,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 4. Limpiar token de verificación utilizado
+    // 5. Limpiar tokens de verificación utilizados
     await prisma.verificationToken.deleteMany({
       where: { identifier: emailNormalized },
     });
