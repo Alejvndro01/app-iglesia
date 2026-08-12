@@ -13,7 +13,7 @@ import { StewardshipView } from '@/components/views/StewardshipView';
 
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
-  const [userRole, setUserRole] = useState('guest');
+  const [, setUserRole] = useState('guest');
   const [, setBulletinModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -37,10 +37,7 @@ export default function MainPage() {
 
       <Header
         currentPage={currentPage}
-        userRole={userRole}
-        userName="Alejvndro01"
         navigateTo={handleNavigate}
-        setUserRole={setUserRole}
         setBulletinModalOpen={setBulletinModalOpen}
         showToast={showToast}
       />

@@ -1,27 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { BulletinModal } from '../modales/BulletinModal';
 import { ThemeToggle } from '../ThemeToggle';
 
 interface HeaderProps {
   currentPage: string;
-  userName?: string;
-  userRole?: string;
   navigateTo: (page: string) => void;
-  setUserRole?: (role: string) => void;
   setBulletinModalOpen?: (open: boolean) => void;
   showToast?: (msg: string) => void;
 }
 
 export function Header({
   currentPage,
-  userName,
-  userRole,
   navigateTo,
-  setUserRole,
   showToast,
 }: HeaderProps) {
+  const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bulletinOpen, setBulletinOpen] = useState(false);
 
@@ -47,13 +43,17 @@ export function Header({
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      setUserRole?.('guest');
+      await signOut({ redirect: false });
       showToast?.('Sesión cerrada correctamente');
       navigateTo('inicio');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
   };
+
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Usuario';
+  const userRole = (session?.user as { role?: string })?.role || 'USER';
+  const isAuthenticated = status === 'authenticated';
 
   return (
     <>
@@ -80,7 +80,7 @@ export function Header({
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  currentPage === item.id
+                  currentPage === item.id || (currentPage === 'home' && item.id === 'inicio')
                     ? 'bg-[#d0e2f1] text-[#486379] dark:bg-slate-800 dark:text-sky-300'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
@@ -94,14 +94,21 @@ export function Header({
           <div className="hidden lg:flex items-center space-x-3">
             <ThemeToggle />
 
-            {userRole && userRole !== 'guest' ? (
+            {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => navigateTo('admin')}
-                  className="px-4 py-1.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-full shadow-xs cursor-pointer"
-                >
-                  ⚙️ Admin ({userName || 'Usuario'})
-                </button>
+                {userRole === 'ADMIN' && (
+                  <button
+                    onClick={() => navigateTo('admin')}
+                    className="px-4 py-1.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-full shadow-xs cursor-pointer"
+                  >
+                    ⚙️ Admin ({userName})
+                  </button>
+                )}
+                {userRole !== 'ADMIN' && (
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 px-2">
+                    👤 {userName}
+                  </span>
+                )}
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
@@ -119,7 +126,7 @@ export function Header({
             )}
           </div>
 
-          {/* Botón Hamburguesa Móvil + ThemeToggle para Móvil */}
+          {/* Botón Hamburguesa Móvil */}
           <div className="flex items-center space-x-2 lg:hidden">
             <ThemeToggle />
             <button
@@ -147,7 +154,7 @@ export function Header({
                 key={item.id}
                 onClick={() => handleNavClick(item)}
                 className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === item.id
+                  currentPage === item.id || (currentPage === 'home' && item.id === 'inicio')
                     ? 'bg-[#d0e2f1] text-[#486379] dark:bg-slate-800 dark:text-sky-300'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
@@ -157,14 +164,16 @@ export function Header({
             ))}
 
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col space-y-2">
-              {userRole && userRole !== 'guest' ? (
+              {isAuthenticated ? (
                 <>
-                  <button
-                    onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
-                    className="w-full py-2.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-2xl text-center"
-                  >
-                    ⚙️ Admin ({userName || 'Usuario'})
-                  </button>
+                  {userRole === 'ADMIN' && (
+                    <button
+                      onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
+                      className="w-full py-2.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-2xl text-center"
+                    >
+                      ⚙️ Admin ({userName})
+                    </button>
+                  )}
                   <button
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="w-full py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-2xl text-center"
