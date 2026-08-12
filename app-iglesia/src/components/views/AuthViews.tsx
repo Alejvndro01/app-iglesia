@@ -131,15 +131,32 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Estados para el flujo OTP
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [otpCode, setOtpCode] = useState('');
 
-  // Paso 1: Enviar OTP al correo del usuario
+  // Validaciones en tiempo real (sin requerir carácter especial)
+  const checks = {
+    length: password.length >= 8,
+    capital: /[A-Z]/.test(password),
+    number: /\d/.test(password),
+    match: password.length > 0 && password === confirmPassword,
+  };
+
+  const isPasswordValid = Object.values(checks).every(Boolean);
+
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isPasswordValid) {
+      showToast('Por favor cumple todos los requisitos de la contraseña.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -165,7 +182,6 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
     }
   };
 
-  // Paso 2: Verificar el código OTP e ingresar el registro final
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -254,24 +270,65 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
                 />
               </div>
 
+              {/* Contraseña */}
               <div>
                 <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                   Contraseña
                 </label>
+                <div className="relative">
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 pr-10 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showPass ? '👁️' : '🙈'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Repetir Contraseña */}
+              <div>
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                  Repetir Contraseña
+                </label>
                 <input
-                  type="password"
+                  type={showPass ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
                 />
               </div>
 
+              {/* Checklist de Fortaleza sin carácter especial */}
+              <div className="p-3.5 bg-[#fbf6ee]/60 dark:bg-slate-800/50 rounded-2xl space-y-1.5 text-[11px] border border-amber-100/50 dark:border-slate-700/50">
+                <p className={checks.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {checks.length ? '✓' : '○'} Mínimo 8 caracteres
+                </p>
+                <p className={checks.capital ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {checks.capital ? '✓' : '○'} Una letra mayúscula
+                </p>
+                <p className={checks.number ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {checks.number ? '✓' : '○'} Un número
+                </p>
+                <p className={checks.match ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {checks.match ? '✓' : '○'} Las contraseñas coinciden
+                </p>
+              </div>
+
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50 transition-colors"
+                disabled={loading || !isPasswordValid}
+                className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
               >
                 {loading ? 'Enviando código...' : 'Continuar →'}
               </button>
