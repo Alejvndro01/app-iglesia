@@ -81,6 +81,17 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
             />
           </div>
 
+          {/* Enlace para recuperar contraseña */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => navigateTo('forgot-password')}
+              className="text-[11px] font-bold text-[#eca489] hover:underline cursor-pointer"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -139,7 +150,7 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [otpCode, setOtpCode] = useState('');
 
-  // Validaciones en tiempo real (sin requerir carácter especial)
+  // Validaciones en tiempo real
   const checks = {
     length: password.length >= 8,
     capital: /[A-Z]/.test(password),
@@ -309,7 +320,7 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
                 />
               </div>
 
-              {/* Checklist de Fortaleza sin carácter especial */}
+              {/* Checklist de Fortaleza */}
               <div className="p-3.5 bg-[#fbf6ee]/60 dark:bg-slate-800/50 rounded-2xl space-y-1.5 text-[11px] border border-amber-100/50 dark:border-slate-700/50">
                 <p className={checks.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
                   {checks.length ? '✓' : '○'} Mínimo 8 caracteres
@@ -401,6 +412,227 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
             className="font-bold text-[#eca489] hover:underline cursor-pointer"
           >
             Inicia sesión aquí
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 'setUserRole'>) {
+  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<'request' | 'reset'>('request');
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Requisitos de la contraseña
+  const checks = {
+    length: newPassword.length >= 8,
+    capital: /[A-Z]/.test(newPassword),
+    number: /\d/.test(newPassword),
+    match: newPassword.length > 0 && newPassword === confirmPassword,
+  };
+
+  const isPasswordValid = Object.values(checks).every(Boolean);
+
+  // Paso 1: Enviar OTP al correo para recuperación
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || 'Error al solicitar el código');
+        return;
+      }
+
+      showToast('📩 Código de recuperación enviado a tu correo.');
+      setStep('reset');
+    } catch {
+      showToast('Error de conexión al procesar la solicitud');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Paso 2: Verificar OTP y guardar la nueva contraseña
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (otpCode.length < 6) {
+      showToast('Ingresa el código completo de 6 dígitos.');
+      return;
+    }
+
+    if (!isPasswordValid) {
+      showToast('Cumple con todos los requisitos de la nueva contraseña.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          code: otpCode,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || 'Error al cambiar la contraseña');
+        return;
+      }
+
+      showToast('🎉 Contraseña actualizada correctamente. Inicia sesión.');
+      navigateTo('login');
+    } catch {
+      showToast('Error de conexión al restablecer la contraseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-[75vh] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-sky-100 dark:border-slate-800 transition-colors">
+        <div className="text-center mb-6">
+          <span className="text-4xl block mb-2">🔑</span>
+          <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">
+            Recuperar Contraseña
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {step === 'request'
+              ? 'Ingresa tu correo para recibir un código de recuperación.'
+              : `Ingresa el código enviado a ${email} y tu nueva clave.`}
+          </p>
+        </div>
+
+        {step === 'request' ? (
+          <form onSubmit={handleRequestReset} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                Correo Electrónico
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="ejemplo@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Enviando código...' : 'Enviar Código →'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1 text-center">
+                Código de Confirmación (6 dígitos)
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="123456"
+                className="w-full text-center tracking-[12px] text-2xl font-black p-3.5 bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                Nueva Contraseña
+              </label>
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 pr-10 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {showPass ? '👁️' : '🙈'}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                Repetir Nueva Contraseña
+              </label>
+              <input
+                type={showPass ? 'text' : 'password'}
+                required
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+              />
+            </div>
+
+            <div className="p-3.5 bg-[#fbf6ee]/60 dark:bg-slate-800/50 rounded-2xl space-y-1.5 text-[11px] border border-amber-100/50 dark:border-slate-700/50">
+              <p className={checks.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                {checks.length ? '✓' : '○'} Mínimo 8 caracteres
+              </p>
+              <p className={checks.capital ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                {checks.capital ? '✓' : '○'} Una letra mayúscula
+              </p>
+              <p className={checks.number ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                {checks.number ? '✓' : '○'} Un número
+              </p>
+              <p className={checks.match ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                {checks.match ? '✓' : '○'} Las contraseñas coinciden
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !isPasswordValid}
+              className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
+            >
+              {loading ? 'Cambiando clave...' : 'Cambiar Contraseña'}
+            </button>
+          </form>
+        )}
+
+        <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+          <button
+            onClick={() => navigateTo('login')}
+            className="font-bold text-[#eca489] hover:underline cursor-pointer"
+          >
+            ← Volver al inicio de sesión
           </button>
         </div>
       </div>
