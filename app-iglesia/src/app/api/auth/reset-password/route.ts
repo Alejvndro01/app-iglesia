@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-// Mismas reglas de fortaleza (>=8 caracteres, 1 mayúscula, 1 número)
+// Regex: >=8 caracteres, al menos 1 mayúscula y al menos 1 número (sin carácter especial obligatorio)
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
 
 export async function POST(request: Request) {
