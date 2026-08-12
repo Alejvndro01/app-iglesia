@@ -7,7 +7,7 @@ import { BibleView } from '@/components/views/BibleView';
 import { HimnarioPageView } from '@/components/views/HymnalView';
 import { SabbathLessonPageView } from '@/components/views/LessonView';
 import { EstudiosBiblicosPageView } from '@/components/views/StudiesView';
-import { LoginView, RegisterView } from '@/components/views/AuthViews';
+import { LoginView, RegisterView, ForgotPasswordView } from '@/components/views/AuthViews';
 import { AdminPanelPageView } from '@/components/views/AdminView';
 import { AgendaView } from '@/components/views/AgendaView';
 import { StewardshipView } from '@/components/views/StewardshipView';
@@ -64,6 +64,12 @@ export default function MainPage() {
         )}
         {currentPage === 'register' && (
           <RegisterView
+            navigateTo={handleNavigate}
+            showToast={showToast}
+          />
+        )}
+        {currentPage === 'forgot-password' && (
+          <ForgotPasswordView
             navigateTo={handleNavigate}
             showToast={showToast}
           />
