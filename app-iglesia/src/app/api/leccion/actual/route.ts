@@ -19,7 +19,7 @@ export async function GET() {
     // 1. Obtener el trimestre de Adventech
     const quarterRes = await fetch(
       'https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/index.json',
-      { next: { revalidate: 3600 } } // Revalidar cada hora
+      { next: { revalidate: 3600 } }
     );
 
     if (!quarterRes.ok) throw new Error('Error conectando con la API de Adventech');
@@ -78,21 +78,21 @@ export async function GET() {
       })
     );
 
-    const resultData = {
+    const responsePayload = {
       tituloSemana: currentLesson.title,
       fechaInicio: currentLesson.start_date,
       fechaFin: currentLesson.end_date,
       portada: currentLesson.cover || '',
-      days: daysWithContent,
+      dias: daysWithContent, // Nombre de la propiedad que espera el Frontend
     };
 
-    // 5. GUARDAR / ACTUALIZAR AUTOMÁTICAMENTE EN POSTGRESQL (NEON)
+    // 5. GUARDAR / ACTUALIZAR EN NEON POSTGRESQL
     await prisma.leccionCache.upsert({
       where: { id: 'actual' },
       update: {
         quarter: '3er Trimestre 2026',
         lessonNumber: parseInt(currentLesson.id, 10) || 1,
-        title: resultData.tituloSemana,
+        title: responsePayload.tituloSemana,
         memoryVerse: '',
         daysJson: JSON.stringify(daysWithContent),
       },
@@ -100,20 +100,20 @@ export async function GET() {
         id: 'actual',
         quarter: '3er Trimestre 2026',
         lessonNumber: parseInt(currentLesson.id, 10) || 1,
-        title: resultData.tituloSemana,
+        title: responsePayload.tituloSemana,
         memoryVerse: '',
         daysJson: JSON.stringify(daysWithContent),
       },
     });
 
     return NextResponse.json({
-      ...resultData,
+      ...responsePayload,
       source: 'live-api',
     });
   } catch (error) {
-    console.warn('Fallback a la caché de PostgreSQL por error:', error);
+    console.warn('Fallback a la caché de DB por error:', error);
 
-    // 6. RECUPERAR DE LA BASE DE DATOS SI LA API EXTERNA FALLA
+    // 6. FALLBACK DESDE BASE DE DATOS NEON
     try {
       const cachedLesson = await prisma.leccionCache.findUnique({
         where: { id: 'actual' },
@@ -125,12 +125,12 @@ export async function GET() {
           fechaInicio: '',
           fechaFin: '',
           portada: '',
-          days: JSON.parse(cachedLesson.daysJson),
+          dias: JSON.parse(cachedLesson.daysJson), // Mapear propiedad 'dias'
           source: 'database-cache',
         });
       }
     } catch (dbError) {
-      console.error('Error al leer de la caché de DB:', dbError);
+      console.error('Error al leer caché DB:', dbError);
     }
 
     return NextResponse.json({ error: 'No se pudo sincronizar la lección' }, { status: 500 });
