@@ -1,109 +1,119 @@
 import { NextResponse } from 'next/server';
 
-// Mapeo exacto de los nombres en español a las abreviaturas estándar en español
-const ABREVIATURAS_LIBROS: Record<string, string> = {
-  'Génesis': 'gn',
-  'Éxodo': 'ex',
-  'Levítico': 'lv',
-  'Números': 'nm',
-  'Deuteronomio': 'dt',
-  'Josué': 'jos',
-  'Jueces': 'jue',
-  'Rut': 'rt',
-  '1 Samuel': '1sm',
-  '2 Samuel': '2sm',
-  '1 Reyes': '1re',
-  '2 Reyes': '2re',
-  '1 Crónicas': '1cr',
-  '2 Crónicas': '2cr',
-  'Esdras': 'esd',
-  'Nehemías': 'neh',
-  'Ester': 'est',
+// Mapeo exhaustivo de todos los libros a slugs internacionales para RVR1960
+const MAPA_SLUGS: Record<string, string> = {
+  'Génesis': 'genesis',
+  'Éxodo': 'exodus',
+  'Levítico': 'leviticus',
+  'Números': 'numbers',
+  'Deuteronomio': 'deuteronomy',
+  'Josué': 'joshua',
+  'Jueces': 'judges',
+  'Rut': 'ruth',
+  '1 Samuel': '1samuel',
+  '2 Samuel': '2samuel',
+  '1 Reyes': '1kings',
+  '2 Reyes': '2kings',
+  '1 Crónicas': '1chronicles',
+  '2 Crónicas': '2chronicles',
+  'Esdras': 'ezra',
+  'Nehemías': 'nehemiah',
+  'Ester': 'esther',
   'Job': 'job',
-  'Salmos': 'sal',
-  'Proverbios': 'pr',
-  'Eclesiastés': 'ec',
-  'Cantares': 'cnt',
-  'Isaías': 'is',
-  'Jeremías': 'jer',
-  'Lamentaciones': 'lm',
-  'Ezequiel': 'ez',
-  'Daniel': 'dn',
-  'Oseas': 'os',
-  'Joel': 'jl',
-  'Amós': 'am',
-  'Abdías': 'ab',
-  'Jonás': 'jon',
-  'Miqueas': 'miq',
-  'Nahúm': 'nah',
-  'Habacuc': 'hab',
-  'Sofonías': 'sof',
-  'Hageo': 'hag',
-  'Zacarías': 'zac',
-  'Malaquías': 'mal',
-  'Mateo': 'mt',
-  'Marcos': 'mc',
-  'Lucas': 'lc',
-  'Juan': 'jn',
-  'Hechos': 'hch',
-  'Romanos': 'ro',
-  '1 Corintios': '1co',
-  '2 Corintios': '2co',
-  'Gálatas': 'ga',
-  'Efesios': 'ef',
-  'Filipenses': 'fil',
-  'Colosenses': 'col',
-  '1 Tesalonicenses': '1ts',
-  '2 Tesalonicenses': '2ts',
-  '1 Timoteo': '1tm',
-  '2 Timoteo': '2tm',
-  'Tito': 'tit',
-  'Filemón': 'flm',
-  'Hebreos': 'heb',
-  'Santiago': 'stg',
-  '1 Pedro': '1pe',
-  '2 Pedro': '2pe',
-  '1 Juan': '1jn',
-  '2 Juan': '2jn',
-  '3 Juan': '3jn',
-  'Judas': 'jd',
-  'Apocalipsis': 'ap'
+  'Salmos': 'psalms',
+  'Proverbios': 'proverbs',
+  'Eclesiastés': 'ecclesiastes',
+  'Cantares': 'songofsolomon',
+  'Isaías': 'isaiah',
+  'Jeremías': 'jeremiah',
+  'Lamentaciones': 'lamentations',
+  'Ezequiel': 'ezekiel',
+  'Daniel': 'daniel',
+  'Oseas': 'hosea',
+  'Joel': 'joel',
+  'Amós': 'amos',
+  'Abdías': 'obadiah',
+  'Jonás': 'jonah',
+  'Miqueas': 'micah',
+  'Nahúm': 'nahum',
+  'Habacuc': 'habakkuk',
+  'Sofonías': 'zephaniah',
+  'Hageo': 'haggai',
+  'Zacarías': 'zechariah',
+  'Malaquías': 'malachi',
+  'Mateo': 'matthew',
+  'Marcos': 'mark',
+  'Lucas': 'luke',
+  'Juan': 'john',
+  'Hechos': 'acts',
+  'Romanos': 'romans',
+  '1 Corintios': '1corinthians',
+  '2 Corintios': '2corinthians',
+  'Gálatas': 'galatians',
+  'Efesios': 'ephesians',
+  'Filipenses': 'philippians',
+  'Colosenses': 'colossians',
+  '1 Tesalonicenses': '1thessalonians',
+  '2 Tesalonicenses': '2thessalonians',
+  '1 Timoteo': '1timothy',
+  '2 Timoteo': '2timothy',
+  'Tito': 'titus',
+  'Filemón': 'philemon',
+  'Hebreos': 'hebrews',
+  'Santiago': 'james',
+  '1 Pedro': '1peter',
+  '2 Pedro': '2peter',
+  '1 Juan': '1john',
+  '2 Juan': '2john',
+  '3 Juan': '3john',
+  'Judas': 'jude',
+  'Apocalipsis': 'revelation',
 };
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const libroParam = searchParams.get('libro') || 'Génesis';
+  const libroParam = searchParams.get('libro') || 'Mateo';
   const capituloParam = searchParams.get('capitulo') || '1';
 
-  const abrev = ABREVIATURAS_LIBROS[libroParam] || 'gn';
+  const slug = MAPA_SLUGS[libroParam] || 'matthew';
 
   try {
-    // API gratuita nativa en español RVR1960 / Nacar-Colunga
-    const res = await fetch(`https://bible-api.deno.dev/api/read/nvi/${abrev}/${capituloParam}`, {
-      next: { revalidate: 86400 },
-    });
+    // 1. Intento principal con RVR1960
+    const primaryUrl = `https://bible-api.com/${slug}+${capituloParam}?translation=rvr1960`;
+    const res = await fetch(primaryUrl, { next: { revalidate: 86400 } });
 
-    if (!res.ok) {
-      throw new Error(`Error API: ${res.status}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.verses && data.verses.length > 0) {
+        return NextResponse.json({
+          verses: data.verses.map((v: { verse: number; text: string }) => ({
+            verse: v.verse,
+            text: v.text.trim(),
+          })),
+        });
+      }
     }
 
-    const data = await res.json();
-
-    if (!data.vers || !Array.isArray(data.vers)) {
-      return NextResponse.json({ verses: [] });
+    // 2. Fallback secundario si falla la traducción RVR1960
+    const fallbackUrl = `https://bible-api.deno.dev/api/read/nvi/${slug}/${capituloParam}`;
+    const resFallback = await fetch(fallbackUrl);
+    if (resFallback.ok) {
+      const dataFb = await resFallback.json();
+      if (dataFb.vers) {
+        return NextResponse.json({
+          verses: dataFb.vers.map((v: { number: number; verse: string }) => ({
+            verse: v.number,
+            text: v.verse.trim(),
+          })),
+        });
+      }
     }
 
-    // Mapear respuesta estandarizada
-    const versesMapped = data.vers.map((v: { number: number; verse: string }) => ({
-      verse: v.number,
-      text: v.verse.trim(),
-    }));
-
-    return NextResponse.json({ verses: versesMapped });
+    return NextResponse.json({ verses: [] });
   } catch (error) {
     console.error('Error al obtener versículos:', error);
     return NextResponse.json(
-      { error: 'No se pudo cargar el capítulo.' },
+      { error: 'Error al consultar la Biblia.' },
       { status: 500 }
     );
   }
