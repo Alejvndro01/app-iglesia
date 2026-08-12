@@ -117,3 +117,13 @@ model SolicitudCurso {
 
   @@map("solicitudes_cursos")
 }
+
+model LeccionCache {
+  id           String   @id @default("actual")
+  quarter      String
+  lessonNumber Int
+  title        String
+  memoryVerse  String
+  daysJson     String   // Guardamos los días estructurados en formato JSON
+  updatedAt    DateTime @updatedAt
+}

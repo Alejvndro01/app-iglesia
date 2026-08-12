@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 // Convertir string DD/MM/YYYY a objeto Date real de JS
 function parseSpanishDate(dateStr: string): Date {
@@ -15,7 +16,7 @@ function parseSpanishDate(dateStr: string): Date {
 
 export async function GET() {
   try {
-    // 1. Obtener el trimestre del 3er trimestre de 2026 (Julio - Septiembre)
+    // 1. Obtener el trimestre de Adventech
     const quarterRes = await fetch(
       'https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/index.json',
       { next: { revalidate: 3600 } } // Revalidar cada hora
@@ -29,7 +30,7 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 2. Buscar la lección cuya semana coincida con la fecha actual
+    // 2. Buscar lección correspondiente a la semana
     let currentLesson = lessons.find((l: any) => {
       const start = parseSpanishDate(l.start_date);
       const end = parseSpanishDate(l.end_date);
@@ -38,19 +39,18 @@ export async function GET() {
       return today >= start && today <= end;
     });
 
-    // Si no encuentra coincidencia exacta, tomar la lección más cercana o la última
     if (!currentLesson && lessons.length > 0) {
       currentLesson = lessons[lessons.length - 1];
     }
 
-    // 3. Obtener el detalle de días de la lección seleccionada
+    // 3. Obtener el detalle de días
     const lessonDetailRes = await fetch(
       `https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/lessons/${currentLesson.id}/index.json`
     );
     const lessonDetail = await lessonDetailRes.json();
     const daysList = lessonDetail.days || [];
 
-    // 4. Obtener el contenido HTML de cada día
+    // 4. Obtener contenido HTML de cada día
     const daysWithContent = await Promise.all(
       daysList.map(async (d: any) => {
         try {
@@ -78,15 +78,61 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json({
+    const resultData = {
       tituloSemana: currentLesson.title,
       fechaInicio: currentLesson.start_date,
       fechaFin: currentLesson.end_date,
-      portada: currentLesson.cover,
-      dias: daysWithContent,
+      portada: currentLesson.cover || '',
+      days: daysWithContent,
+    };
+
+    // 5. GUARDAR / ACTUALIZAR AUTOMÁTICAMENTE EN POSTGRESQL (NEON)
+    await prisma.leccionCache.upsert({
+      where: { id: 'actual' },
+      update: {
+        quarter: '3er Trimestre 2026',
+        lessonNumber: parseInt(currentLesson.id, 10) || 1,
+        title: resultData.tituloSemana,
+        memoryVerse: '',
+        daysJson: JSON.stringify(daysWithContent),
+      },
+      create: {
+        id: 'actual',
+        quarter: '3er Trimestre 2026',
+        lessonNumber: parseInt(currentLesson.id, 10) || 1,
+        title: resultData.tituloSemana,
+        memoryVerse: '',
+        daysJson: JSON.stringify(daysWithContent),
+      },
+    });
+
+    return NextResponse.json({
+      ...resultData,
+      source: 'live-api',
     });
   } catch (error) {
-    console.error('Error al sincronizar lección:', error);
+    console.warn('Fallback a la caché de PostgreSQL por error:', error);
+
+    // 6. RECUPERAR DE LA BASE DE DATOS SI LA API EXTERNA FALLA
+    try {
+      const cachedLesson = await prisma.leccionCache.findUnique({
+        where: { id: 'actual' },
+      });
+
+      if (cachedLesson) {
+        return NextResponse.json({
+          tituloSemana: cachedLesson.title,
+          fechaInicio: '',
+          fechaFin: '',
+          portada: '',
+          days: JSON.parse(cachedLesson.daysJson),
+          source: 'database-cache',
+        });
+      }
+    } catch (dbError) {
+      console.error('Error al leer de la caché de DB:', dbError);
+    }
+
     return NextResponse.json({ error: 'No se pudo sincronizar la lección' }, { status: 500 });
   }
 }
