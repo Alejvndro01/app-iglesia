@@ -1,12 +1,10 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   trustHost: true,
@@ -14,16 +12,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name ?? profile.email.split("@")[0],
-          email: profile.email,
-          image: profile.picture,
-          role: "USER",
-        };
-      },
     }),
     Credentials({
       name: "Credentials",
@@ -57,15 +45,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+
+        let dbUser = await prisma.usuario.findUnique({
+          where: { email: user.email },
+        });
+
+        if (!dbUser) {
+          dbUser = await prisma.usuario.create({
+            data: {
+              email: user.email,
+              name: user.name ?? user.email.split("@")[0],
+              image: user.image,
+              role: "USER",
+            },
+          });
+        }
+
+        user.id = dbUser.id;
+        (user as { role?: string }).role = dbUser.role;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id;
         token.role = (user as { role?: string }).role ?? "USER";
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub as string;
+        session.user.id = token.id as string;
         (session.user as { role?: string }).role = token.role as string;
       }
       return session;
