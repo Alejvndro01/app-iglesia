@@ -1,4 +1,6 @@
-const CACHE_NAME = 'iasd-hualqui-v2';
+const CACHE_NAME = 'iasd-hualqui-v4';
+
+// Archivos estáticos necesarios para abrir la app completamente offline
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -7,15 +9,18 @@ const STATIC_ASSETS = [
   '/globals.css',
 ];
 
-// Instalación e intercepción de recursos
+// 1. Instalar y precargar todo el cascarón de la app
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Precargando assets estáticos...');
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
   self.skipWaiting();
 });
 
-// Limpieza de cachés viejas
+// 2. Limpiar cachés antiguas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -27,23 +32,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Estrategia Network-First con Fallback a Caché (Compatible con Firefox/Brave)
+// 3. Responder desde la caché si no hay internet (Stale-While-Revalidate)
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones de la API y de Auth para no romper las solicitudes en vivo
-  if (event.request.url.includes('/api/') || event.request.method !== 'GET') {
+  // Ignorar peticiones de API de mutación o autenticación
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/auth/')) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Guardar copia fresca en caché
-        if (response.status === 200) {
-          const resClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request).then((res) => res || caches.match('/')))
+    caches.match(event.request).then((cachedResponse) => {
+      // Petición de red en segundo plano para actualizar la caché
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      // Si el archivo está en caché (offline), devolverlo al instante.
+      // Si no, esperar la red. Si la red falla y es navegación, entregar el inicio '/'
+      return (
+        cachedResponse ||
+        fetchPromise.catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('/');
+          }
+        })
+      );
+    })
   );
 });
