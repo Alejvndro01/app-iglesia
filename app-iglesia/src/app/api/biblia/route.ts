@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-// Mapeo exhaustivo de todos los libros a slugs internacionales para RVR1960
-const MAPA_SLUGS: Record<string, string> = {
+// Nombres de libros mapeados exactamente a la API de Reina Valera 1960
+const MAPA_LIBROS: Record<string, string> = {
   'Génesis': 'genesis',
   'Éxodo': 'exodus',
   'Levítico': 'leviticus',
@@ -67,51 +67,47 @@ const MAPA_SLUGS: Record<string, string> = {
   '2 Juan': '2john',
   '3 Juan': '3john',
   'Judas': 'jude',
-  'Apocalipsis': 'revelation',
+  'Apocalipsis': 'revelation'
 };
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const libroParam = searchParams.get('libro') || 'Mateo';
-  const capituloParam = searchParams.get('capitulo') || '1';
+  const libro = searchParams.get('libro') || 'Génesis';
+  const capitulo = searchParams.get('capitulo') || '1';
 
-  const slug = MAPA_SLUGS[libroParam] || 'matthew';
+  const slug = MAPA_LIBROS[libro] || 'genesis';
 
   try {
-    // 1. Intento principal con RVR1960
-    const primaryUrl = `https://bible-api.com/${slug}+${capituloParam}?translation=rvr1960`;
-    const res = await fetch(primaryUrl, { next: { revalidate: 86400 } });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.verses && data.verses.length > 0) {
-        return NextResponse.json({
-          verses: data.verses.map((v: { verse: number; text: string }) => ({
-            verse: v.verse,
-            text: v.text.trim(),
-          })),
-        });
+    // Solicitud a la API con encabezado de User-Agent para evitar bloqueos
+    const response = await fetch(
+      `https://bible-api.com/${slug}+${capitulo}?translation=rvr1960`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        },
+        cache: 'force-cache',
       }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // 2. Fallback secundario si falla la traducción RVR1960
-    const fallbackUrl = `https://bible-api.deno.dev/api/read/nvi/${slug}/${capituloParam}`;
-    const resFallback = await fetch(fallbackUrl);
-    if (resFallback.ok) {
-      const dataFb = await resFallback.json();
-      if (dataFb.vers) {
-        return NextResponse.json({
-          verses: dataFb.vers.map((v: { number: number; verse: string }) => ({
-            verse: v.number,
-            text: v.verse.trim(),
-          })),
-        });
-      }
+    const data = await response.json();
+
+    if (!data.verses || data.verses.length === 0) {
+      return NextResponse.json({ verses: [] });
     }
 
-    return NextResponse.json({ verses: [] });
+    const verses = data.verses.map((v: { verse: number; text: string }) => ({
+      verse: v.verse,
+      text: v.text.trim(),
+    }));
+
+    return NextResponse.json({ verses });
   } catch (error) {
-    console.error('Error al obtener versículos:', error);
+    console.error('Error cargando la Biblia:', error);
     return NextResponse.json(
       { error: 'Error al consultar la Biblia.' },
       { status: 500 }
