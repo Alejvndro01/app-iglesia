@@ -8,23 +8,35 @@ const LIBROS_BIBLIA = [
   'Salmos', 'Proverbios', 'Isaías', 'Mateo', 'Marcos', 'Lucas', 'Juan', 'Hechos', 'Romanos', 'Apocalipsis'
 ];
 
+interface Versiculo {
+  verse: number;
+  text: string;
+}
+
 export function BibleView() {
-  const [libro, setLibro] = useState('Salmos');
-  const [capitulo, setCapitulo] = useState('23');
-  const [contenido, setContenido] = useState<{ number: number; text: string }[]>([]);
+  const [libro, setLibro] = useState('Génesis');
+  const [capitulo, setCapitulo] = useState('1');
+  const [versiculos, setVersiculos] = useState<Versiculo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCapitulo() {
       setLoading(true);
+      setErrorMsg(null);
       try {
         const res = await fetch(`/api/biblia?libro=${encodeURIComponent(libro)}&capitulo=${capitulo}`);
         const data = await res.json();
-        if (data.verses) {
-          setContenido(data.verses);
+
+        if (data.verses && Array.isArray(data.verses)) {
+          setVersiculos(data.verses);
+        } else {
+          setVersiculos([]);
+          setErrorMsg('No se encontraron versículos para este capítulo.');
         }
       } catch (err) {
         console.error('Error cargando pasaje bíblico', err);
+        setErrorMsg('Error de conexión al consultar la Biblia.');
       } finally {
         setLoading(false);
       }
@@ -36,40 +48,53 @@ export function BibleView() {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
       {/* Selector de Libro y Capítulo */}
-      <div className="flex flex-wrap gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-sky-100 dark:border-slate-800">
+      <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-sky-100 dark:border-slate-800">
         <select
           value={libro}
           onChange={(e) => { setLibro(e.target.value); setCapitulo('1'); }}
-          className="bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none"
+          className="bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none border border-transparent focus:border-[#486379] dark:text-slate-200 cursor-pointer"
         >
           {LIBROS_BIBLIA.map((b) => (
             <option key={b} value={b}>{b}</option>
           ))}
         </select>
 
-        <input
-          type="number"
-          min="1"
-          max="150"
-          value={capitulo}
-          onChange={(e) => setCapitulo(e.target.value)}
-          className="w-20 bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none text-center"
-        />
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-400">Capítulo:</span>
+          <input
+            type="number"
+            min="1"
+            max="150"
+            value={capitulo}
+            onChange={(e) => setCapitulo(e.target.value || '1')}
+            className="w-16 bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none text-center border border-transparent focus:border-[#486379] dark:text-slate-200"
+          />
+        </div>
       </div>
 
-      {/* Visor del Texto Bíblico */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-sky-100 dark:border-slate-800">
-        <h2 className="text-xl font-black text-[#486379] dark:text-sky-300 mb-6">
-          📖 {libro} {capitulo}
+      {/* Contenedor del Texto */}
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-sky-100 dark:border-slate-800 transition-colors">
+        <h2 className="text-xl sm:text-2xl font-black text-[#486379] dark:text-sky-300 mb-6 flex items-center gap-2">
+          <span>📖</span> {libro} {capitulo}
         </h2>
 
-        {loading ? (
-          <p className="text-xs text-slate-400 animate-pulse">Cargando las Escrituras...</p>
-        ) : (
-          <div className="space-y-3 leading-relaxed text-sm sm:text-base">
-            {contenido.map((v) => (
-              <p key={v.number} className="text-slate-700 dark:text-slate-200">
-                <sup className="font-bold text-[#eca489] mr-1.5">{v.number}</sup>
+        {loading && (
+          <div className="py-12 text-center space-y-2">
+            <p className="text-xs font-bold text-slate-400 animate-pulse">Cargando las Escrituras...</p>
+          </div>
+        )}
+
+        {errorMsg && !loading && (
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-2xl text-xs font-bold">
+            ⚠️ {errorMsg}
+          </div>
+        )}
+
+        {!loading && !errorMsg && versiculos.length > 0 && (
+          <div className="space-y-4 leading-relaxed text-sm sm:text-base text-slate-700 dark:text-slate-200">
+            {versiculos.map((v) => (
+              <p key={v.verse} className="text-justify">
+                <sup className="font-bold text-[#eca489] mr-1.5 text-xs">{v.verse}</sup>
                 {v.text}
               </p>
             ))}
