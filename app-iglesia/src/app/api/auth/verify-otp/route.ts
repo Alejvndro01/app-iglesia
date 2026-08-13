@@ -2,35 +2,35 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-// Regex: >=8 caracteres, al menos 1 mayúscula y al menos 1 número
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
 
 export async function POST(request: Request) {
   try {
-    const { email, code, name, password } = await request.json();
+    const body = await request.json();
+    const { email, telefono, code, name, password } = body;
 
-    if (!email || !code || !name || !password) {
-      return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
-    }
+    const identifier = email
+      ? email.toLowerCase().trim()
+      : telefono
+      ? telefono.toString().replace(/\s+/g, '')
+      : null;
 
-    const emailNormalized = email.toLowerCase().trim();
-
-    // 1. Validar fortaleza de contraseña (sin exigir carácter especial)
-    if (!PASSWORD_REGEX.test(password)) {
+    if (!identifier || !code) {
       return NextResponse.json(
-        { error: 'La contraseña no cumple con los requisitos de seguridad.' },
+        { error: 'Faltan datos obligatorios (email/teléfono o código).' },
         { status: 400 }
       );
     }
 
-    // 2. Buscar token en VerificationToken
+    // 1. Buscar registros en VerificationToken para el identificador
     const records = await prisma.verificationToken.findMany({
-      where: { identifier: emailNormalized },
+      where: { identifier },
     });
 
+    const cleanCode = code.toString().trim();
     const validRecord = records.find((r) => {
       const [savedCode] = r.token.split(':');
-      return savedCode === code && new Date(r.expires) > new Date();
+      return savedCode === cleanCode && new Date(r.expires) > new Date();
     });
 
     if (!validRecord) {
@@ -40,30 +40,55 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Hash de contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // -------------------------------------------------------------
+    // CASO 1: REGISTRO DE USUARIO (Si incluye nombre y contraseña)
+    // -------------------------------------------------------------
+    if (name && password) {
+      if (!PASSWORD_REGEX.test(password)) {
+        return NextResponse.json(
+          { error: 'La contraseña no cumple con los requisitos de seguridad.' },
+          { status: 400 }
+        );
+      }
 
-    // 4. Crear usuario definitivo
-    const newUser = await prisma.usuario.create({
-      data: {
-        email: emailNormalized,
-        name,
-        password: hashedPassword,
-        role: 'USER',
-      },
-    });
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 5. Limpiar tokens de verificación utilizados
+      const newUser = await prisma.usuario.create({
+        data: {
+          email: email ? identifier : null,
+          name,
+          password: hashedPassword,
+          role: 'USER',
+        },
+      });
+
+      await prisma.verificationToken.deleteMany({
+        where: { identifier },
+      });
+
+      return NextResponse.json({
+        success: true,
+        user: { id: newUser.id, email: newUser.email, name: newUser.name },
+      });
+    }
+
+    // -------------------------------------------------------------
+    // CASO 2: VERIFICACIÓN SIMPLE (Para cursos o validación de teléfono)
+    // -------------------------------------------------------------
     await prisma.verificationToken.deleteMany({
-      where: { identifier: emailNormalized },
+      where: { identifier },
     });
 
     return NextResponse.json({
       success: true,
-      user: { id: newUser.id, email: newUser.email, name: newUser.name },
+      verified: true,
+      message: 'Verificación de código exitosa.',
     });
   } catch (error) {
     console.error('Error al verificar OTP:', error);
-    return NextResponse.json({ error: 'Error al completar el registro' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error interno al procesar la verificación.' },
+      { status: 500 }
+    );
   }
 }
