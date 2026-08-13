@@ -11,12 +11,61 @@ interface StudiesViewProps {
 export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
   const [selectedCourse, setSelectedCourse] = useState<typeof BIBLE_COURSES[0] | null>(null);
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+569');
   const [address, setAddress] = useState('');
   const [modality, setModality] = useState('Presencial en Templo');
+  
+  // Estados para la verificación OTP
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
 
+  // Formatear/Sanitizar teléfono mientras el usuario escribe (+569XXXXXXXX)
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\s+/g, '');
+    if (!val.startsWith('+569')) {
+      val = '+569' + val.replace(/^\+?56?9?/, '');
+    }
+    if (val.length <= 12) {
+      setPhone(val);
+      // Restablecer estado de verificación si cambia el número
+      setIsPhoneVerified(false);
+      setOtpSent(false);
+    }
+  };
+
+  // 1. Enviar código por WhatsApp
+  const handleSendOtp = async () => {
+    if (!/^\+569\d{8}$/.test(phone)) {
+      showToast('Ingresa un número válido con el formato +569XXXXXXXX');
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefono: phone }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al enviar OTP');
+
+      setOtpSent(true);
+      showToast('¡Código de verificación enviado por WhatsApp!');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Error al solicitar el código');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // 2. Verificar código y Guardar Solicitud
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourse) return;
@@ -24,6 +73,20 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
     setLoading(true);
 
     try {
+      // Validar código si aún no ha sido verificado
+      if (!isPhoneVerified) {
+        const verifyRes = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telefono: phone, code: otpCode }),
+        });
+
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok) throw new Error(verifyData.error || 'Código incorrecto');
+        setIsPhoneVerified(true);
+      }
+
+      // Guardar la solicitud del curso
       await apiClient.createSolicitudCurso({
         curso: selectedCourse.title,
         nombre: fullName,
@@ -33,19 +96,19 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
       });
 
       setSubmitted(true);
-      showToast('¡Solicitud guardada correctamente en la base de datos!');
+      showToast('¡Solicitud verificada y guardada correctamente!');
 
+      // Limpiar formulario
       setFullName('');
-      setPhone('');
+      setPhone('+569');
       setAddress('');
+      setOtpCode('');
+      setOtpSent(false);
+      setIsPhoneVerified(false);
       setModality('Presencial en Templo');
       setSelectedCourse(null);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        showToast(err.message);
-      } else {
-        showToast('Error de conexión con el servidor');
-      }
+      showToast(err instanceof Error ? err.message : 'Error al procesar la solicitud');
     } finally {
       setLoading(false);
     }
@@ -165,16 +228,56 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                 <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
                   WhatsApp / Teléfono *
                 </label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="+56 9 1234 5678"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+56912345678"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489] transition-colors"
+                  />
+                  {!otpSent && (
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpLoading || phone.length !== 12}
+                      className="whitespace-nowrap px-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs rounded-2xl transition-all cursor-pointer"
+                    >
+                      {otpLoading ? 'Enviando...' : 'Enviar Código'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* Campo dinámico para ingresar el código OTP recibido en WhatsApp */}
+            {otpSent && (
+              <div className="p-4 bg-amber-50 dark:bg-slate-800/60 rounded-2xl border border-amber-200 dark:border-slate-700 space-y-2">
+                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300">
+                  Código de Verificación (Enviado a tu WhatsApp) *
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="123456"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.trim())}
+                    className="w-full bg-white dark:bg-slate-900 text-center font-mono text-base tracking-widest p-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none focus:border-[#eca489]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={otpLoading}
+                    className="text-[10px] text-slate-500 hover:text-slate-700 underline px-2"
+                  >
+                    Reenviar
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
@@ -210,14 +313,14 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
 
             <button
               type="submit"
-              disabled={!selectedCourse || loading}
+              disabled={!selectedCourse || !otpSent || loading}
               className="w-full py-4 bg-[#eca489] hover:bg-[#e49375] disabled:opacity-50 text-white font-bold text-xs rounded-full shadow-md transition-all cursor-pointer"
             >
               {loading
-                ? 'Guardando en base de datos...'
-                : selectedCourse
-                ? 'Confirmar y Solicitar Curso'
-                : 'Selecciona un curso arriba'}
+                ? 'Verificando y Guardando...'
+                : !otpSent
+                ? 'Primero solicita el código por WhatsApp'
+                : 'Verificar Código y Confirmar Solicitud'}
             </button>
           </form>
         )}
