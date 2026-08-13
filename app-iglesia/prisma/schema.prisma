@@ -107,15 +107,14 @@ model Testimonio {
 }
 
 model SolicitudCurso {
-  id        String   @id @default(uuid())
-  curso     String
-  nombre    String
-  telefono  String
-  direccion String?
-  modalidad String
-  createdAt DateTime @default(now())
-
-  @@map("solicitudes_cursos")
+  id          String   @id @default(cuid())
+  curso       String
+  nombre      String
+  telefono    String
+  direccion   String?
+  modalidad   String
+  estado      String   @default("PENDIENTE") // PENDIENTE, EN_PROCESO, ASIGNADO
+  createdAt   DateTime @default(now())
 }
 
 model LeccionCache {
