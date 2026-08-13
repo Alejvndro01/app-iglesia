@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------------
-    // ENVÍO VÍA WHATSAPP (Green API)
+    // ENVÍO VÍA WHATSAPP (Microservicio Baileys)
     // -------------------------------------------------------------
     if (telefono) {
       const cleanPhone = telefono.toString().replace(/\s+/g, '');
@@ -98,31 +98,29 @@ export async function POST(request: Request) {
         },
       });
 
-      const ID_INSTANCE = process.env.GREEN_API_ID_INSTANCE;
-      const API_TOKEN = process.env.GREEN_API_TOKEN;
+      const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL;
+      const WHATSAPP_API_SECRET = process.env.WHATSAPP_API_SECRET;
 
-      if (!ID_INSTANCE || !API_TOKEN) {
+      if (!WHATSAPP_SERVICE_URL || !WHATSAPP_API_SECRET) {
         return NextResponse.json(
           { error: 'Error de configuración en el servidor de WhatsApp.' },
           { status: 500 }
         );
       }
 
-      const chatId = `${cleanPhone.replace('+', '')}@c.us`;
+      const whatsappResponse = await fetch(`${WHATSAPP_SERVICE_URL}/send-message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${WHATSAPP_API_SECRET}`,
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          message: `🔒 *IASD Central Hualqui*\n\nTu código de verificación es: *${code}*\n\nEste código vencerá en 10 minutos.`,
+        }),
+      });
 
-      const greenApiResponse = await fetch(
-        `https://api.green-api.com/waInstance${ID_INSTANCE}/sendMessage/${API_TOKEN}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chatId,
-            message: `🔒 *IASD Central Hualqui*\n\nTu código de verificación es: *${code}*\n\nEste código vencerá en 10 minutos.`,
-          }),
-        }
-      );
-
-      if (!greenApiResponse.ok) {
+      if (!whatsappResponse.ok) {
         return NextResponse.json(
           { error: 'No se pudo enviar el mensaje por WhatsApp.' },
           { status: 500 }
