@@ -32,7 +32,6 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
     }
     if (val.length <= 12) {
       setPhone(val);
-      // Restablecer estado de verificación si cambia el número
       setIsPhoneVerified(false);
       setOtpSent(false);
     }
@@ -40,7 +39,8 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
 
   // 1. Enviar código por WhatsApp
   const handleSendOtp = async () => {
-    if (!/^\+569\d{8}$/.test(phone)) {
+    const cleanPhone = phone.replace(/\s+/g, '');
+    if (!/^\+569\d{8}$/.test(cleanPhone)) {
       showToast('Ingresa un número válido con el formato +569XXXXXXXX');
       return;
     }
@@ -50,11 +50,11 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefono: phone }),
+        body: JSON.stringify({ telefono: cleanPhone }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al enviar OTP');
+      if (!res.ok) throw new Error(data.error || 'Error al enviar código OTP');
 
       setOtpSent(true);
       showToast('¡Código de verificación enviado por WhatsApp!');
@@ -68,32 +68,52 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
   // 2. Verificar código y Guardar Solicitud
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCourse) return;
+
+    if (!selectedCourse) {
+      showToast('Por favor selecciona un curso bíblico de la lista.');
+      return;
+    }
+
+    if (!fullName.trim()) {
+      showToast('Ingresa tu nombre completo.');
+      return;
+    }
+
+    if (!otpCode.trim() || otpCode.trim().length !== 6) {
+      showToast('Ingresa el código de verificación de 6 dígitos.');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // Validar código si aún no ha sido verificado
+      const cleanPhone = phone.replace(/\s+/g, '');
+
+      // Paso A: Validar código OTP si aún no ha sido marcado como verificado
       if (!isPhoneVerified) {
         const verifyRes = await fetch('/api/auth/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telefono: phone, code: otpCode }),
+          body: JSON.stringify({ telefono: cleanPhone, code: otpCode.trim() }),
         });
 
         const verifyData = await verifyRes.json();
-        if (!verifyRes.ok) throw new Error(verifyData.error || 'Código incorrecto');
+        if (!verifyRes.ok) {
+          throw new Error(verifyData.error || 'El código ingresado es incorrecto o ha expirado');
+        }
         setIsPhoneVerified(true);
       }
 
-      // Guardar la solicitud del curso
-      await apiClient.createSolicitudCurso({
+      // Paso B: Guardar la solicitud del curso con todos los datos saneados
+      const payload = {
         curso: selectedCourse.title,
-        nombre: fullName,
-        telefono: phone,
-        direccion: address,
+        nombre: fullName.trim(),
+        telefono: cleanPhone,
+        direccion: address.trim() || 'No especificada',
         modalidad: modality,
-      });
+      };
+
+      await apiClient.createSolicitudCurso(payload);
 
       setSubmitted(true);
       showToast('¡Solicitud verificada y guardada correctamente!');
@@ -271,7 +291,7 @@ export function EstudiosBiblicosPageView({ showToast }: StudiesViewProps) {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpLoading}
-                    className="text-[10px] text-slate-500 hover:text-slate-700 underline px-2"
+                    className="text-[10px] text-slate-500 hover:text-slate-700 underline px-2 cursor-pointer"
                   >
                     Reenviar
                   </button>
