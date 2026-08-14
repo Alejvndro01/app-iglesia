@@ -53,7 +53,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   const [prayerPrivate, setPrayerPrivate] = useState(false);
   const [loadingPrayer, setLoadingPrayer] = useState(false);
 
-  // Materiales (R2)
+  // Materiales (Cloudflare R2)
   const [materials, setMaterials] = useState<Material[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -269,14 +269,14 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   return (
     <div className="space-y-16 pb-12 antialiased">
-      {/* 1. Hero Section con Acciones a Modales */}
+      {/* 1. Hero Section */}
       <section className="bg-[#E8F0EA] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
             <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#546E5C] dark:text-emerald-300 shadow-xs border border-[#C5D8CC] dark:border-slate-700">
               <span className="w-2.5 h-2.5 rounded-full bg-[#7C9885] animate-pulse"></span>
               <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> Central de Waikiki
+                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> La Concepción #450, Hualqui
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold text-[#2D3831] dark:text-slate-100 leading-tight">
@@ -285,7 +285,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               y Servir.
             </h2>
             <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
-              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la adoración y la comunión fraternal.
+              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la oración y la comunión fraternal en nuestra comuna de Hualqui.
             </p>
             
             {/* CTAs de Modales y Accesos */}
@@ -315,7 +315,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-md border-4 border-[#FAF8F3] dark:border-slate-800 group">
               <img
                 src="/landscape.jpg"
-                alt="IASD Central Waikiki"
+                alt="IASD Central de Hualqui"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
                     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
@@ -325,9 +325,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/70 via-transparent to-transparent flex items-end p-6">
                 <div className="text-white">
                   <span className="bg-[#7C9885] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                    Comunidad de Fe
+                    La Concepción 450, Hualqui
                   </span>
-                  <h3 className="text-base font-bold mt-2">IASD Central de Waikiki</h3>
+                  <h3 className="text-base font-bold mt-2">Templo Central IASD Hualqui</h3>
                 </div>
               </div>
             </div>
@@ -415,7 +415,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* 4. Banner de Mayordomía / Adventist Giving */}
+      {/* 4. Banner de Mayordomía */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between p-8 rounded-3xl bg-gradient-to-r from-[#FAF8F3] to-[#E8F0EA] dark:from-slate-900 dark:to-slate-950 border border-[#E2DEC9] dark:border-slate-800 gap-6">
           <div className="space-y-1 text-center sm:text-left">
@@ -424,7 +424,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             </div>
             <h3 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100">Mayordomía Cristiana</h3>
             <p className="text-xs text-[#526157] dark:text-slate-300 max-w-xl">
-              Devuelve tus diezmos y entrega tus ofrendas de forma online y segura a través del sistema oficial.
+              Devuelve tus diezmos y pacta tus ofrendas de forma online y segura para el sostenimiento de la misión.
             </p>
           </div>
           <button
@@ -556,7 +556,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             Muro de Testimonios
           </h2>
           <p className="text-xs text-[#66756C] dark:text-slate-400">
-            Compartiendo las bendiciones y obras del Señor en nuestra congregación.
+            Compartiendo las grandes bendiciones que Dios realiza en Hualqui.
           </p>
         </div>
 
@@ -636,7 +636,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* 8. Petición de Oración */}
+      {/* 8. Formulario de Petición de Oración */}
       <section className="max-w-3xl mx-auto px-4">
         <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xs border border-[#E2DEC9] dark:border-slate-800 space-y-5">
           <div className="text-center space-y-1">
@@ -742,7 +742,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       )}
 
       {/* MODALES MONTADOS */}
-      <BulletinModal isOpen={showBulletin} onClose={() => setShowBulletin(false)} />
+      {showBulletin && <BulletinModal isOpen={showBulletin} onClose={() => setShowBulletin(false)} />}
       {showPastoral && <PastoralModal onClose={() => setShowPastoral(false)} />}
       {showSermonModal && <SermonModal onClose={() => setShowSermonModal(false)} />}
     </div>
