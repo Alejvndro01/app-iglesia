@@ -1,6 +1,6 @@
+// src/app/api/biblia/route.ts
 import { NextResponse } from 'next/server';
 
-// Nombres de libros mapeados exactamente a la API de Reina Valera 1960
 const MAPA_LIBROS: Record<string, string> = {
   'Génesis': 'genesis',
   'Éxodo': 'exodus',
@@ -78,20 +78,39 @@ export async function GET(request: Request) {
   const slug = MAPA_LIBROS[libro] || 'genesis';
 
   try {
-    // Solicitud a la API con encabezado de User-Agent para evitar bloqueos
+    // Se utiliza translation=rvr que es el identificador oficial de Reina-Valera en bible-api.com
     const response = await fetch(
-      `https://bible-api.com/${slug}+${capitulo}?translation=rvr1960`,
+      `https://bible-api.com/${slug}+${capitulo}?translation=rvr`,
       {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         },
-        cache: 'force-cache',
+        next: { revalidate: 86400 }, // Cache por 24 horas para optimizar peticiones
       }
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Fallback a traducción alternativa 'valera' si 'rvr' tuviese algún problema transitorio
+      const fallbackRes = await fetch(
+        `https://bible-api.com/${slug}+${capitulo}?translation=valera`,
+        {
+          headers: { 'Accept': 'application/json' },
+          next: { revalidate: 86400 },
+        }
+      );
+
+      if (!fallbackRes.ok) {
+        return NextResponse.json({ verses: [] });
+      }
+
+      const fallbackData = await fallbackRes.json();
+      const verses = (fallbackData.verses || []).map((v: { verse: number; text: string }) => ({
+        verse: v.verse,
+        text: v.text.trim(),
+      }));
+
+      return NextResponse.json({ verses });
     }
 
     const data = await response.json();
@@ -107,9 +126,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ verses });
   } catch (error) {
-    console.error('Error cargando la Biblia:', error);
+    console.error('Error al consultar bible-api:', error);
     return NextResponse.json(
-      { error: 'Error al consultar la Biblia.' },
+      { error: 'Error al consultar la API de la Biblia.' },
       { status: 500 }
     );
   }
