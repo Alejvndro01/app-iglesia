@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CHURCH_CALENDAR_EVENTS } from '@/data/mockData';
+import { Calendar, Cake, Plus, Clock, Sparkles } from 'lucide-react';
 
 interface EventItem {
   id: string;
@@ -17,51 +18,89 @@ interface AgendaViewProps {
 
 export function AgendaView({ showToast }: AgendaViewProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div className="text-center max-w-2xl mx-auto">
-        <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 antialiased">
+      {/* Encabezado */}
+      <div className="text-center max-w-2xl mx-auto space-y-2">
+        <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
           Comunidad Unida
         </span>
-        <h2 className="text-3xl sm:text-4xl font-black text-[#486379] dark:text-sky-300 mt-1">Agenda Eclesial & Cumpleaños</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center justify-center gap-2">
+          <Calendar className="w-6 h-6 text-[#7C9885]" /> Agenda Eclesial & Cumpleaños
+        </h2>
+        <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
+          Mantente al día con las actividades y celebraciones de la IASD Central Hualqui.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        {/* Próximos Eventos (Columna Izquierda / Central) */}
         <div className="md:col-span-2 space-y-4">
-          <h3 className="font-extrabold text-[#486379] dark:text-sky-300 text-lg">📅 Próximos Eventos</h3>
+          <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-base flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-[#7C9885]" /> Próximos Eventos
+          </h3>
           <div className="space-y-3">
             {CHURCH_CALENDAR_EVENTS.map((e: EventItem) => (
-              <div key={e.id} className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-sky-100 dark:border-slate-700 shadow-xs flex items-center justify-between transition-colors">
-                <div>
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${e.type === 'Cumpleaños' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300'}`}>
+              <div
+                key={e.id}
+                className="bg-[#FAF8F3] dark:bg-slate-900 p-5 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs flex items-center justify-between transition-colors gap-4"
+              >
+                <div className="space-y-1">
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-block ${
+                      e.type === 'Cumpleaños'
+                        ? 'bg-[#F8F5EC] text-[#E08A72] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#E2DEC9] dark:border-slate-700'
+                        : 'bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#C5D8CC]/50 dark:border-slate-700'
+                    }`}
+                  >
                     {e.type}
                   </span>
-                  <h4 className="font-black text-[#486379] dark:text-sky-300 text-sm mt-1">{e.title}</h4>
-                  <p className="text-xs text-slate-400 dark:text-slate-400">📅 {e.date} • ⏰ {e.time}</p>
+                  <h4 className="font-bold text-[#2D3831] dark:text-slate-100 text-sm">
+                    {e.title}
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-[#66756C] dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-[#7C9885]" /> {e.date}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-[#7C9885]" /> {e.time}
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => showToast(`Agendado: ${e.title}`)}
-                  className="px-3.5 py-1.5 bg-[#f0f6fb] dark:bg-slate-700 text-[#486379] dark:text-sky-300 font-bold text-xs rounded-full hover:bg-[#eca489] hover:text-white dark:hover:bg-[#eca489] dark:hover:text-white transition-colors"
+                  className="px-3.5 py-2 bg-white dark:bg-slate-800 text-[#2D3831] dark:text-emerald-300 border border-[#DCD7C5] dark:border-slate-700 font-semibold text-xs rounded-xl hover:bg-[#7C9885] hover:text-white dark:hover:bg-[#7C9885] dark:hover:text-white transition-all cursor-pointer flex items-center gap-1 shrink-0"
                 >
-                  ➕ Agendar
+                  <Plus className="w-3.5 h-3.5" /> Agendar
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 shadow-xs space-y-4 h-fit transition-colors">
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl">🎂</span>
-            <h3 className="font-extrabold text-[#486379] dark:text-sky-300 text-base">Cumpleaños del Mes</h3>
+        {/* Cumpleaños del Mes (Columna Derecha) */}
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-4 h-fit">
+          <div className="flex items-center gap-2 border-b border-[#E8E4D5] dark:border-slate-800 pb-3">
+            <Cake className="w-5 h-5 text-[#E08A72]" />
+            <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-base">
+              Cumpleaños del Mes
+            </h3>
           </div>
-          <div className="space-y-2 text-xs">
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-2xl flex justify-between items-center border border-transparent dark:border-amber-900/30">
-              <span className="font-bold text-amber-900 dark:text-amber-300">🎉 Hna. Carmen Reyes</span>
-              <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">25 de Agosto</span>
+          <div className="space-y-2.5 text-xs">
+            <div className="p-3.5 bg-[#F8F5EC] dark:bg-slate-800/80 rounded-2xl flex justify-between items-center border border-[#E8E4D5] dark:border-slate-700">
+              <span className="font-semibold text-[#2D3831] dark:text-slate-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#E08A72]" /> Hna. Carmen Reyes
+              </span>
+              <span className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-900 px-2 py-0.5 rounded-full">
+                25 de Agosto
+              </span>
             </div>
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-2xl flex justify-between items-center border border-transparent dark:border-amber-900/30">
-              <span className="font-bold text-amber-900 dark:text-amber-300">🎈 Pr. Alejandro Silva</span>
-              <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">30 de Agosto</span>
+            <div className="p-3.5 bg-[#F8F5EC] dark:bg-slate-800/80 rounded-2xl flex justify-between items-center border border-[#E8E4D5] dark:border-slate-700">
+              <span className="font-semibold text-[#2D3831] dark:text-slate-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#E08A72]" /> Pr. Alejandro Silva
+              </span>
+              <span className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-900 px-2 py-0.5 rounded-full">
+                30 de Agosto
+              </span>
             </div>
           </div>
         </div>
