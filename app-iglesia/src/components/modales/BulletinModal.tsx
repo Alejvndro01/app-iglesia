@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { FileText, Megaphone, Church, X, Check } from 'lucide-react';
+import { FileText, Megaphone, Church, X, Check, Clock } from 'lucide-react';
+import { SERVICE_SCHEDULES } from '@/data/mockData';
 
 interface BulletinModalProps {
   isOpen: boolean;
@@ -11,19 +12,11 @@ interface BulletinModalProps {
 export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
   if (!isOpen) return null;
 
-  // Datos estáticos del boletín
-  const bulletinData = {
-    titulo: 'Boletín Sabático',
-    fecha: 'Sábado de Culto Especial',
-    anuncios: `• Culto de Oración: Miércoles a las 19:30 hrs.
-• Reunión de Jóvenes (JA): Sábado a las 18:00 hrs.
-• Almuerzo Fraternal: Próximo sábado después del Culto Divino.
-• Recepción de Sábado: Viernes a las 19:00 hrs vía Zoom.`,
-    programa: `09:30 hrs - Escuela Sabática
-10:45 hrs - Anuncios y Bienvenida
-11:00 hrs - Culto Divino & Predicación
-12:30 hrs - Cierre y Bendición Final`,
-  };
+  const announcements = [
+    '• Almuerzo Fraternal: Próximo sábado después del Culto Divino.',
+    '• Recepción de Sábado: Viernes a las 19:00 hrs vía Zoom.',
+    '• Club de Conquistadores: Domingos a las 10:00 hrs en el templo.',
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-[#2D3831]/60 backdrop-blur-xs flex items-center justify-center p-4 transition-opacity antialiased">
@@ -36,7 +29,7 @@ export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
               Boletín Informativo
             </span>
             <h3 className="text-lg sm:text-xl font-bold text-white dark:text-emerald-100 flex items-center gap-2 pt-1">
-              <FileText className="w-5 h-5 text-[#FAF8F3]" /> {bulletinData.titulo}
+              <FileText className="w-5 h-5 text-[#FAF8F3]" /> Boletín Sabático
             </h3>
           </div>
           <button
@@ -56,8 +49,31 @@ export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
                 IASD Central de Hualqui
               </h4>
               <p className="text-xs text-[#66756C] dark:text-slate-400">
-                {bulletinData.fecha}
+                La Concepción #450, Hualqui
               </p>
+            </div>
+
+            {/* Horarios Sincronizados de Cultos */}
+            <div className="space-y-3">
+              <h5 className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-[#7C9885]" /> Reuniones Semanales
+              </h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {SERVICE_SCHEDULES.map((schedule) => (
+                  <div 
+                    key={schedule.id} 
+                    className="p-3 bg-white dark:bg-slate-950 rounded-2xl border border-[#E8E4D5] dark:border-slate-800 flex items-center justify-between shadow-2xs"
+                  >
+                    <div>
+                      <p className="font-bold text-xs text-[#2D3831] dark:text-slate-100">{schedule.name}</p>
+                      <span className="text-[10px] text-[#66756C] dark:text-slate-400">{schedule.day}</span>
+                    </div>
+                    <span className="text-xs font-black text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-800 px-2 py-1 rounded-lg">
+                      {schedule.time} hrs
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Anuncios Principales */}
@@ -65,18 +81,23 @@ export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
               <h5 className="text-xs font-bold text-[#546E5C] dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Megaphone className="w-4 h-4 text-[#7C9885]" /> Anuncios Eclesiales
               </h5>
-              <p className="text-xs text-[#2D3831] dark:text-slate-200 whitespace-pre-line leading-relaxed">
-                {bulletinData.anuncios}
-              </p>
+              <ul className="text-xs text-[#2D3831] dark:text-slate-200 leading-relaxed space-y-1">
+                {announcements.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
             </div>
 
-            {/* Programa del Culto */}
+            {/* Orden de Culto */}
             <div className="space-y-2">
               <h5 className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Church className="w-4 h-4 text-[#7C9885]" /> Orden del Culto
+                <Church className="w-4 h-4 text-[#7C9885]" /> Orden del Culto Divino
               </h5>
               <div className="bg-white dark:bg-slate-950 p-4 rounded-2xl border border-[#E8E4D5] dark:border-slate-800 text-xs text-[#3A473E] dark:text-slate-300 whitespace-pre-line leading-relaxed font-medium">
-                {bulletinData.programa}
+                {`09:30 hrs - Escuela Sabática
+10:45 hrs - Anuncios y Bienvenida
+11:00 hrs - Alabanza y Culto Divino
+12:30 hrs - Cierre y Bendición`}
               </div>
             </div>
           </div>

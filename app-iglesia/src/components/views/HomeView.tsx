@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Testimonio, Material } from '@/types';
+import { SERVICE_SCHEDULES } from '@/data/mockData';
 import { BulletinModal } from '@/components/modales/BulletinModal';
 import { PastoralModal } from '@/components/modales/PastoralModal';
 import { SermonModal } from '@/components/modales/SermonModal';
@@ -68,6 +69,17 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     if (mimeType?.includes('plain') || path?.endsWith('.txt')) return 'TXT';
     if (mimeType?.includes('mpeg') || mimeType?.includes('mp3') || path?.endsWith('.mp3')) return 'MP3';
     return 'DOCUMENTO';
+  };
+
+  const renderScheduleIcon = (icon?: string, isDivine?: boolean) => {
+    const iconClass = `w-7 h-7 ${isDivine ? 'text-white' : ''}`;
+    switch (icon) {
+      case 'book': return <BookOpen className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
+      case 'church': return <Church className={`${iconClass} ${!isDivine ? 'text-white' : ''}`} />;
+      case 'flame': return <Flame className={`${iconClass} ${!isDivine ? 'text-[#E08A72]' : ''}`} />;
+      case 'heart': return <Heart className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
+      default: return <Church className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
+    }
   };
 
   const fetchTestimonies = async () => {
@@ -369,7 +381,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* 3. Horarios de Culto */}
+      {/* 3. Horarios de Culto (Consumidos desde SERVICE_SCHEDULES) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10 space-y-1">
           <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
@@ -380,38 +392,53 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
-            <BookOpen className="w-7 h-7 text-[#7C9885]" />
-            <span className="text-[10px] font-bold text-[#7C9885] uppercase block">Sábados</span>
-            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Escuela Sabática</h4>
-            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
-              09:30 <span className="text-xs font-normal text-[#66756C]">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#7C9885] dark:bg-slate-900 text-white p-6 rounded-3xl border border-[#6B8774] dark:border-slate-800 space-y-2 shadow-xs">
-            <Church className="w-7 h-7 text-white" />
-            <span className="text-[10px] font-bold text-[#E8EFEA] uppercase block">Sábados</span>
-            <h4 className="text-base font-bold text-white dark:text-emerald-100">Culto Divino</h4>
-            <p className="text-2xl font-black text-white dark:text-emerald-300 flex items-baseline gap-1">
-              11:00 <span className="text-xs font-normal text-[#E8EFEA]">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
-            <Flame className="w-7 h-7 text-[#E08A72]" />
-            <span className="text-[10px] font-bold text-[#E08A72] uppercase block">Sábados</span>
-            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Sociedad de Jóvenes (JA)</h4>
-            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
-              18:00 <span className="text-xs font-normal text-[#66756C]">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
-            <Heart className="w-7 h-7 text-[#7C9885]" />
-            <span className="text-[10px] font-bold text-[#7C9885] uppercase block">Miércoles</span>
-            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Culto de Oración</h4>
-            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
-              19:30 <span className="text-xs font-normal text-[#66756C]">hrs</span>
-            </p>
-          </div>
+          {SERVICE_SCHEDULES.map((item) => {
+            const isDivine = item.id === 'culto-divino';
+            return (
+              <div
+                key={item.id}
+                className={`p-6 rounded-3xl border space-y-2 transition-colors ${
+                  isDivine
+                    ? 'bg-[#7C9885] dark:bg-slate-900 text-white border-[#6B8774] dark:border-slate-800 shadow-xs'
+                    : 'bg-[#FAF8F3] dark:bg-slate-900 border-[#E2DEC9] dark:border-slate-800'
+                }`}
+              >
+                {renderScheduleIcon(item.iconName, isDivine)}
+                <span
+                  className={`text-[10px] font-bold uppercase block ${
+                    isDivine
+                      ? 'text-[#E8EFEA]'
+                      : item.iconName === 'flame'
+                      ? 'text-[#E08A72]'
+                      : 'text-[#7C9885]'
+                  }`}
+                >
+                  {item.day}
+                </span>
+                <h4
+                  className={`text-base font-bold ${
+                    isDivine ? 'text-white dark:text-emerald-100' : 'text-[#2D3831] dark:text-emerald-100'
+                  }`}
+                >
+                  {item.name}
+                </h4>
+                <p
+                  className={`text-2xl font-black flex items-baseline gap-1 ${
+                    isDivine ? 'text-white dark:text-emerald-300' : 'text-[#2D3831] dark:text-emerald-300'
+                  }`}
+                >
+                  {item.time}{' '}
+                  <span
+                    className={`text-xs font-normal ${
+                      isDivine ? 'text-[#E8EFEA]' : 'text-[#66756C]'
+                    }`}
+                  >
+                    hrs
+                  </span>
+                </p>
+              </div>
+            );
+          })}
         </div>
       </section>
 

@@ -71,3 +71,12 @@ export interface HimnoDetail {
   verses: HimnoVerse[];
   error?: string;
 }
+
+export interface ServiceSchedule {
+  id: string;
+  name: string;
+  day: string;
+  time: string;
+  description?: string;
+  iconName?: 'book' | 'church' | 'flame' | 'heart';
+}

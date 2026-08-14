@@ -1,4 +1,105 @@
-export const INITIAL_MATERIALS = [
+export interface ServiceSchedule {
+  id: string;
+  name: string;
+  day: string;
+  time: string;
+  description?: string;
+  iconName?: 'book' | 'church' | 'flame' | 'heart';
+}
+
+export interface MaterialMock {
+  id: string;
+  title: string;
+  category: string;
+  fileType: string;
+  size: string;
+  date: string;
+  author: string;
+  downloads: number;
+}
+
+export interface BibleCourse {
+  id: string;
+  title: string;
+  description: string;
+  lessons: string;
+  level: string;
+  badge: string;
+  icon: string;
+}
+
+export interface HymnMock {
+  number: number;
+  title: string;
+  category: string;
+  key: string;
+  lyrics: string;
+}
+
+export interface LessonDay {
+  day: string;
+  topic: string;
+  content: string;
+}
+
+export interface SabbathLesson {
+  quarter: string;
+  lessonNumber: number;
+  title: string;
+  memoryVerse: string;
+  days: LessonDay[];
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  type: 'Especial' | 'Clubes' | 'Espiritual' | 'Cumpleaños' | string;
+  time: string;
+}
+
+// ----------------------------------------------------------------------
+// 1. HORARIOS DE SERVICIOS SINCRONIZADOS (Home, Footer y Boletín)
+// ----------------------------------------------------------------------
+export const SERVICE_SCHEDULES: ServiceSchedule[] = [
+  {
+    id: 'escuela-sabatica',
+    name: 'Escuela Sabática',
+    day: 'Sábados',
+    time: '09:30',
+    description: 'Estudio interactivo de la lección y confraternización.',
+    iconName: 'book',
+  },
+  {
+    id: 'culto-divino',
+    name: 'Culto Divino',
+    day: 'Sábados',
+    time: '11:00',
+    description: 'Momento central de adoración, alabanza y sermón bíblico.',
+    iconName: 'church',
+  },
+  {
+    id: 'sociedad-jovenes',
+    name: 'Sociedad de Jóvenes (JA)',
+    day: 'Sábados',
+    time: '18:00',
+    description: 'Espacio dinámico de alabanza y testimonio juvenil.',
+    iconName: 'flame',
+  },
+  {
+    id: 'culto-oracion',
+    name: 'Culto de Oración',
+    day: 'Miércoles',
+    time: '19:30',
+    description: 'Intercesión por familias, necesidades y estudio de la Palabra.',
+    iconName: 'heart',
+  },
+];
+
+// ----------------------------------------------------------------------
+// 2. MATERIALES INICIALES
+// ----------------------------------------------------------------------
+export const INITIAL_MATERIALS: MaterialMock[] = [
   {
     id: 'm1',
     title: 'Guía de Escuela Sabática Adultos - 3er Trimestre',
@@ -21,7 +122,10 @@ export const INITIAL_MATERIALS = [
   },
 ];
 
-export const BIBLE_COURSES = [
+// ----------------------------------------------------------------------
+// 3. CURSOS BÍBLICOS
+// ----------------------------------------------------------------------
+export const BIBLE_COURSES: BibleCourse[] = [
   {
     id: 'c1',
     title: 'La Fe de Jesús',
@@ -42,7 +146,10 @@ export const BIBLE_COURSES = [
   },
 ];
 
-export const INITIAL_HYMNS = [
+// ----------------------------------------------------------------------
+// 4. HIMNARIO
+// ----------------------------------------------------------------------
+export const INITIAL_HYMNS: HymnMock[] = [
   {
     number: 1,
     title: 'Cantad al Señor',
@@ -59,21 +166,68 @@ export const INITIAL_HYMNS = [
   },
 ];
 
-export const SABBATH_LESSON_WEEK = {
+// ----------------------------------------------------------------------
+// 5. LECCIÓN DE ESCUELA SABÁTICA
+// ----------------------------------------------------------------------
+export const SABBATH_LESSON_WEEK: SabbathLesson = {
   quarter: '3er Trimestre 2026',
   lessonNumber: 8,
   title: 'La Fe que Vence al Mundo y Permanecer en Cristo',
-  memoryVerse: '"Porque todo lo que es nacido de Dios vence al mundo; y esta es la victoria que ha vencido al mundo, nuestra fe." 1 Juan 5:4',
+  memoryVerse:
+    '"Porque todo lo que es nacido de Dios vence al mundo; y esta es la victoria que ha vencido al mundo, nuestra fe." 1 Juan 5:4',
   days: [
-    { day: 'Sábado', topic: 'Introducción a la lección semanal', content: 'La fe verdadera es un principio activo fundado en las promesas de Dios.' },
-    { day: 'Domingo', topic: 'Venciendo el Temor y la Incertidumbre', content: 'Encontrando en la oración el valor para sostenerse en medio de las pruebas.' },
+    {
+      day: 'Sábado',
+      topic: 'Introducción a la lección semanal',
+      content:
+        'La fe verdadera es un principio activo fundado en las promesas de Dios.',
+    },
+    {
+      day: 'Domingo',
+      topic: 'Venciendo el Temor y la Incertidumbre',
+      content:
+        'Encontrando en la oración el valor para sostenerse en medio de las pruebas.',
+    },
   ],
 };
 
-export const CHURCH_CALENDAR_EVENTS = [
-  { id: 'ev1', title: 'Sábado de Visita e Impacto Comunitario', date: '2026-08-22', type: 'Especial', time: '11:30 AM' },
-  { id: 'ev2', title: 'Camporí de Conquistadores Hualqui', date: '2026-08-28', type: 'Clubes', time: 'Todo el día' },
-  { id: 'ev3', title: 'Semana de Oración de la Mujer', date: '2026-09-05', type: 'Espiritual', time: '19:30 PM' },
-  { id: 'ev4', title: 'Cumpleaños Hna. Carmen Reyes', date: '2026-08-25', type: 'Cumpleaños', time: 'Día Completo' },
-  { id: 'ev5', title: 'Cumpleaños Pr. Alejandro Silva', date: '2026-08-30', type: 'Cumpleaños', time: 'Día Completo' },
+// ----------------------------------------------------------------------
+// 6. CALENDARIO DE EVENTOS
+// ----------------------------------------------------------------------
+export const CHURCH_CALENDAR_EVENTS: CalendarEvent[] = [
+  {
+    id: 'ev1',
+    title: 'Sábado de Visita e Impacto Comunitario',
+    date: '2026-08-22',
+    type: 'Especial',
+    time: '11:30 AM',
+  },
+  {
+    id: 'ev2',
+    title: 'Camporí de Conquistadores Hualqui',
+    date: '2026-08-28',
+    type: 'Clubes',
+    time: 'Todo el día',
+  },
+  {
+    id: 'ev3',
+    title: 'Semana de Oración de la Mujer',
+    date: '2026-09-05',
+    type: 'Espiritual',
+    time: '19:30 PM',
+  },
+  {
+    id: 'ev4',
+    title: 'Cumpleaños Hna. Carmen Reyes',
+    date: '2026-08-25',
+    type: 'Cumpleaños',
+    time: 'Día Completo',
+  },
+  {
+    id: 'ev5',
+    title: 'Cumpleaños Pr. Alejandro Silva',
+    date: '2026-08-30',
+    type: 'Cumpleaños',
+    time: 'Día Completo',
+  },
 ];
