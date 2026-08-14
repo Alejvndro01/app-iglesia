@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Home, BookOpen, Music, FileText, Heart } from 'lucide-react';
 
 interface FooterProps {
   navigateTo?: (page: string) => void;
@@ -21,96 +20,106 @@ export function Footer({ navigateTo, setBulletinModalOpen }: FooterProps) {
   };
 
   return (
-    <footer className="w-full bg-[#A1B5C4] text-white border-t border-white/10 pt-12 pb-24 px-6 font-sans">
-      <div className="max-w-md mx-auto space-y-10">
-        
-        {/* Identidad Minimalist / Editorial */}
-        <div className="text-center space-y-2">
-          <div className="w-10 h-10 rounded-full bg-white/15 border border-white/20 mx-auto flex items-center justify-center mb-3">
-            <Heart className="w-4 h-4 text-minimal-accent fill-minimal-accent" />
+    <footer className="bg-white dark:bg-slate-900 border-t border-sky-100 dark:border-slate-800 text-[#486379] dark:text-slate-300 mt-16 transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          
+          {/* Identidad de la Iglesia */}
+          <div className="md:col-span-2 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-full bg-[#eca489] flex items-center justify-center text-white font-black text-sm shadow-xs">
+                ⛪
+              </div>
+              <div>
+                <h3 className="font-black text-base text-[#486379] dark:text-sky-300 leading-tight">
+                  IASD CENTRAL
+                </h3>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  DE HUALQUI
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+              Una comunidad cristiana comprometida con proclamar el evangelio eterno, 
+              la adoración y el servicio en Hualqui y sus alrededores.
+            </p>
           </div>
-          <h3 className="text-lg font-bold tracking-tight text-white uppercase">
-            IASD Central Hualqui
-          </h3>
-          <p className="text-xs text-white/70 max-w-xs mx-auto leading-relaxed font-light">
-            Un espacio de fe, comunión y servicio en la palabra de Dios.
+
+          {/* Enlaces Rápidos sin recarga de página */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-black text-[#eca489] dark:text-amber-400 uppercase tracking-wider">
+              Navegación
+            </h4>
+            <ul className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <li>
+                <button 
+                  onClick={() => handleNav('home')} 
+                  className="hover:text-[#486379] dark:hover:text-sky-300 transition-colors cursor-pointer text-left"
+                >
+                  Inicio
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNav('leccion')} 
+                  className="hover:text-[#486379] dark:hover:text-sky-300 transition-colors cursor-pointer text-left"
+                >
+                  Lección Diaria
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNav('himnario')} 
+                  className="hover:text-[#486379] dark:hover:text-sky-300 transition-colors cursor-pointer text-left"
+                >
+                  Himnario Adventista
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNav('boletin')} 
+                  className="hover:text-[#486379] dark:hover:text-sky-300 transition-colors cursor-pointer text-left"
+                >
+                  Boletín Sabático
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Horarios de Cultos */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-black text-[#eca489] dark:text-amber-400 uppercase tracking-wider">
+              Horarios de Culto
+            </h4>
+            <ul className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <li>
+                <span className="font-bold text-[#486379] dark:text-slate-200">Sábados:</span> 09:30 hrs
+              </li>
+              <li>
+                <span className="font-bold text-[#486379] dark:text-slate-200">Miércoles:</span> 19:30 hrs
+              </li>
+              <li>
+                <span className="font-bold text-[#486379] dark:text-slate-200">Domingos:</span> 19:30 hrs
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Separador y Copyright */}
+        <div className="border-t border-sky-100 dark:border-slate-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium gap-3">
+          <p>
+            © {currentYear} IASD Central de Hualqui. Todos los derechos reservados.
           </p>
-        </div>
-
-        {/* Muestra de tonos estilo paleta */}
-        <div className="flex justify-center items-center gap-1.5 opacity-60">
-          <span className="w-4 h-1.5 rounded-full bg-[#537180]" />
-          <span className="w-4 h-1.5 rounded-full bg-[#7091A4]" />
-          <span className="w-4 h-1.5 rounded-full bg-[#BDD1DE]" />
-          <span className="w-4 h-1.5 rounded-full bg-[#C8D3DB]" />
-        </div>
-
-        {/* NAVEGACIÓN RÁPIDA - Botones sutiles */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <button 
-            onClick={() => handleNav('home')} 
-            className="bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/10 transition-all text-left flex items-center gap-2.5 active:scale-95"
-          >
-            <Home className="w-4 h-4 text-white/80" />
-            <span className="font-medium text-white">Inicio</span>
-          </button>
-
-          <button 
-            onClick={() => handleNav('leccion')} 
-            className="bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/10 transition-all text-left flex items-center gap-2.5 active:scale-95"
-          >
-            <BookOpen className="w-4 h-4 text-white/80" />
-            <span className="font-medium text-white">Lección</span>
-          </button>
-
-          <button 
-            onClick={() => handleNav('himnario')} 
-            className="bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/10 transition-all text-left flex items-center gap-2.5 active:scale-95"
-          >
-            <Music className="w-4 h-4 text-white/80" />
-            <span className="font-medium text-white">Himnario</span>
-          </button>
-
-          <button 
-            onClick={() => handleNav('boletin')} 
-            className="bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/10 transition-all text-left flex items-center gap-2.5 active:scale-95"
-          >
-            <FileText className="w-4 h-4 text-white/80" />
-            <span className="font-medium text-white">Boletín</span>
-          </button>
-        </div>
-
-        {/* HORARIOS - Card semi-transparente */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10 space-y-3">
-          <span className="text-[10px] tracking-widest uppercase text-white/60 font-semibold block">
-            Horarios de Culto
-          </span>
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="bg-white/5 p-2 rounded-lg border border-white/5">
-              <span className="block font-bold text-white">Sáb</span>
-              <span className="text-[10px] text-white/70">09:30</span>
-            </div>
-            <div className="bg-white/5 p-2 rounded-lg border border-white/5">
-              <span className="block font-bold text-white">Mié</span>
-              <span className="text-[10px] text-white/70">19:30</span>
-            </div>
-            <div className="bg-white/5 p-2 rounded-lg border border-white/5">
-              <span className="block font-bold text-white">Dom</span>
-              <span className="text-[10px] text-white/70">19:30</span>
-            </div>
-          </div>
-        </div>
-
-        {/* COPYRIGHT */}
-        <div className="pt-4 border-t border-white/10 text-center text-[11px] text-white/50 space-y-2">
-          <p>© {currentYear} IASD Central Hualqui</p>
-          <div className="flex justify-center items-center gap-4 text-[10px]">
-            <span className="hover:text-white transition-colors cursor-pointer">Privacidad</span>
+          <div className="flex items-center space-x-4">
+            <span className="hover:text-[#486379] dark:hover:text-sky-300 cursor-pointer transition-colors">
+              Privacidad
+            </span>
             <span>•</span>
-            <span className="hover:text-white transition-colors cursor-pointer">Términos</span>
+            <span className="hover:text-[#486379] dark:hover:text-sky-300 cursor-pointer transition-colors">
+              Términos
+            </span>
           </div>
         </div>
-
       </div>
     </footer>
   );
