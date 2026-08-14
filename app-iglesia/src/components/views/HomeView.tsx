@@ -3,6 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Testimonio, Material } from '@/types';
+import { 
+  BookOpen, 
+  Music, 
+  Calendar, 
+  Heart, 
+  Upload, 
+  Search, 
+  Play, 
+  Download, 
+  Sparkles, 
+  Send, 
+  X, 
+  Clock,
+  HeartHandshake
+} from 'lucide-react';
 
 interface HomeViewProps {
   navigateTo: (page: string) => void;
@@ -35,7 +50,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     if (mimeType?.includes('presentation') || path?.endsWith('.pptx')) return 'PPTX';
     if (mimeType?.includes('plain') || path?.endsWith('.txt')) return 'TXT';
     if (mimeType?.includes('mpeg') || mimeType?.includes('mp3') || path?.endsWith('.mp3')) return 'MP3';
-    return 'DOCUMENTO';
+    return 'DOC';
   };
 
   const fetchTestimonies = async () => {
@@ -236,196 +251,162 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   );
 
   return (
-    <div className="space-y-16 pb-12 transition-colors">
-      <section className="bg-[#d0e2f1] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#486379] dark:text-sky-300 shadow-xs">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Iglesia Abierta en Bulnes 450, Hualqui</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[#486379] dark:text-slate-100 leading-tight">
-              Un lugar para <br />
-              <span className="text-[#eca489] dark:text-amber-400">Creer, Pertenecer</span> <br />
-              y Servir.
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xl">
-              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia y la comunión fraternal.
-            </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-              <button
-                onClick={() => navigateTo('estudios-biblicos')}
-                className="px-6 py-3.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold rounded-full text-xs shadow-md cursor-pointer"
-              >
-                Solicitar Estudio Bíblico
-              </button>
-              <button
-                onClick={() => navigateTo('leccion')}
-                className="px-6 py-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-[#486379] dark:text-sky-300 font-bold rounded-full text-xs shadow-xs border border-sky-100 dark:border-slate-700 flex items-center space-x-1 cursor-pointer"
-              >
-                <span>📖 Lección de Escuela Sabática</span>
-              </button>
-            </div>
+    <div className="flex flex-col justify-between h-full py-2 text-minimal-text space-y-10 font-sans">
+      
+      {/* HERO PRINCIPAL - EDITORIAL MINIMAL */}
+      <section className="text-center space-y-3 mt-2">
+        <span className="text-[10px] tracking-widest uppercase text-white/70 font-medium block">
+          Bulnes 450, Hualqui
+        </span>
+        <h1 className="text-5xl font-extrabold tracking-tight text-white leading-none">
+          Creer.
+        </h1>
+        <p className="text-xs text-white/80 max-w-xs mx-auto leading-relaxed font-light px-2">
+          Un espacio simple y tranquilo para la reflexión diaria, el estudio de la palabra y la vida en comunidad.
+        </p>
+
+        {/* ACCIONES RÁPIDAS HERO */}
+        <div className="flex justify-center items-center gap-2 pt-2">
+          <button
+            onClick={() => navigateTo('estudios-biblicos')}
+            className="px-4 py-2 bg-white text-minimal-dark font-semibold text-xs rounded-full shadow-xs transition-transform active:scale-95"
+          >
+            Estudio Bíblico
+          </button>
+          <button
+            onClick={() => navigateTo('leccion')}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-medium text-xs rounded-full border border-white/10 transition-transform active:scale-95 flex items-center gap-1.5"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Lección</span>
+          </button>
+        </div>
+      </section>
+
+      {/* MUESTRA DE PALETA MINIMAL */}
+      <div className="flex justify-center items-center gap-1.5 py-1">
+        <span className="w-6 h-1.5 rounded-full bg-[#537180]" />
+        <span className="w-6 h-1.5 rounded-full bg-[#7091A4]" />
+        <span className="w-6 h-1.5 rounded-full bg-[#BDD1DE]" />
+        <span className="w-6 h-1.5 rounded-full bg-[#C8D3DB]" />
+      </div>
+
+      {/* HORARIOS DE CULTO - CÁPSULA LIMPIA */}
+      <section className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] tracking-widest uppercase text-white/70 font-semibold flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-white/80" />
+            Reuniones
+          </span>
+          <span className="text-[10px] text-white/50">Hualqui</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+            <span className="block font-bold text-white text-xs">Sábados</span>
+            <span className="text-[10px] text-white/70">10:00 S.S.</span>
           </div>
-          <div className="w-full md:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 group">
-              <img
-                src="/landscape.jpg"
-                alt="IASD Hualqui"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
-                }}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-6">
-                <div className="text-white">
-                  <span className="bg-[#eca489] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                    Bulnes 450, Hualqui
-                  </span>
-                  <h3 className="text-lg font-bold mt-2">Templo Central Hualqui</h3>
-                </div>
-              </div>
-            </div>
+          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+            <span className="block font-bold text-white text-xs">Sábados</span>
+            <span className="text-[10px] text-white/70">11:30 Culto</span>
+          </div>
+          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+            <span className="block font-bold text-white text-xs">Sábados</span>
+            <span className="text-[10px] text-white/70">18:00 JA</span>
+          </div>
+          <div className="bg-white/5 p-2.5 rounded-xl border border-white/5">
+            <span className="block font-bold text-white text-xs">Miércoles</span>
+            <span className="text-[10px] text-white/70">19:00 Oración</span>
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
-            Horarios de Culto
-          </h3>
-          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">
-            Nuestras Reuniones Semanales
-          </h2>
+      {/* PREDICACIONES / SERMONES */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] tracking-widest uppercase text-white/70 font-semibold">
+            Sermones
+          </span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">📖</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Escuela Sabática</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              10:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#486379] dark:bg-slate-800 text-white p-6 rounded-3xl border border-transparent dark:border-slate-700 shadow-md transition-colors">
-            <div className="text-3xl mb-3">⛪</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-white dark:text-sky-300">Culto Divino</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              11:30 <span className="text-xs text-slate-200 dark:text-slate-400">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">🔥</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto JA (Jóvenes)</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              18:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
-            </p>
-          </div>
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">🙏</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Miércoles</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto de Oración</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              19:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#f0f6fb] dark:bg-slate-900 py-14 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
-                Predicaciones
-              </h3>
-              <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Sermones Recientes</h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {sermons.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => setSelectedSermon && setSelectedSermon(s)}
-                className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-sky-100 dark:border-slate-700 shadow-xs hover:shadow-md cursor-pointer group transition-colors"
-              >
-                <div className="relative aspect-video bg-slate-800">
-                  <img
-                    src={s.thumbnail}
-                    alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-[#eca489] text-white flex items-center justify-center">
-                      ▶
-                    </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {sermons.map((s) => (
+            <div
+              key={s.id}
+              onClick={() => setSelectedSermon && setSelectedSermon(s)}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-3.5 border border-white/10 transition-all cursor-pointer group active:scale-[0.98] space-y-2"
+            >
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-black/20">
+                <img
+                  src={s.thumbnail}
+                  alt={s.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-white text-minimal-dark flex items-center justify-center shadow-xs">
+                    <Play className="w-3.5 h-3.5 fill-minimal-dark ml-0.5" />
                   </div>
                 </div>
-                <div className="p-5">
-                  <span className="text-[10px] font-bold text-[#eca489] dark:text-amber-400">
-                    {s.category}
-                  </span>
-                  <h4 className="text-sm font-bold text-[#486379] dark:text-sky-300 mt-1">{s.title}</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">👤 {s.speaker}</p>
-                </div>
               </div>
-            ))}
-          </div>
+              <div>
+                <span className="text-[9px] uppercase tracking-wider text-white/60 font-medium block">
+                  {s.category}
+                </span>
+                <h4 className="text-xs font-semibold text-white truncate mt-0.5">{s.title}</h4>
+                <p className="text-[10px] text-white/70 mt-0.5">{s.speaker}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
-              Descargas
-            </h3>
-            <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Materiales y Recursos</h2>
-          </div>
+      {/* RECURSOS / DESCARGAS */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] tracking-widest uppercase text-white/70 font-semibold">
+            Recursos
+          </span>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md cursor-pointer"
+            className="flex items-center gap-1 text-[11px] text-white/80 hover:text-white transition-colors"
           >
-            📤 Subir Material
+            <Upload className="w-3.5 h-3.5" />
+            <span>Subir</span>
           </button>
         </div>
 
-        <div className="mb-6 flex justify-between items-center bg-[#f0f6fb] dark:bg-slate-800 p-3 rounded-2xl border border-sky-100 dark:border-slate-700">
+        {/* Buscador minimalista */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-white/50" />
           <input
             type="text"
-            placeholder="🔍 Buscar recurso por título..."
+            placeholder="Buscar recurso..."
             value={materialSearch}
             onChange={(e) => setMaterialSearch(e.target.value)}
-            className="w-full md:w-72 bg-white dark:bg-slate-900 text-xs px-4 py-2 rounded-full border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+            className="w-full bg-white/10 text-xs text-white placeholder-white/50 pl-8 pr-4 py-2 rounded-xl border border-white/10 outline-none focus:border-white/30 transition-all"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {filteredMaterials.length === 0 ? (
-            <p className="text-xs text-slate-400 col-span-3 text-center">No hay archivos registrados.</p>
+            <p className="text-xs text-white/50 col-span-3 text-center py-4">No hay archivos disponibles.</p>
           ) : (
             filteredMaterials.map((m) => (
               <div
                 key={m.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-sky-100 dark:border-slate-700 shadow-xs flex flex-col justify-between space-y-3 transition-colors"
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10 flex items-center justify-between gap-2"
               >
-                <div>
-                  <span className="bg-[#d0e2f1] dark:bg-slate-700 text-[#486379] dark:text-sky-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+                <div className="min-w-0">
+                  <span className="text-[9px] uppercase font-bold text-white/60 bg-white/10 px-1.5 py-0.5 rounded">
                     {getExtensionLabel(m.mimeType, m.path)}
                   </span>
-                  <h4 className="text-sm font-bold text-[#486379] dark:text-sky-300 mt-2">{m.titulo}</h4>
-                  <p className="text-xs text-slate-400 mt-1">Subido por: {m.usuario?.nombre || 'Miembro'}</p>
+                  <h4 className="text-xs font-medium text-white truncate mt-1">{m.titulo}</h4>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleDownload(m)}
-                  className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
+                  className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
+                  title="Descargar"
                 >
-                  Descargar Archivo
+                  <Download className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))
@@ -433,44 +414,42 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
-            Agradecimientos y Fe
+      {/* MURO DE TESTIMONIOS */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] tracking-widest uppercase text-white/70 font-semibold flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-white/80" />
+            Testimonios
           </span>
-          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Muro de Testimonios</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Compartiendo las grandes maravillas que Dios hace en Hualqui.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {testimonies.length === 0 ? (
-            <p className="text-xs text-slate-400 col-span-3 text-center">
-              Aún no hay testimonios registrados. ¡Sé el primero en compartir!
+            <p className="text-xs text-white/50 col-span-3 text-center py-4">
+              Aún no hay testimonios. ¡Sé el primero en compartir!
             </p>
           ) : (
             testimonies.map((t) => (
               <div
                 key={t.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-sky-100 dark:border-slate-700 shadow-xs space-y-3 flex flex-col justify-between transition-colors"
+                className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col justify-between space-y-2"
               >
                 <div>
-                  <span className="text-2xl block mb-2">✨</span>
-                  <h4 className="text-base font-bold text-[#486379] dark:text-sky-300">
-                    {t.titulo || 'Agradecimiento al Señor'}
+                  <h4 className="text-xs font-semibold text-white">
+                    {t.titulo || 'Agradecimiento'}
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                  <p className="text-[11px] text-white/80 mt-1 leading-relaxed line-clamp-3 font-light">
                     "{t.contenido || 'Sin contenido'}"
                   </p>
                 </div>
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
-                  <span>👤 {t.autor || 'Hermano de Iglesia'}</span>
+                <div className="pt-2 border-t border-white/10 flex justify-between items-center text-[10px] text-white/60">
+                  <span>{t.autor || 'Anónimo'}</span>
                   <button
                     onClick={() => handleLikeTestimonio(t.id)}
-                    className="px-3 py-1 bg-amber-50 dark:bg-slate-700 hover:bg-amber-100 text-[#eca489] dark:text-amber-400 font-bold rounded-full text-[10px] cursor-pointer transition-colors"
+                    className="flex items-center gap-1 text-white/80 hover:text-white transition-colors"
                   >
-                    ❤️ Amén ({t.likes || 0})
+                    <Heart className="w-3 h-3 fill-minimal-accent text-minimal-accent" />
+                    <span>{t.likes || 0}</span>
                   </button>
                 </div>
               </div>
@@ -478,138 +457,134 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           )}
         </div>
 
-        <div className="mt-8 bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 max-w-2xl mx-auto space-y-3 transition-colors">
-          <h4 className="font-extrabold text-[#486379] dark:text-sky-300 text-sm text-center">
-            ¿Tienes un testimonio o agradecimiento que compartir?
-          </h4>
-          <form onSubmit={handleTestimonySubmit} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Formulario Testimonio */}
+        <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-3">
+          <span className="text-xs font-medium text-white block">Compartir Testimonio</span>
+          <form onSubmit={handleTestimonySubmit} className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 type="text"
                 placeholder="Tu Nombre"
                 value={testimonyAuthor}
                 onChange={(e) => setTestimonyAuthor(e.target.value)}
-                className="bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                className="bg-white/10 text-xs p-2.5 rounded-lg border border-white/10 text-white placeholder-white/40 outline-none"
               />
               <input
                 type="text"
                 required
-                placeholder="Título del Testimonio *"
+                placeholder="Título *"
                 value={testimonyTitle}
                 onChange={(e) => setTestimonyTitle(e.target.value)}
-                className="bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                className="bg-white/10 text-xs p-2.5 rounded-lg border border-white/10 text-white placeholder-white/40 outline-none"
               />
             </div>
             <textarea
-              rows={3}
+              rows={2}
               required
-              placeholder="Cuenta brevemente lo que el Señor ha hecho por ti... *"
+              placeholder="Escribe tu testimonio... *"
               value={testimonyContent}
               onChange={(e) => setTestimonyContent(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+              className="w-full bg-white/10 text-xs p-2.5 rounded-lg border border-white/10 text-white placeholder-white/40 outline-none"
             ></textarea>
             <button
               type="submit"
               disabled={loadingTestimony}
-              className="w-full py-2.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-sm cursor-pointer disabled:opacity-50"
+              className="w-full py-2 bg-white text-minimal-dark font-semibold text-xs rounded-lg transition-transform active:scale-98 disabled:opacity-50"
             >
-              {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio en el Muro'}
+              {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio'}
             </button>
           </form>
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-sky-100 dark:border-slate-700 transition-colors">
-          <div className="text-center mb-6">
-            <span className="text-3xl block mb-2">🙏</span>
-            <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">¿Podemos Orar por Ti?</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Escribe tu motivo de oración y lo guardaremos en nuestra lista intercesora.
-            </p>
-          </div>
+      {/* PEDIDO DE ORACIÓN */}
+      <section className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 space-y-4">
+        <div className="text-center space-y-1">
+          <HeartHandshake className="w-5 h-5 mx-auto text-white/80" />
+          <h3 className="text-sm font-bold text-white">¿Podemos Orar por Ti?</h3>
+          <p className="text-[11px] text-white/70 font-light">
+            Escribe tu motivo de oración para nuestra lista intercesora.
+          </p>
+        </div>
 
-          <form onSubmit={handlePrayerSubmit} className="space-y-4">
+        <form onSubmit={handlePrayerSubmit} className="space-y-2.5">
+          <input
+            type="text"
+            placeholder="Tu nombre (opcional)"
+            value={prayerName}
+            onChange={(e) => setPrayerName(e.target.value)}
+            className="w-full bg-white/10 text-xs p-2.5 rounded-xl border border-white/10 text-white placeholder-white/40 outline-none"
+          />
+          <textarea
+            rows={2}
+            required
+            placeholder="Escribe aquí tu pedido de oración... *"
+            value={prayerRequest}
+            onChange={(e) => setPrayerRequest(e.target.value)}
+            className="w-full bg-white/10 text-xs p-2.5 rounded-xl border border-white/10 text-white placeholder-white/40 outline-none"
+          ></textarea>
+          <div className="flex items-center space-x-2">
             <input
-              type="text"
-              placeholder="Tu nombre (opcional)"
-              value={prayerName}
-              onChange={(e) => setPrayerName(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+              type="checkbox"
+              id="priv"
+              checked={prayerPrivate}
+              onChange={(e) => setPrayerPrivate(e.target.checked)}
+              className="rounded bg-white/10 border-white/20 text-minimal-accent focus:ring-0"
             />
-            <textarea
-              rows={3}
-              required
-              placeholder="Escribe aquí tu motivo de oración... *"
-              value={prayerRequest}
-              onChange={(e) => setPrayerRequest(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
-            ></textarea>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="priv"
-                checked={prayerPrivate}
-                onChange={(e) => setPrayerPrivate(e.target.checked)}
-                className="accent-[#eca489]"
-              />
-              <label htmlFor="priv" className="text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                Mantener este pedido en privado
-              </label>
-            </div>
-            <button
-              type="submit"
-              disabled={loadingPrayer}
-              className="w-full py-3.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50"
-            >
-              {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
-            </button>
-          </form>
-        </div>
+            <label htmlFor="priv" className="text-[11px] text-white/70 cursor-pointer">
+              Mantener en privado
+            </label>
+          </div>
+          <button
+            type="submit"
+            disabled={loadingPrayer}
+            className="w-full py-2.5 bg-minimal-accent hover:bg-minimal-accent/90 text-white font-medium text-xs rounded-xl transition-transform active:scale-98 disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>{loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}</span>
+          </button>
+        </form>
       </section>
 
+      {/* MODAL DE SUBIDA DE MATERIAL */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 space-y-4 border border-transparent dark:border-slate-700">
-            <div className="flex justify-between items-center border-b dark:border-slate-700 pb-2">
-              <h3 className="font-bold text-[#486379] dark:text-sky-300 text-sm">Subir Nuevo Material</h3>
-              <button onClick={() => setUploadModalOpen(false)} className="text-slate-400 font-bold cursor-pointer">
-                ✕
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#A1B5C4] w-full max-w-sm rounded-2xl p-5 space-y-4 border border-white/20 shadow-2xl text-white">
+            <div className="flex justify-between items-center border-b border-white/10 pb-2">
+              <h3 className="font-semibold text-xs uppercase tracking-wider">Subir Recurso</h3>
+              <button onClick={() => setUploadModalOpen(false)} className="text-white/70 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleUploadSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
-                  Título del Recurso
-                </label>
+                <label className="block text-[11px] text-white/80 mb-1">Título del Recurso</label>
                 <input
                   type="text"
                   placeholder="Ej. Guía de Escuela Sabática"
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3 rounded-xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                  className="w-full bg-white/10 text-xs p-2.5 rounded-lg border border-white/10 text-white placeholder-white/40 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
-                  Seleccionar Archivo (PDF, PPTX, MP3)
-                </label>
+                <label className="block text-[11px] text-white/80 mb-1">Archivo (PDF, PPTX, MP3)</label>
                 <input
                   type="file"
                   required
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-slate-500 dark:text-slate-400"
+                  className="w-full text-xs text-white/70 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white/20 file:text-white hover:file:bg-white/30"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loadingUpload}
-                className="w-full py-3 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 bg-white text-minimal-dark font-semibold text-xs rounded-xl shadow-xs disabled:opacity-50 transition-transform active:scale-98"
               >
-                {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
+                {loadingUpload ? 'Subiendo archivo...' : 'Publicar Material'}
               </button>
             </form>
           </div>
