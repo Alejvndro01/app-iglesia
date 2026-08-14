@@ -94,10 +94,10 @@ export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
                 <Church className="w-4 h-4 text-[#7C9885]" /> Orden del Culto Divino
               </h5>
               <div className="bg-white dark:bg-slate-950 p-4 rounded-2xl border border-[#E8E4D5] dark:border-slate-800 text-xs text-[#3A473E] dark:text-slate-300 whitespace-pre-line leading-relaxed font-medium">
-                {`09:30 hrs - Escuela Sabática
-10:45 hrs - Anuncios y Bienvenida
-11:00 hrs - Alabanza y Culto Divino
-12:30 hrs - Cierre y Bendición`}
+                {`10:00 hrs - Escuela Sabática
+                  11:05 hrs - Anuncios y Bienvenida
+                  11:30 hrs - Alabanza y Culto Divino
+                  12:30 hrs - Cierre y Bendición`}
               </div>
             </div>
           </div>
