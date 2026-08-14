@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 
 const LIBROS_BIBLIA = [
@@ -27,46 +27,53 @@ export function BibleView() {
   const [versiculos, setVersiculos] = useState<Versiculo[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    // Cancelar la petición anterior si sigue en vuelo
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     async function fetchCapitulo() {
       setLoading(true);
       setErrorMsg(null);
 
       try {
-        const res = await fetch(`/api/biblia?libro=${encodeURIComponent(libro)}&capitulo=${capitulo}`);
-        if (!res.ok) {
-          throw new Error('Error de respuesta del servidor');
-        }
+        const res = await fetch(
+          `/api/biblia?libro=${encodeURIComponent(libro)}&capitulo=${capitulo}`,
+          { signal: controller.signal }
+        );
+
+        if (!res.ok) throw new Error('Error en el servidor');
 
         const data = await res.json();
 
-        if (isMounted) {
-          if (Array.isArray(data?.verses) && data.verses.length > 0) {
-            setVersiculos(data.verses);
-          } else {
-            setVersiculos([]);
-            setErrorMsg('No se encontraron versículos para este capítulo.');
-          }
+        if (Array.isArray(data?.verses) && data.verses.length > 0) {
+          setVersiculos(data.verses);
+        } else {
+          setVersiculos([]);
+          setErrorMsg('No se encontraron versículos para este capítulo.');
         }
-      } catch (err) {
-        console.error('Error al cargar pasaje bíblico:', err);
-        if (isMounted) {
-          setErrorMsg('Error de conexión al consultar las Sagradas Escrituras.');
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          return; // Petición cancelada deliberadamente, no mostrar error
         }
+        console.error('Error cargando pasaje:', err);
+        setErrorMsg('Error de conexión al consultar las Sagradas Escrituras.');
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
     fetchCapitulo();
 
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, [libro, capitulo]);
 
@@ -97,7 +104,7 @@ export function BibleView() {
         </p>
       </div>
 
-      {/* Selector de Libro, Capítulo y Navegación */}
+      {/* Selector de Libro y Capítulo */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#FAF8F3] dark:bg-slate-900 p-4 rounded-3xl shadow-xs border border-[#E2DEC9] dark:border-slate-800">
         <div className="flex flex-wrap items-center gap-3">
           <select
@@ -123,7 +130,7 @@ export function BibleView() {
           </div>
         </div>
 
-        {/* Botones de navegación directa */}
+        {/* Botones de navegación */}
         <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
           <button
             type="button"
@@ -145,7 +152,7 @@ export function BibleView() {
         </div>
       </div>
 
-      {/* Contenedor del Texto Bíblico */}
+      {/* Contenedor del Texto */}
       <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs transition-colors">
         <div className="border-b border-[#E8E4D5] dark:border-slate-800 pb-4 mb-6 flex items-center justify-between">
           <h2 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center gap-2">
