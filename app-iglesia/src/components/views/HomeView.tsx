@@ -3,6 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Testimonio, Material } from '@/types';
+import { 
+  BookOpen, 
+  Church, 
+  Flame, 
+  Heart, 
+  Upload, 
+  Play, 
+  Download, 
+  Search, 
+  X, 
+  Sparkles, 
+  MapPin, 
+  Calendar, 
+  Clock, 
+  Send, 
+  FileText,
+  MessageSquare
+} from 'lucide-react';
 
 interface HomeViewProps {
   navigateTo: (page: string) => void;
@@ -236,39 +254,42 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   );
 
   return (
-    <div className="space-y-16 pb-12 transition-colors">
-      <section className="bg-[#d0e2f1] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden transition-colors">
+    <div className="space-y-16 pb-12 antialiased">
+      {/* Hero Section */}
+      <section className="bg-[#E8F0EA] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#486379] dark:text-sky-300 shadow-xs">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Iglesia Abierta en Bulnes 450, Hualqui</span>
+            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#546E5C] dark:text-emerald-300 shadow-xs border border-[#C5D8CC] dark:border-slate-700">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#7C9885] animate-pulse"></span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> La Concepción #450, Hualqui
+              </span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-[#486379] dark:text-slate-100 leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-bold text-[#2D3831] dark:text-slate-100 leading-tight">
               Un lugar para <br />
-              <span className="text-[#eca489] dark:text-amber-400">Creer, Pertenecer</span> <br />
+              <span className="text-[#7C9885] dark:text-emerald-400">Creer, Pertenecer</span> <br />
               y Servir.
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xl">
-              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia y la comunión fraternal.
+            <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
+              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la oración y la comunión fraternal en nuestra comuna.
             </p>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
               <button
                 onClick={() => navigateTo('estudios-biblicos')}
-                className="px-6 py-3.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold rounded-full text-xs shadow-md cursor-pointer"
+                className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2"
               >
-                Solicitar Estudio Bíblico
+                <BookOpen className="w-4 h-4" /> Solicitar Estudio Bíblico
               </button>
               <button
                 onClick={() => navigateTo('leccion')}
-                className="px-6 py-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-[#486379] dark:text-sky-300 font-bold rounded-full text-xs shadow-xs border border-sky-100 dark:border-slate-700 flex items-center space-x-1 cursor-pointer"
+                className="px-6 py-3.5 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-[#2D3831] dark:text-emerald-300 font-semibold rounded-2xl text-xs shadow-xs border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
               >
-                <span>📖 Lección de Escuela Sabática</span>
+                <Calendar className="w-4 h-4 text-[#7C9885]" /> Lección Escuela Sabática
               </button>
             </div>
           </div>
           <div className="w-full md:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 group">
+            <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-md border-4 border-[#FAF8F3] dark:border-slate-800 group">
               <img
                 src="/landscape.jpg"
                 alt="IASD Hualqui"
@@ -278,12 +299,12 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/70 via-transparent to-transparent flex items-end p-6">
                 <div className="text-white">
-                  <span className="bg-[#eca489] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                    Bulnes 450, Hualqui
+                  <span className="bg-[#7C9885] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                    La Concepción 450, Hualqui
                   </span>
-                  <h3 className="text-lg font-bold mt-2">Templo Central Hualqui</h3>
+                  <h3 className="text-base font-bold mt-2">Templo Central IASD Hualqui</h3>
                 </div>
               </div>
             </div>
@@ -291,59 +312,63 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
+      {/* Horarios de Culto */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-1">
+          <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
             Horarios de Culto
-          </h3>
-          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 pt-1">
             Nuestras Reuniones Semanales
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">📖</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Escuela Sabática</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              10:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
+            <BookOpen className="w-7 h-7 text-[#7C9885]" />
+            <span className="text-[10px] font-bold text-[#7C9885] uppercase block">Sábados</span>
+            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Escuela Sabática</h4>
+            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
+              09:30 <span className="text-xs font-normal text-[#66756C]">hrs</span>
             </p>
           </div>
-          <div className="bg-[#486379] dark:bg-slate-800 text-white p-6 rounded-3xl border border-transparent dark:border-slate-700 shadow-md transition-colors">
-            <div className="text-3xl mb-3">⛪</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-white dark:text-sky-300">Culto Divino</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              11:30 <span className="text-xs text-slate-200 dark:text-slate-400">hrs</span>
+          <div className="bg-[#7C9885] dark:bg-slate-900 text-white p-6 rounded-3xl border border-[#6B8774] dark:border-slate-800 space-y-2 shadow-xs">
+            <Church className="w-7 h-7 text-white" />
+            <span className="text-[10px] font-bold text-[#E8EFEA] uppercase block">Sábados</span>
+            <h4 className="text-base font-bold text-white dark:text-emerald-100">Culto Divino</h4>
+            <p className="text-2xl font-black text-white dark:text-emerald-300 flex items-baseline gap-1">
+              11:00 <span className="text-xs font-normal text-[#E8EFEA]">hrs</span>
             </p>
           </div>
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">🔥</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Sábados</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto JA (Jóvenes)</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              18:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
+            <Flame className="w-7 h-7 text-[#E08A72]" />
+            <span className="text-[10px] font-bold text-[#E08A72] uppercase block">Sábados</span>
+            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Sociedad de Jóvenes (JA)</h4>
+            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
+              18:00 <span className="text-xs font-normal text-[#66756C]">hrs</span>
             </p>
           </div>
-          <div className="bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 transition-colors">
-            <div className="text-3xl mb-3">🙏</div>
-            <span className="text-[10px] font-extrabold text-[#eca489] uppercase">Miércoles</span>
-            <h4 className="text-lg font-black text-[#486379] dark:text-sky-300">Culto de Oración</h4>
-            <p className="text-2xl font-black text-[#eca489] dark:text-amber-400 mt-1">
-              19:00 <span className="text-xs text-slate-500 dark:text-slate-400">hrs</span>
+          <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 space-y-2">
+            <Heart className="w-7 h-7 text-[#7C9885]" />
+            <span className="text-[10px] font-bold text-[#7C9885] uppercase block">Miércoles</span>
+            <h4 className="text-base font-bold text-[#2D3831] dark:text-emerald-100">Culto de Oración</h4>
+            <p className="text-2xl font-black text-[#2D3831] dark:text-emerald-300 flex items-baseline gap-1">
+              19:30 <span className="text-xs font-normal text-[#66756C]">hrs</span>
             </p>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f0f6fb] dark:bg-slate-900 py-14 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+      {/* Sermones Recientes */}
+      <section className="bg-[#FAF8F3] dark:bg-slate-900 py-12 border-y border-[#E2DEC9] dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
+              <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
                 Predicaciones
-              </h3>
-              <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Sermones Recientes</h2>
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
+                Sermones Recientes
+              </h2>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -351,26 +376,26 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               <div
                 key={s.id}
                 onClick={() => setSelectedSermon && setSelectedSermon(s)}
-                className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-sky-100 dark:border-slate-700 shadow-xs hover:shadow-md cursor-pointer group transition-colors"
+                className="bg-white dark:bg-slate-950 rounded-3xl overflow-hidden border border-[#E2DEC9] dark:border-slate-800 shadow-xs hover:border-[#7C9885] cursor-pointer group transition-all"
               >
                 <div className="relative aspect-video bg-slate-800">
                   <img
                     src={s.thumbnail}
                     alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-[#eca489] text-white flex items-center justify-center">
-                      ▶
+                  <div className="absolute inset-0 bg-[#2D3831]/30 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-[#7C9885] text-white flex items-center justify-center shadow-md">
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
                     </div>
                   </div>
                 </div>
-                <div className="p-5">
-                  <span className="text-[10px] font-bold text-[#eca489] dark:text-amber-400">
+                <div className="p-5 space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400">
                     {s.category}
                   </span>
-                  <h4 className="text-sm font-bold text-[#486379] dark:text-sky-300 mt-1">{s.title}</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">👤 {s.speaker}</p>
+                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100">{s.title}</h4>
+                  <p className="text-xs text-[#66756C] dark:text-slate-400">🎙️ {s.speaker}</p>
                 </div>
               </div>
             ))}
@@ -378,54 +403,64 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+      {/* Descargas de Materiales */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h3 className="text-xs font-bold text-[#eca489] dark:text-amber-400 uppercase tracking-widest">
-              Descargas
-            </h3>
-            <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Materiales y Recursos</h2>
+            <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+              Recursos
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
+              Materiales y Documentos
+            </h2>
           </div>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md cursor-pointer"
+            className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5 self-start sm:self-auto"
           >
-            📤 Subir Material
+            <Upload className="w-4 h-4" /> Subir Material
           </button>
         </div>
 
-        <div className="mb-6 flex justify-between items-center bg-[#f0f6fb] dark:bg-slate-800 p-3 rounded-2xl border border-sky-100 dark:border-slate-700">
+        <div className="relative max-w-md">
+          <Search className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="🔍 Buscar recurso por título..."
+            placeholder="Buscar recurso por título..."
             value={materialSearch}
             onChange={(e) => setMaterialSearch(e.target.value)}
-            className="w-full md:w-72 bg-white dark:bg-slate-900 text-xs px-4 py-2 rounded-full border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+            className="w-full bg-[#FAF8F3] dark:bg-slate-900 text-xs pl-10 pr-4 py-2.5 rounded-xl border border-[#E2DEC9] dark:border-slate-800 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {filteredMaterials.length === 0 ? (
-            <p className="text-xs text-slate-400 col-span-3 text-center">No hay archivos registrados.</p>
+            <p className="text-xs text-[#66756C] dark:text-slate-400 col-span-3 text-center py-6">
+              No hay archivos o materiales registrados.
+            </p>
           ) : (
             filteredMaterials.map((m) => (
               <div
                 key={m.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-sky-100 dark:border-slate-700 shadow-xs flex flex-col justify-between space-y-3 transition-colors"
+                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-5 border border-[#E2DEC9] dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-4"
               >
-                <div>
-                  <span className="bg-[#d0e2f1] dark:bg-slate-700 text-[#486379] dark:text-sky-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
+                <div className="space-y-2">
+                  <span className="bg-[#E8F0EA] dark:bg-slate-800 text-[#546E5C] dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
                     {getExtensionLabel(m.mimeType, m.path)}
                   </span>
-                  <h4 className="text-sm font-bold text-[#486379] dark:text-sky-300 mt-2">{m.titulo}</h4>
-                  <p className="text-xs text-slate-400 mt-1">Subido por: {m.usuario?.nombre || 'Miembro'}</p>
+                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100 flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-[#7C9885]" /> {m.titulo}
+                  </h4>
+                  <p className="text-xs text-[#66756C] dark:text-slate-400">
+                    Subido por: {m.usuario?.nombre || 'Miembro de Iglesia'}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleDownload(m)}
-                  className="w-full py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full text-center shadow-xs block cursor-pointer transition-colors"
+                  className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1.5"
                 >
-                  Descargar Archivo
+                  <Download className="w-3.5 h-3.5" /> Descargar Archivo
                 </button>
               </div>
             ))
@@ -433,44 +468,47 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
+      {/* Muro de Testimonios */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-1">
+          <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
             Agradecimientos y Fe
           </span>
-          <h2 className="text-3xl font-black text-[#486379] dark:text-sky-300 mt-1">Muro de Testimonios</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Compartiendo las grandes maravillas que Dios hace en Hualqui.
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 pt-1">
+            Muro de Testimonios
+          </h2>
+          <p className="text-xs text-[#66756C] dark:text-slate-400">
+            Compartiendo las grandes bendiciones que Dios realiza en Hualqui.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonies.length === 0 ? (
-            <p className="text-xs text-slate-400 col-span-3 text-center">
-              Aún no hay testimonios registrados. ¡Sé el primero en compartir!
+            <p className="text-xs text-[#66756C] dark:text-slate-400 col-span-3 text-center py-6">
+              Aún no hay testimonios compartidos. ¡Sé el primero en publicar!
             </p>
           ) : (
             testimonies.map((t) => (
               <div
                 key={t.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-sky-100 dark:border-slate-700 shadow-xs space-y-3 flex flex-col justify-between transition-colors"
+                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-3 flex flex-col justify-between"
               >
-                <div>
-                  <span className="text-2xl block mb-2">✨</span>
-                  <h4 className="text-base font-bold text-[#486379] dark:text-sky-300">
+                <div className="space-y-2">
+                  <Sparkles className="w-5 h-5 text-[#7C9885]" />
+                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100">
                     {t.titulo || 'Agradecimiento al Señor'}
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                  <p className="text-xs text-[#526157] dark:text-slate-300 leading-relaxed italic">
                     "{t.contenido || 'Sin contenido'}"
                   </p>
                 </div>
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs text-slate-400">
+                <div className="pt-3 border-t border-[#E8E4D5] dark:border-slate-800 flex justify-between items-center text-xs text-[#66756C]">
                   <span>👤 {t.autor || 'Hermano de Iglesia'}</span>
                   <button
                     onClick={() => handleLikeTestimonio(t.id)}
-                    className="px-3 py-1 bg-amber-50 dark:bg-slate-700 hover:bg-amber-100 text-[#eca489] dark:text-amber-400 font-bold rounded-full text-[10px] cursor-pointer transition-colors"
+                    className="px-3 py-1 bg-[#E8F0EA] dark:bg-slate-800 hover:bg-[#D8E6DB] text-[#546E5C] dark:text-emerald-300 font-semibold rounded-xl text-[11px] cursor-pointer transition-colors flex items-center gap-1"
                   >
-                    ❤️ Amén ({t.likes || 0})
+                    <Heart className="w-3 h-3 fill-current" /> Amén ({t.likes || 0})
                   </button>
                 </div>
               </div>
@@ -478,18 +516,19 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           )}
         </div>
 
-        <div className="mt-8 bg-[#f0f6fb] dark:bg-slate-800 p-6 rounded-3xl border border-sky-100 dark:border-slate-700 max-w-2xl mx-auto space-y-3 transition-colors">
-          <h4 className="font-extrabold text-[#486379] dark:text-sky-300 text-sm text-center">
-            ¿Tienes un testimonio o agradecimiento que compartir?
+        {/* Publicar Testimonio */}
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 max-w-2xl mx-auto space-y-4">
+          <h4 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm text-center flex items-center justify-center gap-1.5">
+            <MessageSquare className="w-4 h-4 text-[#7C9885]" /> ¿Tienes un testimonio para compartir?
           </h4>
-          <form onSubmit={handleTestimonySubmit} className="space-y-3">
+          <form onSubmit={handleTestimonySubmit} className="space-y-3 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 type="text"
-                placeholder="Tu Nombre"
+                placeholder="Tu Nombre o Familia"
                 value={testimonyAuthor}
                 onChange={(e) => setTestimonyAuthor(e.target.value)}
-                className="bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                className="bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
               />
               <input
                 type="text"
@@ -497,53 +536,54 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 placeholder="Título del Testimonio *"
                 value={testimonyTitle}
                 onChange={(e) => setTestimonyTitle(e.target.value)}
-                className="bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                className="bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
               />
             </div>
             <textarea
               rows={3}
               required
-              placeholder="Cuenta brevemente lo que el Señor ha hecho por ti... *"
+              placeholder="Escribe brevemente tu testimonio de gratitud... *"
               value={testimonyContent}
               onChange={(e) => setTestimonyContent(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 text-xs p-3 rounded-xl border border-sky-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
             ></textarea>
             <button
               type="submit"
               disabled={loadingTestimony}
-              className="w-full py-2.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-sm cursor-pointer disabled:opacity-50"
+              className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
             >
-              {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio en el Muro'}
+              <Send className="w-3.5 h-3.5" /> {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio en el Muro'}
             </button>
           </form>
         </div>
       </section>
 
+      {/* Formulario de Petición de Oración */}
       <section className="max-w-3xl mx-auto px-4">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-sky-100 dark:border-slate-700 transition-colors">
-          <div className="text-center mb-6">
-            <span className="text-3xl block mb-2">🙏</span>
-            <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">¿Podemos Orar por Ti?</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Escribe tu motivo de oración y lo guardaremos en nuestra lista intercesora.
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xs border border-[#E2DEC9] dark:border-slate-800 space-y-5">
+          <div className="text-center space-y-1">
+            <Heart className="w-8 h-8 text-[#E08A72] mx-auto" />
+            <h2 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100">¿Podemos Orar por Ti?</h2>
+            <p className="text-xs text-[#66756C] dark:text-slate-400">
+              Escribe tu motivo de oración para que nuestra comunidad interceda por ti.
             </p>
           </div>
 
-          <form onSubmit={handlePrayerSubmit} className="space-y-4">
+          <form onSubmit={handlePrayerSubmit} className="space-y-4 text-xs">
             <input
               type="text"
-              placeholder="Tu nombre (opcional)"
+              placeholder="Tu Nombre (Opcional)"
               value={prayerName}
               onChange={(e) => setPrayerName(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
             />
             <textarea
               rows={3}
               required
-              placeholder="Escribe aquí tu motivo de oración... *"
+              placeholder="Escribe aquí tu motivo o pedido de oración... *"
               value={prayerRequest}
               onChange={(e) => setPrayerRequest(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
             ></textarea>
             <div className="flex items-center space-x-2">
               <input
@@ -551,65 +591,72 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 id="priv"
                 checked={prayerPrivate}
                 onChange={(e) => setPrayerPrivate(e.target.checked)}
-                className="accent-[#eca489]"
+                className="accent-[#7C9885]"
               />
-              <label htmlFor="priv" className="text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                Mantener este pedido en privado
+              <label htmlFor="priv" className="text-xs text-[#526157] dark:text-slate-300 cursor-pointer">
+                Mantener este pedido en privado (solo con equipo pastoral)
               </label>
             </div>
             <button
               type="submit"
               disabled={loadingPrayer}
-              className="w-full py-3.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
             >
-              {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
+              <Send className="w-4 h-4" /> {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
             </button>
           </form>
         </div>
       </section>
 
+      {/* Modal para Subida de Materiales R2 */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 space-y-4 border border-transparent dark:border-slate-700">
-            <div className="flex justify-between items-center border-b dark:border-slate-700 pb-2">
-              <h3 className="font-bold text-[#486379] dark:text-sky-300 text-sm">Subir Nuevo Material</h3>
-              <button onClick={() => setUploadModalOpen(false)} className="text-slate-400 font-bold cursor-pointer">
-                ✕
+        <div className="fixed inset-0 z-50 bg-[#2D3831]/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FAF8F3] dark:bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden shadow-xl p-6 space-y-4 border border-[#E2DEC9] dark:border-slate-800">
+            <div className="flex justify-between items-center border-b border-[#E8E4D5] dark:border-slate-800 pb-3">
+              <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm flex items-center gap-1.5">
+                <Upload className="w-4 h-4 text-[#7C9885]" /> Subir Nuevo Material
+              </h3>
+              <button 
+                onClick={() => setUploadModalOpen(false)} 
+                className="text-[#66756C] hover:text-[#2D3831] p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleUploadSubmit} className="space-y-3">
+            <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
-                  Título del Recurso
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
+                  Título del Recurso *
                 </label>
                 <input
                   type="text"
+                  required
                   placeholder="Ej. Guía de Escuela Sabática"
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-900 text-xs p-3 rounded-xl border border-amber-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 outline-none"
+                  className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
-                  Seleccionar Archivo (PDF, PPTX, MP3)
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
+                  Seleccionar Archivo (PDF, PPTX, MP3) *
                 </label>
                 <input
                   type="file"
                   required
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-slate-500 dark:text-slate-400"
+                  className="w-full text-xs text-[#526157] dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E8F0EA] file:text-[#546E5C] hover:file:bg-[#D8E6DB]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loadingUpload}
-                className="w-full py-3 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center gap-2"
               >
-                {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
+                <Upload className="w-4 h-4" /> {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
               </button>
             </form>
           </div>

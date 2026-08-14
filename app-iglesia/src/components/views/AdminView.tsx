@@ -3,6 +3,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Oracion, SolicitudCurso, Archivo } from '@/types';
+import { 
+  ShieldCheck, 
+  FolderArchive, 
+  Upload, 
+  FileText, 
+  Download, 
+  Heart, 
+  BookOpen, 
+  CheckCircle2, 
+  Loader2, 
+  Phone, 
+  MapPin, 
+  User 
+} from 'lucide-react';
 
 interface AdminViewProps {
   showToast: (msg: string) => void;
@@ -27,7 +41,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
       setPrayers(dataPrayers.oraciones || []);
       setCourses(dataCourses.solicitudes || []);
 
-      // Normalizar respuesta de la API de archivos para garantizar acceso a nombre, url, tamaño y tipo
       const rawFiles = (Array.isArray(dataFiles) ? dataFiles : dataFiles?.archivos || []) as unknown as Record<string, unknown>[];
       
       const normalizedFiles: Archivo[] = rawFiles.map((item, index) => {
@@ -76,7 +89,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
     setUploading(true);
     try {
-      // 1. Solicitar Presigned URL
       const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +118,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         key: string;
       };
 
-      // 2. Subir directamente el archivo a R2 vía PUT
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
@@ -119,7 +130,6 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         throw new Error(`Error en almacenamiento R2 (HTTP ${uploadRes.status})`);
       }
 
-      // 3. Persistir metadata en la BD
       const savedMetadata = await apiClient.saveArchivoMetadata({
         nombre: selectedFile.name,
         url: publicUrl,
@@ -151,32 +161,35 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-xs font-bold text-[#486379] dark:text-sky-300">
-        Cargando datos del panel de control...
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center text-xs font-semibold text-[#7C9885] flex flex-col items-center justify-center space-y-2">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <p className="text-[#66756C] dark:text-slate-400">Cargando datos del panel de control...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div className="bg-[#486379] dark:bg-slate-800 text-white p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl border border-transparent dark:border-slate-700 transition-colors">
-        <div>
-          <span className="bg-[#eca489] text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase">
-            Gestión Eclesial
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 antialiased">
+      {/* Banner Principal de Liderazgo */}
+      <div className="bg-[#7C9885] dark:bg-slate-900 text-white p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs border border-[#6B8774] dark:border-slate-800">
+        <div className="space-y-2 text-center md:text-left">
+          <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase border border-white/30 inline-flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5" /> Gestión Eclesial
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black mt-1 text-white dark:text-sky-300">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-emerald-100">
             Panel de Control de Liderazgo
           </h2>
-          <p className="text-xs text-slate-200 dark:text-slate-300">
-            Administración de oraciones, solicitudes de cursos bíblicos y repositorio de archivos R2.
+          <p className="text-xs text-[#E8EFEA] dark:text-slate-300 max-w-xl">
+            Administración de peticiones de oración, solicitudes de cursos bíblicos y repositorio de recursos R2.
           </p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">
-            📁 Repositorio de Archivos y Recursos (Cloudflare R2)
+      {/* Repositorio de Archivos */}
+      <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E4D5] dark:border-slate-800 pb-4">
+          <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-base flex items-center gap-2">
+            <FolderArchive className="w-5 h-5 text-[#7C9885]" /> Repositorio de Archivos y Recursos (R2)
           </h3>
           <div>
             <input
@@ -189,29 +202,39 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
             />
             <label
               htmlFor="file-upload-input"
-              className={`px-4 py-2 bg-[#eca489] hover:bg-[#e59376] text-white text-xs font-bold rounded-full cursor-pointer transition-colors ${
+              className={`px-4 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white text-xs font-semibold rounded-xl cursor-pointer transition-all flex items-center gap-1.5 shadow-xs ${
                 uploading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              {uploading ? 'Subiendo archivo...' : '⬆️ Subir Nuevo Archivo'}
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Subiendo...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" /> Subir Nuevo Archivo
+                </>
+              )}
             </label>
           </div>
         </div>
 
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
           {files.length === 0 ? (
-            <p className="text-xs text-slate-400">No hay archivos alojados en la plataforma.</p>
+            <p className="text-xs text-[#66756C] dark:text-slate-400 py-4 text-center">
+              No hay archivos alojados en la plataforma.
+            </p>
           ) : (
             files.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs border border-slate-100 dark:border-slate-700"
+                className="flex items-center justify-between p-3 bg-white dark:bg-slate-950 rounded-2xl text-xs border border-[#E2DEC9] dark:border-slate-800"
               >
                 <div className="truncate max-w-md space-y-0.5">
-                  <p className="font-bold text-slate-700 dark:text-slate-200 truncate">
-                    📄 {file.nombre}
+                  <p className="font-semibold text-[#2D3831] dark:text-slate-200 truncate flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-[#7C9885]" /> {file.nombre}
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-[#66756C] dark:text-slate-400">
                     {(file.tamano / 1024 / 1024).toFixed(2)} MB | {file.tipo}
                   </p>
                 </div>
@@ -219,9 +242,9 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold rounded-full transition-colors flex items-center space-x-1"
+                  className="px-3.5 py-1.5 bg-[#E8F0EA] dark:bg-slate-800 hover:bg-[#D8E6DB] text-[#546E5C] dark:text-emerald-300 text-[11px] font-semibold rounded-xl transition-colors flex items-center gap-1 shrink-0"
                 >
-                  <span>Ver / Descargar</span>
+                  <Download className="w-3.5 h-3.5" /> Ver / Descargar
                 </a>
               </div>
             ))
@@ -229,28 +252,45 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
-          <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">🙏 Moderación de Oraciones</h3>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+      {/* Grid de Oraciones y Cursos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Moderación de Oraciones */}
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-4">
+          <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-base flex items-center gap-2 border-b border-[#E8E4D5] dark:border-slate-800 pb-3">
+            <Heart className="w-5 h-5 text-[#E08A72]" /> Moderación de Oraciones
+          </h3>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
             {prayers.length === 0 ? (
-              <p className="text-xs text-slate-400">No hay oraciones registradas.</p>
+              <p className="text-xs text-[#66756C] dark:text-slate-400 py-4 text-center">
+                No hay oraciones registradas.
+              </p>
             ) : (
               prayers.map((p) => (
-                <div key={p.id} className="p-4 bg-[#f0f6fb] dark:bg-slate-800 rounded-2xl text-xs space-y-2 border border-transparent dark:border-slate-700">
-                  <div className="flex justify-between font-bold text-slate-800 dark:text-slate-200">
-                    <span>👤 {p.nombre} {p.isPrivate && '(Privado)'}</span>
-                    <span className={p.status === 'Respondida' ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#eca489] dark:text-amber-400'}>
+                <div 
+                  key={p.id} 
+                  className="p-4 bg-white dark:bg-slate-950 rounded-2xl text-xs space-y-2 border border-[#E2DEC9] dark:border-slate-800"
+                >
+                  <div className="flex justify-between font-semibold text-[#2D3831] dark:text-slate-200">
+                    <span className="flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-[#7C9885]" /> {p.nombre} {p.isPrivate && '(Privado)'}
+                    </span>
+                    <span 
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                        p.status === 'Respondida' 
+                          ? 'bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/40 dark:text-emerald-300' 
+                          : 'bg-[#F8F5EC] text-[#E08A72] dark:bg-amber-950/40 dark:text-amber-400'
+                      }`}
+                    >
                       {p.status}
                     </span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-300">{p.request}</p>
+                  <p className="text-[#526157] dark:text-slate-300 leading-relaxed">{p.request}</p>
                   {p.status !== 'Respondida' && (
                     <button
                       onClick={() => handleMarkAsAnswered(p.id)}
-                      className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full text-[10px] cursor-pointer"
+                      className="px-3 py-1.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-xl text-[10px] cursor-pointer transition-all flex items-center gap-1 mt-1"
                     >
-                      Marcar Respondida
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Marcar Respondida
                     </button>
                   )}
                 </div>
@@ -259,18 +299,32 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sky-100 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
-          <h3 className="font-black text-[#486379] dark:text-sky-300 text-base">📖 Solicitudes de Cursos Bíblicos</h3>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+        {/* Solicitudes de Cursos Bíblicos */}
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-4">
+          <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-base flex items-center gap-2 border-b border-[#E8E4D5] dark:border-slate-800 pb-3">
+            <BookOpen className="w-5 h-5 text-[#7C9885]" /> Solicitudes de Cursos Bíblicos
+          </h3>
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
             {courses.length === 0 ? (
-              <p className="text-xs text-slate-400">No hay solicitudes registradas.</p>
+              <p className="text-xs text-[#66756C] dark:text-slate-400 py-4 text-center">
+                No hay solicitudes registradas.
+              </p>
             ) : (
               courses.map((c) => (
-                <div key={c.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-xs space-y-1 border border-slate-100 dark:border-slate-700">
-                  <p className="font-bold text-[#eca489] dark:text-amber-400">{c.curso}</p>
-                  <p className="font-bold text-slate-700 dark:text-slate-200">👤 {c.nombre}</p>
-                  <p className="text-slate-500 dark:text-slate-400">📞 WhatsApp: {c.telefono}</p>
-                  <p className="text-slate-500 dark:text-slate-400">📍 {c.direccion || 'Sin dirección'} ({c.modalidad})</p>
+                <div 
+                  key={c.id} 
+                  className="p-4 bg-white dark:bg-slate-950 rounded-2xl text-xs space-y-1.5 border border-[#E2DEC9] dark:border-slate-800"
+                >
+                  <p className="font-bold text-[#7C9885] dark:text-emerald-400">{c.curso}</p>
+                  <p className="font-semibold text-[#2D3831] dark:text-slate-200 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-[#66756C]" /> {c.nombre}
+                  </p>
+                  <p className="text-[#526157] dark:text-slate-400 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-[#66756C]" /> WhatsApp: {c.telefono}
+                  </p>
+                  <p className="text-[#526157] dark:text-slate-400 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#66756C]" /> {c.direccion || 'Sin dirección'} ({c.modalidad})
+                  </p>
                 </div>
               ))
             )}

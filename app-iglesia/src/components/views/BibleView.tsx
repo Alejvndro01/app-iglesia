@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { BookOpen, ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
 
 const LIBROS_BIBLIA = [
   'Génesis', 'Éxodo', 'Levítico', 'Números', 'Deuteronomio',
@@ -52,56 +53,114 @@ export function BibleView() {
     fetchCapitulo();
   }, [libro, capitulo]);
 
-  return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Selector de Libro y Capítulo */}
-      <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-sky-100 dark:border-slate-800">
-        <select
-          value={libro}
-          onChange={(e) => { setLibro(e.target.value); setCapitulo('1'); }}
-          className="bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none border border-transparent focus:border-[#486379] dark:text-slate-200 cursor-pointer"
-        >
-          {LIBROS_BIBLIA.map((b) => (
-            <option key={b} value={b}>{b}</option>
-          ))}
-        </select>
+  const handlePrevCapitulo = () => {
+    const num = parseInt(capitulo, 10);
+    if (num > 1) {
+      setCapitulo((num - 1).toString());
+    }
+  };
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-400">Capítulo:</span>
-          <input
-            type="number"
-            min="1"
-            max="150"
-            value={capitulo}
-            onChange={(e) => setCapitulo(e.target.value || '1')}
-            className="w-16 bg-slate-100 dark:bg-slate-800 text-xs font-bold p-3 rounded-2xl outline-none text-center border border-transparent focus:border-[#486379] dark:text-slate-200"
-          />
+  const handleNextCapitulo = () => {
+    const num = parseInt(capitulo, 10);
+    setCapitulo((num + 1).toString());
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 antialiased">
+      {/* Encabezado */}
+      <div className="text-center max-w-xl mx-auto space-y-2">
+        <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+          Escrituras Sagradas
+        </span>
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center justify-center gap-2">
+          <BookOpen className="w-6 h-6 text-[#7C9885]" /> Santa Biblia
+        </h2>
+        <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
+          Lectura y meditación de la Palabra de Dios
+        </p>
+      </div>
+
+      {/* Selector de Libro, Capítulo y Navegación */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#FAF8F3] dark:bg-slate-900 p-4 rounded-3xl shadow-xs border border-[#E2DEC9] dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={libro}
+            onChange={(e) => { setLibro(e.target.value); setCapitulo('1'); }}
+            className="bg-white dark:bg-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl outline-none border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 focus:border-[#7C9885] cursor-pointer"
+          >
+            {LIBROS_BIBLIA.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#66756C] dark:text-slate-400">Capítulo:</span>
+            <input
+              type="number"
+              min="1"
+              max="150"
+              value={capitulo}
+              onChange={(e) => setCapitulo(e.target.value || '1')}
+              className="w-16 bg-white dark:bg-slate-950 text-xs font-bold p-2.5 rounded-xl outline-none text-center border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 focus:border-[#7C9885]"
+            />
+          </div>
+        </div>
+
+        {/* Botones de navegación directa */}
+        <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+          <button
+            type="button"
+            onClick={handlePrevCapitulo}
+            disabled={parseInt(capitulo, 10) <= 1}
+            className="p-2.5 bg-white dark:bg-slate-950 hover:bg-[#E8F0EA] dark:hover:bg-slate-800 disabled:opacity-40 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-700 rounded-xl cursor-pointer transition-colors"
+            title="Capítulo anterior"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleNextCapitulo}
+            className="p-2.5 bg-white dark:bg-slate-950 hover:bg-[#E8F0EA] dark:hover:bg-slate-800 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-700 rounded-xl cursor-pointer transition-colors"
+            title="Capítulo siguiente"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Contenedor del Texto */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-sky-100 dark:border-slate-800 transition-colors">
-        <h2 className="text-xl sm:text-2xl font-black text-[#486379] dark:text-sky-300 mb-6 flex items-center gap-2">
-          <span>📖</span> {libro} {capitulo}
-        </h2>
+      {/* Contenedor del Texto Bíblico */}
+      <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs transition-colors">
+        <div className="border-b border-[#E8E4D5] dark:border-slate-800 pb-4 mb-6 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-[#7C9885]" /> {libro} {capitulo}
+          </h2>
+          <span className="text-xs font-semibold text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-800 px-3 py-1 rounded-full">
+            Reina-Valera
+          </span>
+        </div>
 
         {loading && (
-          <div className="py-12 text-center space-y-2">
-            <p className="text-xs font-bold text-slate-400 animate-pulse">Cargando las Escrituras...</p>
+          <div className="flex flex-col items-center justify-center py-16 space-y-2 text-[#7C9885]">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <p className="text-xs font-semibold text-[#66756C] dark:text-slate-400">
+              Cargando las Escrituras...
+            </p>
           </div>
         )}
 
         {errorMsg && !loading && (
-          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-2xl text-xs font-bold">
-            ⚠️ {errorMsg}
+          <div className="p-4 bg-[#F8F5EC] dark:bg-slate-800/80 border border-[#E8E4D5] dark:border-slate-700 text-[#E08A72] dark:text-amber-400 rounded-2xl text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" /> {errorMsg}
           </div>
         )}
 
         {!loading && !errorMsg && versiculos.length > 0 && (
-          <div className="space-y-4 leading-relaxed text-sm sm:text-base text-slate-700 dark:text-slate-200">
+          <div className="space-y-3.5 leading-relaxed text-sm sm:text-base text-[#3A473E] dark:text-slate-200">
             {versiculos.map((v) => (
-              <p key={v.verse} className="text-justify">
-                <sup className="font-bold text-[#eca489] mr-1.5 text-xs">{v.verse}</sup>
+              <p key={v.verse} className="text-justify leading-relaxed">
+                <sup className="font-bold text-[#7C9885] dark:text-emerald-400 mr-1.5 text-xs select-none">
+                  {v.verse}
+                </sup>
                 {v.text}
               </p>
             ))}

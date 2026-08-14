@@ -2,6 +2,20 @@
 
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { 
+  Church, 
+  UserPlus, 
+  KeyRound, 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
+  User, 
+  ArrowLeft, 
+  Check, 
+  Circle,
+  Loader2
+} from 'lucide-react';
 
 interface AuthProps {
   navigateTo: (page: string) => void;
@@ -44,49 +58,56 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-sky-100 dark:border-slate-800 transition-colors">
-        <div className="text-center mb-6">
-          <span className="text-4xl block mb-2">⛪</span>
-          <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">Iniciar Sesión</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">IASD Central de Hualqui</p>
+    <div className="min-h-[75vh] flex items-center justify-center p-4 antialiased">
+      <div className="w-full max-w-md bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl shadow-xs p-6 sm:p-8 border border-[#E2DEC9] dark:border-slate-800 transition-colors">
+        <div className="text-center mb-6 space-y-1">
+          <div className="w-12 h-12 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center mx-auto text-[#7C9885] dark:text-emerald-400">
+            <Church className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100 pt-2">Iniciar Sesión</h2>
+          <p className="text-xs text-[#66756C] dark:text-slate-400">IASD Central Hualqui</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+            <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
               Correo Electrónico
             </label>
-            <input
-              type="email"
-              required
-              placeholder="ejemplo@correo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-            />
+            <div className="relative">
+              <Mail className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="email"
+                required
+                placeholder="ejemplo@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] transition-colors"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+            <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
               Contraseña
             </label>
-            <input
-              type="password"
-              required
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-            />
+            <div className="relative">
+              <Lock className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] transition-colors"
+              />
+            </div>
           </div>
 
-          {/* Enlace para recuperar contraseña */}
           <div className="flex justify-end">
             <button
               type="button"
               onClick={() => navigateTo('forgot-password')}
-              className="text-[11px] font-bold text-[#eca489] hover:underline cursor-pointer"
+              className="text-[11px] font-semibold text-[#7C9885] hover:underline cursor-pointer"
             >
               ¿Olvidaste tu contraseña?
             </button>
@@ -95,17 +116,18 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50 transition-colors"
+            className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {loading ? 'Ingresando...' : 'Entrar'}
           </button>
         </form>
 
         <div className="relative my-6 text-center">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+            <div className="w-full border-t border-[#E8E4D5] dark:border-slate-800" />
           </div>
-          <span className="relative bg-white dark:bg-slate-900 px-3 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+          <span className="relative bg-[#FAF8F3] dark:bg-slate-900 px-3 text-[10px] uppercase tracking-wider text-[#8C9B90] dark:text-slate-500 font-semibold">
             o
           </span>
         </div>
@@ -113,7 +135,7 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
         <button
           onClick={handleGoogleLogin}
           type="button"
-          className="w-full py-3 px-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs rounded-full shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+          className="w-full py-3 px-4 bg-white dark:bg-slate-950 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-800 font-semibold text-xs rounded-xl shadow-xs hover:bg-[#E8F0EA] dark:hover:bg-slate-800 flex items-center justify-center gap-2 cursor-pointer transition-colors"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -124,11 +146,11 @@ export function LoginView({ navigateTo, showToast, setUserRole }: AuthProps) {
           Continuar con Google
         </button>
 
-        <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-6 text-center text-xs text-[#66756C] dark:text-slate-400">
           ¿No tienes una cuenta?{' '}
           <button
             onClick={() => navigateTo('register')}
-            className="font-bold text-[#eca489] hover:underline cursor-pointer"
+            className="font-bold text-[#7C9885] hover:underline cursor-pointer"
           >
             Regístrate aquí
           </button>
@@ -146,11 +168,9 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Estados para el flujo OTP
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [otpCode, setOtpCode] = useState('');
 
-  // Validaciones en tiempo real
   const checks = {
     length: password.length >= 8,
     capital: /[A-Z]/.test(password),
@@ -236,14 +256,16 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-sky-100 dark:border-slate-800 transition-colors">
-        <div className="text-center mb-6">
-          <span className="text-4xl block mb-2">{step === 'form' ? '📜' : '🔒'}</span>
-          <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">
+    <div className="min-h-[75vh] flex items-center justify-center p-4 antialiased">
+      <div className="w-full max-w-md bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl shadow-xs p-6 sm:p-8 border border-[#E2DEC9] dark:border-slate-800 transition-colors">
+        <div className="text-center mb-6 space-y-1">
+          <div className="w-12 h-12 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center mx-auto text-[#7C9885] dark:text-emerald-400">
+            {step === 'form' ? <UserPlus className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
+          </div>
+          <h2 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100 pt-2">
             {step === 'form' ? 'Crear Cuenta' : 'Verifica tu Correo'}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#66756C] dark:text-slate-400">
             {step === 'form'
               ? 'Registro de nuevos miembros e invitados.'
               : `Ingresa el código de 6 dígitos enviado a ${email}`}
@@ -252,104 +274,112 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
 
         {step === 'form' ? (
           <>
-            <form onSubmit={handleRequestOTP} className="space-y-4">
+            <form onSubmit={handleRequestOTP} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                   Nombre Completo
                 </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Juan Pérez"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-                />
+                <div className="relative">
+                  <User className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Juan Pérez"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                   Correo Electrónico
                 </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="ejemplo@correo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-                />
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="ejemplo@correo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                  />
+                </div>
               </div>
 
-              {/* Contraseña */}
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                   Contraseña
                 </label>
                 <div className="relative">
+                  <Lock className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type={showPass ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 pr-10 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                    className="w-full bg-white dark:bg-slate-950 pl-10 pr-10 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C9B90] hover:text-[#2D3831] cursor-pointer"
                   >
-                    {showPass ? '👁️' : '🙈'}
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Repetir Contraseña */}
               <div>
-                <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                   Repetir Contraseña
                 </label>
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  required
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-                />
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                  />
+                </div>
               </div>
 
-              {/* Checklist de Fortaleza */}
-              <div className="p-3.5 bg-[#fbf6ee]/60 dark:bg-slate-800/50 rounded-2xl space-y-1.5 text-[11px] border border-amber-100/50 dark:border-slate-700/50">
-                <p className={checks.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                  {checks.length ? '✓' : '○'} Mínimo 8 caracteres
+              <div className="p-3 bg-[#E8F0EA]/60 dark:bg-slate-800/50 rounded-xl space-y-1 text-[11px] border border-[#C5D8CC]/50 dark:border-slate-700/50">
+                <p className={`flex items-center gap-1.5 ${checks.length ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                  {checks.length ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Mínimo 8 caracteres
                 </p>
-                <p className={checks.capital ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                  {checks.capital ? '✓' : '○'} Una letra mayúscula
+                <p className={`flex items-center gap-1.5 ${checks.capital ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                  {checks.capital ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Una letra mayúscula
                 </p>
-                <p className={checks.number ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                  {checks.number ? '✓' : '○'} Un número
+                <p className={`flex items-center gap-1.5 ${checks.number ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                  {checks.number ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Un número
                 </p>
-                <p className={checks.match ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                  {checks.match ? '✓' : '○'} Las contraseñas coinciden
+                <p className={`flex items-center gap-1.5 ${checks.match ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                  {checks.match ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Las contraseñas coinciden
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading || !isPasswordValid}
-                className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
+                className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 {loading ? 'Enviando código...' : 'Continuar →'}
               </button>
             </form>
 
             <div className="relative my-6 text-center">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                <div className="w-full border-t border-[#E8E4D5] dark:border-slate-800" />
               </div>
-              <span className="relative bg-white dark:bg-slate-900 px-3 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+              <span className="relative bg-[#FAF8F3] dark:bg-slate-900 px-3 text-[10px] uppercase tracking-wider text-[#8C9B90] dark:text-slate-500 font-semibold">
                 o
               </span>
             </div>
@@ -357,7 +387,7 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
             <button
               onClick={handleGoogleLogin}
               type="button"
-              className="w-full py-3 px-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs rounded-full shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+              className="w-full py-3 px-4 bg-white dark:bg-slate-950 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-800 font-semibold text-xs rounded-xl shadow-xs hover:bg-[#E8F0EA] dark:hover:bg-slate-800 flex items-center justify-center gap-2 cursor-pointer transition-colors"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -369,9 +399,9 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
             </button>
           </>
         ) : (
-          <form onSubmit={handleVerifyOTP} className="space-y-4 text-center">
+          <form onSubmit={handleVerifyOTP} className="space-y-4 text-center text-xs">
             <div>
-              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-2">
+              <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-2">
                 Código de Confirmación
               </label>
               <input
@@ -380,7 +410,7 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                 placeholder="123456"
-                className="w-full text-center tracking-[12px] text-2xl font-black p-3.5 bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                className="w-full text-center tracking-[10px] text-xl font-mono font-bold p-3 bg-white dark:bg-slate-950 text-[#2D3831] dark:text-slate-100 rounded-xl border border-[#DCD7C5] dark:border-slate-700 outline-none focus:border-[#7C9885]"
                 required
               />
             </div>
@@ -388,8 +418,9 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50 transition-colors"
+              className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {loading ? 'Verificando...' : 'Verificar y Crear Cuenta'}
             </button>
 
@@ -397,19 +428,19 @@ export function RegisterView({ navigateTo, showToast }: Omit<AuthProps, 'setUser
               <button
                 type="button"
                 onClick={() => setStep('form')}
-                className="text-xs text-[#eca489] hover:underline font-bold cursor-pointer"
+                className="text-xs text-[#7C9885] hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
               >
-                ← Cambiar correo o datos
+                <ArrowLeft className="w-3.5 h-3.5" /> Cambiar correo o datos
               </button>
             </div>
           </form>
         )}
 
-        <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-6 text-center text-xs text-[#66756C] dark:text-slate-400">
           ¿Ya tienes cuenta?{' '}
           <button
             onClick={() => navigateTo('login')}
-            className="font-bold text-[#eca489] hover:underline cursor-pointer"
+            className="font-bold text-[#7C9885] hover:underline cursor-pointer"
           >
             Inicia sesión aquí
           </button>
@@ -428,7 +459,6 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Requisitos de la contraseña
   const checks = {
     length: newPassword.length >= 8,
     capital: /[A-Z]/.test(newPassword),
@@ -438,7 +468,6 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
 
   const isPasswordValid = Object.values(checks).every(Boolean);
 
-  // Paso 1: Enviar OTP al correo para recuperación
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -466,7 +495,6 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
     }
   };
 
-  // Paso 2: Verificar OTP y guardar la nueva contraseña
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -510,14 +538,16 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-sky-100 dark:border-slate-800 transition-colors">
-        <div className="text-center mb-6">
-          <span className="text-4xl block mb-2">🔑</span>
-          <h2 className="text-2xl font-black text-[#486379] dark:text-sky-300">
+    <div className="min-h-[75vh] flex items-center justify-center p-4 antialiased">
+      <div className="w-full max-w-md bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl shadow-xs p-6 sm:p-8 border border-[#E2DEC9] dark:border-slate-800 transition-colors">
+        <div className="text-center mb-6 space-y-1">
+          <div className="w-12 h-12 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center mx-auto text-[#7C9885] dark:text-emerald-400">
+            <KeyRound className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100 pt-2">
             Recuperar Contraseña
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-[#66756C] dark:text-slate-400">
             {step === 'request'
               ? 'Ingresa tu correo para recibir un código de recuperación.'
               : `Ingresa el código enviado a ${email} y tu nueva clave.`}
@@ -525,33 +555,37 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
         </div>
 
         {step === 'request' ? (
-          <form onSubmit={handleRequestReset} className="space-y-4">
+          <form onSubmit={handleRequestReset} className="space-y-4 text-xs">
             <div>
-              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+              <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                 Correo Electrónico
               </label>
-              <input
-                type="email"
-                required
-                placeholder="ejemplo@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-              />
+              <div className="relative">
+                <Mail className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  placeholder="ejemplo@correo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-50 transition-colors"
+              className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {loading ? 'Enviando código...' : 'Enviar Código →'}
             </button>
           </form>
         ) : (
-          <form onSubmit={handleResetPassword} className="space-y-4">
+          <form onSubmit={handleResetPassword} className="space-y-4 text-xs">
             <div>
-              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1 text-center">
+              <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-2 text-center">
                 Código de Confirmación (6 dígitos)
               </label>
               <input
@@ -560,79 +594,84 @@ export function ForgotPasswordView({ navigateTo, showToast }: Omit<AuthProps, 's
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                 placeholder="123456"
-                className="w-full text-center tracking-[12px] text-2xl font-black p-3.5 bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                className="w-full text-center tracking-[10px] text-xl font-mono font-bold p-3 bg-white dark:bg-slate-950 text-[#2D3831] dark:text-slate-100 rounded-xl border border-[#DCD7C5] dark:border-slate-700 outline-none focus:border-[#7C9885]"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+              <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                 Nueva Contraseña
               </label>
               <div className="relative">
+                <Lock className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPass ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 pr-10 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
+                  className="w-full bg-white dark:bg-slate-950 pl-10 pr-10 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C9B90] hover:text-[#2D3831] cursor-pointer"
                 >
-                  {showPass ? '👁️' : '🙈'}
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#486379] dark:text-sky-300 mb-1">
+              <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
                 Repetir Nueva Contraseña
               </label>
-              <input
-                type={showPass ? 'text' : 'password'}
-                required
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-[#fbf6ee] dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs p-3.5 rounded-2xl border border-amber-100 dark:border-slate-700 outline-none"
-              />
+              <div className="relative">
+                <Lock className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-950 pl-10 pr-3.5 py-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                />
+              </div>
             </div>
 
-            <div className="p-3.5 bg-[#fbf6ee]/60 dark:bg-slate-800/50 rounded-2xl space-y-1.5 text-[11px] border border-amber-100/50 dark:border-slate-700/50">
-              <p className={checks.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                {checks.length ? '✓' : '○'} Mínimo 8 caracteres
+            <div className="p-3 bg-[#E8F0EA]/60 dark:bg-slate-800/50 rounded-xl space-y-1 text-[11px] border border-[#C5D8CC]/50 dark:border-slate-700/50">
+              <p className={`flex items-center gap-1.5 ${checks.length ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                {checks.length ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Mínimo 8 caracteres
               </p>
-              <p className={checks.capital ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                {checks.capital ? '✓' : '○'} Una letra mayúscula
+              <p className={`flex items-center gap-1.5 ${checks.capital ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                {checks.capital ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Una letra mayúscula
               </p>
-              <p className={checks.number ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                {checks.number ? '✓' : '○'} Un número
+              <p className={`flex items-center gap-1.5 ${checks.number ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                {checks.number ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Un número
               </p>
-              <p className={checks.match ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
-                {checks.match ? '✓' : '○'} Las contraseñas coinciden
+              <p className={`flex items-center gap-1.5 ${checks.match ? 'text-[#546E5C] dark:text-emerald-400 font-bold' : 'text-[#8C9B90]'}`}>
+                {checks.match ? <Check className="w-3.5 h-3.5" /> : <Circle className="w-3 h-3" />} Las contraseñas coinciden
               </p>
             </div>
 
             <button
               type="submit"
               disabled={loading || !isPasswordValid}
-              className="w-full py-3.5 bg-[#486379] hover:bg-[#385063] text-white font-bold text-xs rounded-full shadow-md cursor-pointer disabled:opacity-40 transition-colors"
+              className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {loading ? 'Cambiando clave...' : 'Cambiar Contraseña'}
             </button>
           </form>
         )}
 
-        <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-6 text-center text-xs text-[#66756C] dark:text-slate-400">
           <button
             onClick={() => navigateTo('login')}
-            className="font-bold text-[#eca489] hover:underline cursor-pointer"
+            className="font-bold text-[#7C9885] hover:underline cursor-pointer inline-flex items-center gap-1"
           >
-            ← Volver al inicio de sesión
+            <ArrowLeft className="w-3.5 h-3.5" /> Volver al inicio de sesión
           </button>
         </div>
       </div>
