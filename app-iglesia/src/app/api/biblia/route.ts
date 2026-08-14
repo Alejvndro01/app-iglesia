@@ -1,77 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// Mapeo normalizado a los nombres de archivos de la Biblia RVR1960
-const LIBROS_MAP: Record<string, string> = {
-  'Génesis': 'genesis',
-  'Éxodo': 'exodo',
-  'Levítico': 'levitico',
-  'Números': 'numeros',
-  'Deuteronomio': 'deuteronomio',
-  'Josué': 'josue',
-  'Jueces': 'jueces',
-  'Rut': 'rut',
-  '1 Samuel': '1samuel',
-  '2 Samuel': '2samuel',
-  '1 Reyes': '1reyes',
-  '2 Reyes': '2reyes',
-  '1 Crónicas': '1cronicas',
-  '2 Crónicas': '2cronicas',
-  'Esdras': 'esdras',
-  'Nehemías': 'nehemias',
-  'Ester': 'ester',
-  'Job': 'job',
-  'Salmos': 'salmos',
-  'Proverbios': 'proverbios',
-  'Eclesiastés': 'eclesiastes',
-  'Cantares': 'cantares',
-  'Isaías': 'isaias',
-  'Jeremías': 'jeremias',
-  'Lamentaciones': 'lamentaciones',
-  'Ezequiel': 'ezequiel',
-  'Daniel': 'daniel',
-  'Oseas': 'oseas',
-  'Joel': 'joel',
-  'Amós': 'amos',
-  'Abdías': 'abdias',
-  'Jonás': 'jonas',
-  'Miqueas': 'miqueas',
-  'Nahúm': 'nahum',
-  'Habacuc': 'habakkuk',
-  'Sofonías': 'sofonias',
-  'Hageo': 'hageo',
-  'Zacarías': 'zacarias',
-  'Malaquías': 'malaquias',
-  'Mateo': 'mateo',
-  'Marcos': 'marcos',
-  'Lucas': 'lucas',
-  'Juan': 'juan',
-  'Hechos': 'hechos',
-  'Romanos': 'romanos',
-  '1 Corintios': '1corintios',
-  '2 Corintios': '2corintios',
-  'Gálatas': 'galatas',
-  'Efesios': 'efesios',
-  'Filipenses': 'filipenses',
-  'Colosenses': 'colosenses',
-  '1 Tesalonicenses': '1tesalonicenses',
-  '2 Tesalonicenses': '2tesalonicenses',
-  '1 Timoteo': '1timoteo',
-  '2 Timoteo': '2timoteo',
-  'Tito': 'tito',
-  'Filemón': 'filemon',
-  'Hebreos': 'hebreos',
-  'Santiago': 'santiago',
-  '1 Pedro': '1pedro',
-  '2 Pedro': '2pedro',
-  '1 Juan': '1juan',
-  '2 Juan': '2juan',
-  '3 Juan': '3juan',
-  'Judas': 'judas',
-  'Apocalipsis': 'apocalipsis',
-};
-
-// ID numérico para la API Bolls en backend
-const LIBROS_ID: Record<string, number> = {
+const LIBROS_MAP: Record<string, number> = {
   'Génesis': 1, 'Éxodo': 2, 'Levítico': 3, 'Números': 4, 'Deuteronomio': 5,
   'Josué': 6, 'Jueces': 7, 'Rut': 8, '1 Samuel': 9, '2 Samuel': 10,
   '1 Reyes': 11, '2 Reyes': 12, '1 Crónicas': 13, '2 Crónicas': 14,
@@ -89,47 +18,57 @@ const LIBROS_ID: Record<string, number> = {
   'Apocalipsis': 66
 };
 
+// Cache en memoria para evitar ráfagas
+const cacheMap = new Map<string, Array<{ verse: number; text: string }>>();
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const libro = searchParams.get('libro') || 'Génesis';
-  const capitulo = searchParams.get('capitulo') || '1';
-  const capNum = parseInt(capitulo, 10) || 1;
-  const bookId = LIBROS_ID[libro] || 1;
+  const capituloStr = searchParams.get('capitulo') || '1';
+  const capitulo = parseInt(capituloStr, 10) || 1;
+  const bookId = LIBROS_MAP[libro] || 1;
+
+  const cacheKey = `${bookId}-${capitulo}`;
+  if (cacheMap.has(cacheKey)) {
+    return NextResponse.json({ verses: cacheMap.get(cacheKey) });
+  }
 
   try {
-    // Intento 1: API Bolls desde el servidor Next.js
-    const bollsUrl = `https://bolls.life/get-chapter/RVR1960/${bookId}/${capNum}/`;
-    const resBolls = await fetch(bollsUrl, {
-      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
-      next: { revalidate: 604800 },
+    // 1. Endpoint primario: Bolls API RVR1960
+    const bollsUrl = `https://bolls.life/get-chapter/RVR1960/${bookId}/${capitulo}/`;
+    const res = await fetch(bollsUrl, {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 2592000 }
     });
 
-    if (resBolls.ok) {
-      const data = await resBolls.json();
+    if (res.ok) {
+      const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         const verses = data.map((v: { verse: number; text: string }) => ({
           verse: v.verse,
-          text: v.text.replace(/<[^>]*>?/gm, '').trim(),
+          text: v.text.replace(/<[^>]*>?/gm, '').trim()
         }));
+        cacheMap.set(cacheKey, verses);
         return NextResponse.json({ verses });
       }
     }
 
-    // Intento 2 Fallback: bible-api.com
-    const slug = LIBROS_MAP[libro] || 'genesis';
-    const fallbackUrl = `https://bible-api.com/${slug}+${capNum}?translation=rvr`;
-    const resFallback = await fetch(fallbackUrl, {
+    // 2. Fallback CDN Github Raw
+    const slug = libro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+    const denoUrl = `https://bible-api.deno.dev/api/read/rv1960/${slug}/${capitulo}`;
+    const fallbackRes = await fetch(denoUrl, {
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 604800 },
+      next: { revalidate: 2592000 }
     });
 
-    if (resFallback.ok) {
-      const fallbackData = await resFallback.json();
-      if (Array.isArray(fallbackData?.verses) && fallbackData.verses.length > 0) {
-        const verses = fallbackData.verses.map((v: { verse: number; text: string }) => ({
-          verse: v.verse,
-          text: v.text.trim(),
+    if (fallbackRes.ok) {
+      const fbData = await fallbackRes.json();
+      if (Array.isArray(fbData?.vers) && fbData.vers.length > 0) {
+        const verses = fbData.vers.map((v: { number: number; verse: string }) => ({
+          verse: v.number,
+          text: v.verse.trim()
         }));
+        cacheMap.set(cacheKey, verses);
         return NextResponse.json({ verses });
       }
     }
