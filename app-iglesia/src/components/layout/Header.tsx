@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { BulletinModal } from '../modales/BulletinModal';
 import { ThemeToggle } from '../ThemeToggle';
+import { Menu, X, LogOut, User, Settings, Sparkles } from 'lucide-react';
 
 interface HeaderProps {
   currentPage: string;
@@ -23,13 +24,13 @@ export function Header({
 
   const navItems = [
     { id: 'inicio', label: 'Inicio' },
-    { id: 'biblia', label: '📖 Biblia' },
-    { id: 'leccion', label: 'Lección Diaria' },
+    { id: 'biblia', label: 'Biblia' },
+    { id: 'leccion', label: 'Lección' },
     { id: 'himnario', label: 'Himnario' },
-    { id: 'estudios-biblicos', label: 'Estudios Bíblicos' },
+    { id: 'estudios-biblicos', label: 'Estudios' },
     { id: 'mayordomia', label: 'Mayordomía' },
     { id: 'agenda', label: 'Agenda' },
-    { id: 'boletin', label: '📜 Boletín Sabático', action: () => setBulletinOpen(true) },
+    { id: 'boletin', label: 'Boletín', action: () => setBulletinOpen(true) },
   ];
 
   const handleNavClick = (item: { id: string; label: string; action?: () => void }) => {
@@ -58,40 +59,48 @@ export function Header({
 
   return (
     <>
-      <header className="bg-white dark:bg-slate-900 border-b border-sky-100 dark:border-slate-800 sticky top-0 z-40 shadow-xs transition-colors duration-300">
+      <header className="bg-[#A1B5C4] border-b border-white/10 sticky top-0 z-40 backdrop-blur-md font-sans text-white transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo */}
+          
+          {/* LOGO EDITORIAL / MINIMAL */}
           <div 
             onClick={() => navigateTo('inicio')} 
-            className="flex items-center space-x-2 cursor-pointer"
+            className="flex items-center space-x-2.5 cursor-pointer group active:scale-95 transition-transform"
           >
-            <div className="w-9 h-9 rounded-full bg-[#eca489] flex items-center justify-center text-white font-black text-lg shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-xs">
               ⛪
             </div>
-            <div>
-              <h1 className="font-black text-[#486379] dark:text-sky-300 text-sm sm:text-base leading-none">IASD CENTRAL</h1>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">DE HUALQUI</span>
+            <div className="flex flex-col">
+              <h1 className="font-extrabold text-white text-xs sm:text-sm tracking-tight leading-none uppercase">
+                IASD Hualqui
+              </h1>
+              <span className="text-[9px] text-white/70 font-light tracking-widest uppercase">
+                Comunidad & Fe
+              </span>
             </div>
           </div>
 
-          {/* Menú Desktop */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  currentPage === item.id || (currentPage === 'home' && item.id === 'inicio')
-                    ? 'bg-[#d0e2f1] text-[#486379] dark:bg-slate-800 dark:text-sky-300'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          {/* MENÚ DESKTOP MINIMALISTA */}
+          <nav className="hidden lg:flex items-center space-x-1 bg-white/10 p-1 rounded-full border border-white/10 backdrop-blur-sm">
+            {navItems.map((item) => {
+              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio');
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-white text-minimal-dark font-semibold shadow-xs'
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Botones de Autenticación + Alternador de Tema (Desktop) */}
+          {/* BOTONES AUTH + THEME (DESKTOP) */}
           <div className="hidden lg:flex items-center space-x-3">
             <ThemeToggle />
 
@@ -100,92 +109,96 @@ export function Header({
                 {userRole === 'ADMIN' && (
                   <button
                     onClick={() => navigateTo('admin')}
-                    className="px-4 py-1.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-full shadow-xs cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-minimal-accent hover:bg-minimal-accent/90 text-white font-medium text-xs rounded-full shadow-xs transition-all active:scale-95"
                   >
-                    ⚙️ Admin ({userName})
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>Admin</span>
                   </button>
                 )}
-                {userRole !== 'ADMIN' && (
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 px-2">
-                    👤 {userName}
-                  </span>
-                )}
+                
+                <span className="text-xs font-light text-white/90 px-2 flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-white/70" />
+                  {userName}
+                </span>
+
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white border border-white/10 transition-all"
+                  title="Cerrar Sesión"
                 >
-                  Salir
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => navigateTo('login')}
-                className="px-5 py-2 bg-[#eca489] hover:bg-[#e49375] text-white font-bold text-xs rounded-full shadow-xs cursor-pointer transition-colors"
+                className="px-4 py-1.5 bg-white text-minimal-dark hover:bg-white/90 font-semibold text-xs rounded-full shadow-xs transition-all active:scale-95"
               >
-                Iniciar Sesión
+                Ingresar
               </button>
             )}
           </div>
 
-          {/* Botón Hamburguesa Móvil */}
+          {/* HAMBURGUESA MÓVIL */}
           <div className="flex items-center space-x-2 lg:hidden">
             <ThemeToggle />
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-[#486379] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
               aria-label="Abrir Menú"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Desplegable Menú Móvil */}
+        {/* DESPLEGABLE MENÚ MÓVIL */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white dark:bg-slate-900 border-b border-sky-100 dark:border-slate-800 px-4 pt-2 pb-6 space-y-2 animate-in slide-in-from-top duration-200">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item)}
-                className={`w-full text-left px-4 py-2.5 rounded-2xl text-xs font-bold transition-colors cursor-pointer ${
-                  currentPage === item.id || (currentPage === 'home' && item.id === 'inicio')
-                    ? 'bg-[#d0e2f1] text-[#486379] dark:bg-slate-800 dark:text-sky-300'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="lg:hidden bg-[#A1B5C4] border-b border-white/10 px-5 pt-3 pb-6 space-y-2 backdrop-blur-xl animate-in slide-in-from-top duration-200">
+            <div className="grid grid-cols-2 gap-1.5">
+              {navItems.map((item) => {
+                const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio');
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item)}
+                    className={`text-left px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                      isActive
+                        ? 'bg-white text-minimal-dark font-bold'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col space-y-2">
+            <div className="pt-3 border-t border-white/10 flex flex-col space-y-2">
               {isAuthenticated ? (
                 <>
                   {userRole === 'ADMIN' && (
                     <button
                       onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
-                      className="w-full py-2.5 bg-[#486379] dark:bg-sky-700 text-white font-bold text-xs rounded-2xl text-center"
+                      className="w-full py-2.5 bg-minimal-accent text-white font-medium text-xs rounded-xl text-center flex items-center justify-center gap-2"
                     >
-                      ⚙️ Admin ({userName})
+                      <Settings className="w-4 h-4" />
+                      <span>Panel Admin ({userName})</span>
                     </button>
                   )}
                   <button
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                    className="w-full py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-2xl text-center"
+                    className="w-full py-2.5 bg-white/10 border border-white/10 text-white font-medium text-xs rounded-xl text-center flex items-center justify-center gap-2 hover:bg-white/20"
                   >
-                    Cerrar Sesión
+                    <LogOut className="w-4 h-4" />
+                    <span>Cerrar Sesión</span>
                   </button>
                 </>
               ) : (
                 <button
                   onClick={() => { navigateTo('login'); setMobileMenuOpen(false); }}
-                  className="w-full py-2.5 bg-[#eca489] text-white font-bold text-xs rounded-2xl text-center"
+                  className="w-full py-2.5 bg-white text-minimal-dark font-semibold text-xs rounded-xl text-center"
                 >
                   Iniciar Sesión
                 </button>
@@ -195,7 +208,7 @@ export function Header({
         )}
       </header>
 
-      {/* Modal del Boletín Sabático */}
+      {/* MODAL DEL BOLETÍN */}
       <BulletinModal isOpen={bulletinOpen} onClose={() => setBulletinOpen(false)} />
     </>
   );
