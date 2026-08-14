@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Testimonio, Material } from '@/types';
+import { BulletinModal } from '@/components/modales/BulletinModal';
+import { PastoralModal } from '@/components/modales/PastoralModal';
+import { SermonModal } from '@/components/modales/SermonModal';
 import { 
   BookOpen, 
   Church, 
@@ -16,10 +19,13 @@ import {
   Sparkles, 
   MapPin, 
   Calendar, 
-  Clock, 
   Send, 
   FileText,
-  MessageSquare
+  MessageSquare,
+  Music,
+  GraduationCap,
+  Coins,
+  Radio
 } from 'lucide-react';
 
 interface HomeViewProps {
@@ -29,17 +35,25 @@ interface HomeViewProps {
 }
 
 export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewProps) {
+  // Modales
+  const [showBulletin, setShowBulletin] = useState(false);
+  const [showPastoral, setShowPastoral] = useState(false);
+  const [showSermonModal, setShowSermonModal] = useState(false);
+
+  // Testimonios
   const [testimonies, setTestimonies] = useState<Testimonio[]>([]);
   const [testimonyTitle, setTestimonyTitle] = useState('');
   const [testimonyAuthor, setTestimonyAuthor] = useState('');
   const [testimonyContent, setTestimonyContent] = useState('');
   const [loadingTestimony, setLoadingTestimony] = useState(false);
 
+  // Oraciones
   const [prayerName, setPrayerName] = useState('');
   const [prayerRequest, setPrayerRequest] = useState('');
   const [prayerPrivate, setPrayerPrivate] = useState(false);
   const [loadingPrayer, setLoadingPrayer] = useState(false);
 
+  // Materiales (R2)
   const [materials, setMaterials] = useState<Material[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -255,14 +269,14 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
   return (
     <div className="space-y-16 pb-12 antialiased">
-      {/* Hero Section */}
+      {/* 1. Hero Section con Acciones a Modales */}
       <section className="bg-[#E8F0EA] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
             <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#546E5C] dark:text-emerald-300 shadow-xs border border-[#C5D8CC] dark:border-slate-700">
               <span className="w-2.5 h-2.5 rounded-full bg-[#7C9885] animate-pulse"></span>
               <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> La Concepción #450, Hualqui
+                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> Central de Waikiki
               </span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-bold text-[#2D3831] dark:text-slate-100 leading-tight">
@@ -271,28 +285,37 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               y Servir.
             </h2>
             <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
-              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la oración y la comunión fraternal en nuestra comuna.
+              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la adoración y la comunión fraternal.
             </p>
+            
+            {/* CTAs de Modales y Accesos */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
               <button
-                onClick={() => navigateTo('estudios-biblicos')}
-                className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2"
+                onClick={() => setShowSermonModal(true)}
+                className="px-5 py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2"
               >
-                <BookOpen className="w-4 h-4" /> Solicitar Estudio Bíblico
+                <Radio className="w-4 h-4" /> Ver En Vivo / Sermón
               </button>
               <button
-                onClick={() => navigateTo('leccion')}
-                className="px-6 py-3.5 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-[#2D3831] dark:text-emerald-300 font-semibold rounded-2xl text-xs shadow-xs border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
+                onClick={() => setShowBulletin(true)}
+                className="px-5 py-3 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-[#2D3831] dark:text-emerald-300 font-semibold rounded-2xl text-xs shadow-xs border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
               >
-                <Calendar className="w-4 h-4 text-[#7C9885]" /> Lección Escuela Sabática
+                <FileText className="w-4 h-4 text-[#7C9885]" /> Boletín Semanal
+              </button>
+              <button
+                onClick={() => setShowPastoral(true)}
+                className="px-5 py-3 bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-700 text-[#546E5C] dark:text-slate-200 font-semibold rounded-2xl text-xs border border-[#C5D8CC] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
+              >
+                <MessageSquare className="w-4 h-4 text-[#7C9885]" /> Mensaje Pastoral
               </button>
             </div>
           </div>
+
           <div className="w-full md:w-1/2 flex justify-center">
             <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-md border-4 border-[#FAF8F3] dark:border-slate-800 group">
               <img
                 src="/landscape.jpg"
-                alt="IASD Hualqui"
+                alt="IASD Central Waikiki"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
                     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
@@ -302,9 +325,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/70 via-transparent to-transparent flex items-end p-6">
                 <div className="text-white">
                   <span className="bg-[#7C9885] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                    La Concepción 450, Hualqui
+                    Comunidad de Fe
                   </span>
-                  <h3 className="text-base font-bold mt-2">Templo Central IASD Hualqui</h3>
+                  <h3 className="text-base font-bold mt-2">IASD Central de Waikiki</h3>
                 </div>
               </div>
             </div>
@@ -312,7 +335,41 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Horarios de Culto */}
+      {/* 2. Accesos Rápidos a Módulos del Ecosistema */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <button
+            onClick={() => navigateTo('biblia')}
+            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
+          >
+            <BookOpen className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Santa Biblia</span>
+          </button>
+          <button
+            onClick={() => navigateTo('leccion')}
+            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
+          >
+            <Calendar className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Escuela Sabática</span>
+          </button>
+          <button
+            onClick={() => navigateTo('himnario')}
+            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
+          >
+            <Music className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Himnario</span>
+          </button>
+          <button
+            onClick={() => navigateTo('estudios-biblicos')}
+            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
+          >
+            <GraduationCap className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
+            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Cursos Bíblicos</span>
+          </button>
+        </div>
+      </section>
+
+      {/* 3. Horarios de Culto */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10 space-y-1">
           <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
@@ -358,7 +415,28 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Sermones Recientes */}
+      {/* 4. Banner de Mayordomía / Adventist Giving */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-8 rounded-3xl bg-gradient-to-r from-[#FAF8F3] to-[#E8F0EA] dark:from-slate-900 dark:to-slate-950 border border-[#E2DEC9] dark:border-slate-800 gap-6">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7C9885]">
+              <Coins className="w-4 h-4" /> Pacto y Fidelidad
+            </div>
+            <h3 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100">Mayordomía Cristiana</h3>
+            <p className="text-xs text-[#526157] dark:text-slate-300 max-w-xl">
+              Devuelve tus diezmos y entrega tus ofrendas de forma online y segura a través del sistema oficial.
+            </p>
+          </div>
+          <button
+            onClick={() => navigateTo('mayordomia')}
+            className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2 shrink-0"
+          >
+            <Coins className="w-4 h-4" /> Ofrendar en Línea
+          </button>
+        </div>
+      </section>
+
+      {/* 5. Sermones Recientes */}
       <section className="bg-[#FAF8F3] dark:bg-slate-900 py-12 border-y border-[#E2DEC9] dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -403,7 +481,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Descargas de Materiales */}
+      {/* 6. Descargas de Materiales (Cloudflare R2) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
@@ -468,7 +546,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Muro de Testimonios */}
+      {/* 7. Muro de Testimonios */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-1">
           <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
@@ -478,7 +556,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             Muro de Testimonios
           </h2>
           <p className="text-xs text-[#66756C] dark:text-slate-400">
-            Compartiendo las grandes bendiciones que Dios realiza en Hualqui.
+            Compartiendo las bendiciones y obras del Señor en nuestra congregación.
           </p>
         </div>
 
@@ -558,7 +636,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Formulario de Petición de Oración */}
+      {/* 8. Petición de Oración */}
       <section className="max-w-3xl mx-auto px-4">
         <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xs border border-[#E2DEC9] dark:border-slate-800 space-y-5">
           <div className="text-center space-y-1">
@@ -608,7 +686,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
       </section>
 
-      {/* Modal para Subida de Materiales R2 */}
+      {/* MODAL: Subida de Materiales R2 */}
       {uploadModalOpen && (
         <div className="fixed inset-0 z-50 bg-[#2D3831]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#FAF8F3] dark:bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden shadow-xl p-6 space-y-4 border border-[#E2DEC9] dark:border-slate-800">
@@ -662,6 +740,11 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           </div>
         </div>
       )}
+
+      {/* MODALES MONTADOS */}
+      <BulletinModal isOpen={showBulletin} onClose={() => setShowBulletin(false)} />
+      {showPastoral && <PastoralModal onClose={() => setShowPastoral(false)} />}
+      {showSermonModal && <SermonModal onClose={() => setShowSermonModal(false)} />}
     </div>
   );
 }
