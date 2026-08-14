@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Church, MapPin, Clock, Compass } from 'lucide-react';
+import { SERVICE_SCHEDULES } from '@/data/mockData';
 
 interface FooterProps {
   navigateTo?: (page: string) => void;
@@ -87,21 +88,20 @@ export function Footer({ navigateTo, setBulletinModalOpen }: FooterProps) {
             </ul>
           </div>
 
-          {/* Horarios de Cultos */}
+          {/* Horarios de Cultos Sincronizados */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" /> Horarios de Culto
             </h4>
             <ul className="space-y-1.5 text-xs text-[#526157] dark:text-slate-400 font-medium">
-              <li>
-                <span className="font-semibold text-[#2D3831] dark:text-slate-200">Sábados:</span> 09:30 hrs
-              </li>
-              <li>
-                <span className="font-semibold text-[#2D3831] dark:text-slate-200">Miércoles:</span> 19:30 hrs
-              </li>
-              <li>
-                <span className="font-semibold text-[#2D3831] dark:text-slate-200">Domingos:</span> 19:30 hrs
-              </li>
+              {SERVICE_SCHEDULES.map((s) => (
+                <li key={s.id}>
+                  <span className="font-semibold text-[#2D3831] dark:text-slate-200">
+                    {s.name} ({s.day}):
+                  </span>{' '}
+                  {s.time} hrs
+                </li>
+              ))}
             </ul>
           </div>
         </div>
