@@ -16,25 +16,6 @@ const LIBROS_BIBLIA = [
   'Santiago', '1 Pedro', '2 Pedro', '1 Juan', '2 Juan', '3 Juan', 'Judas', 'Apocalipsis'
 ];
 
-// Mapeo numérico oficial canónico (1 a 66)
-const LIBROS_ID_MAP: Record<string, number> = {
-  'Génesis': 1, 'Éxodo': 2, 'Levítico': 3, 'Números': 4, 'Deuteronomio': 5,
-  'Josué': 6, 'Jueces': 7, 'Rut': 8, '1 Samuel': 9, '2 Samuel': 10,
-  '1 Reyes': 11, '2 Reyes': 12, '1 Crónicas': 13, '2 Crónicas': 14,
-  'Esdras': 15, 'Nehemías': 16, 'Ester': 17, 'Job': 18, 'Salmos': 19,
-  'Proverbios': 20, 'Eclesiastés': 21, 'Cantares': 22, 'Isaías': 23,
-  'Jeremías': 24, 'Lamentaciones': 25, 'Ezequiel': 26, 'Daniel': 27,
-  'Oseas': 28, 'Joel': 29, 'Amós': 30, 'Abdías': 31, 'Jonás': 32,
-  'Miqueas': 33, 'Nahúm': 34, 'Habacuc': 35, 'Sofonías': 36, 'Hageo': 37,
-  'Zacarías': 38, 'Malaquías': 39, 'Mateo': 40, 'Marcos': 41, 'Lucas': 42,
-  'Juan': 43, 'Hechos': 44, 'Romanos': 45, '1 Corintios': 46, '2 Corintios': 47,
-  'Gálatas': 48, 'Efesios': 49, 'Filipenses': 50, 'Colosenses': 51,
-  '1 Tesalonicenses': 52, '2 Tesalonicenses': 53, '1 Timoteo': 54, '2 Timoteo': 55,
-  'Tito': 56, 'Filemón': 57, 'Hebreos': 58, 'Santiago': 59, '1 Pedro': 60,
-  '2 Pedro': 61, '1 Juan': 62, '2 Juan': 63, '3 Juan': 64, 'Judas': 65,
-  'Apocalipsis': 66
-};
-
 interface Versiculo {
   verse: number;
   text: string;
@@ -48,59 +29,45 @@ export function BibleView() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchCapitulo() {
       setLoading(true);
       setErrorMsg(null);
-      
-      const bookId = LIBROS_ID_MAP[libro] || 1;
-      const capNum = parseInt(capitulo, 10) || 1;
 
       try {
-        // 1. Intento primario: Bolls API (Soporta CORS directo en navegador)
-        const primaryRes = await fetch(`https://bolls.life/get-chapter/RVR1960/${bookId}/${capNum}/`);
-        
-        if (primaryRes.ok) {
-          const data = await primaryRes.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const list: Versiculo[] = data.map((v: { verse: number; text: string }) => ({
-              verse: v.verse,
-              text: v.text.replace(/<[^>]*>?/gm, '').trim()
-            }));
-            setVersiculos(list);
-            setLoading(false);
-            return;
-          }
+        const res = await fetch(`/api/biblia?libro=${encodeURIComponent(libro)}&capitulo=${capitulo}`);
+        if (!res.ok) {
+          throw new Error('Error de respuesta del servidor');
         }
 
-        // 2. Intento secundario: GitHub Raw CDN (Estructura de respaldo en JSON)
-        const slug = libro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-        const secondaryRes = await fetch(`https://bible-api.deno.dev/api/read/rv1960/${slug}/${capNum}`);
-        
-        if (secondaryRes.ok) {
-          const data = await secondaryRes.json();
-          if (Array.isArray(data?.vers) && data.vers.length > 0) {
-            const list: Versiculo[] = data.vers.map((v: { number: number; verse: string }) => ({
-              verse: v.number,
-              text: v.verse.trim()
-            }));
-            setVersiculos(list);
-            setLoading(false);
-            return;
+        const data = await res.json();
+
+        if (isMounted) {
+          if (Array.isArray(data?.verses) && data.verses.length > 0) {
+            setVersiculos(data.verses);
+          } else {
+            setVersiculos([]);
+            setErrorMsg('No se encontraron versículos para este capítulo.');
           }
         }
-
-        // Si ninguna fuente responde
-        setVersiculos([]);
-        setErrorMsg('No se pudieron obtener los versículos para este capítulo.');
       } catch (err) {
         console.error('Error al cargar pasaje bíblico:', err);
-        setErrorMsg('Error de conexión al consultar las Sagradas Escrituras.');
+        if (isMounted) {
+          setErrorMsg('Error de conexión al consultar las Sagradas Escrituras.');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchCapitulo();
+
+    return () => {
+      isMounted = false;
+    };
   }, [libro, capitulo]);
 
   const handlePrevCapitulo = () => {

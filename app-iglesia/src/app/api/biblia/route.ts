@@ -1,85 +1,142 @@
 import { NextResponse } from 'next/server';
 
-// Normaliza el nombre del libro para coincidir con nombres de carpetas/archivos (ej. "Génesis" -> "genesis")
-function normalizeBookSlug(book: string): string {
-  return book
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-');
-}
+// Mapeo normalizado a los nombres de archivos de la Biblia RVR1960
+const LIBROS_MAP: Record<string, string> = {
+  'Génesis': 'genesis',
+  'Éxodo': 'exodo',
+  'Levítico': 'levitico',
+  'Números': 'numeros',
+  'Deuteronomio': 'deuteronomio',
+  'Josué': 'josue',
+  'Jueces': 'jueces',
+  'Rut': 'rut',
+  '1 Samuel': '1samuel',
+  '2 Samuel': '2samuel',
+  '1 Reyes': '1reyes',
+  '2 Reyes': '2reyes',
+  '1 Crónicas': '1cronicas',
+  '2 Crónicas': '2cronicas',
+  'Esdras': 'esdras',
+  'Nehemías': 'nehemias',
+  'Ester': 'ester',
+  'Job': 'job',
+  'Salmos': 'salmos',
+  'Proverbios': 'proverbios',
+  'Eclesiastés': 'eclesiastes',
+  'Cantares': 'cantares',
+  'Isaías': 'isaias',
+  'Jeremías': 'jeremias',
+  'Lamentaciones': 'lamentaciones',
+  'Ezequiel': 'ezequiel',
+  'Daniel': 'daniel',
+  'Oseas': 'oseas',
+  'Joel': 'joel',
+  'Amós': 'amos',
+  'Abdías': 'abdias',
+  'Jonás': 'jonas',
+  'Miqueas': 'miqueas',
+  'Nahúm': 'nahum',
+  'Habacuc': 'habakkuk',
+  'Sofonías': 'sofonias',
+  'Hageo': 'hageo',
+  'Zacarías': 'zacarias',
+  'Malaquías': 'malaquias',
+  'Mateo': 'mateo',
+  'Marcos': 'marcos',
+  'Lucas': 'lucas',
+  'Juan': 'juan',
+  'Hechos': 'hechos',
+  'Romanos': 'romanos',
+  '1 Corintios': '1corintios',
+  '2 Corintios': '2corintios',
+  'Gálatas': 'galatas',
+  'Efesios': 'efesios',
+  'Filipenses': 'filipenses',
+  'Colosenses': 'colosenses',
+  '1 Tesalonicenses': '1tesalonicenses',
+  '2 Tesalonicenses': '2tesalonicenses',
+  '1 Timoteo': '1timoteo',
+  '2 Timoteo': '2timoteo',
+  'Tito': 'tito',
+  'Filemón': 'filemon',
+  'Hebreos': 'hebreos',
+  'Santiago': 'santiago',
+  '1 Pedro': '1pedro',
+  '2 Pedro': '2pedro',
+  '1 Juan': '1juan',
+  '2 Juan': '2juan',
+  '3 Juan': '3juan',
+  'Judas': 'judas',
+  'Apocalipsis': 'apocalipsis',
+};
+
+// ID numérico para la API Bolls en backend
+const LIBROS_ID: Record<string, number> = {
+  'Génesis': 1, 'Éxodo': 2, 'Levítico': 3, 'Números': 4, 'Deuteronomio': 5,
+  'Josué': 6, 'Jueces': 7, 'Rut': 8, '1 Samuel': 9, '2 Samuel': 10,
+  '1 Reyes': 11, '2 Reyes': 12, '1 Crónicas': 13, '2 Crónicas': 14,
+  'Esdras': 15, 'Nehemías': 16, 'Ester': 17, 'Job': 18, 'Salmos': 19,
+  'Proverbios': 20, 'Eclesiastés': 21, 'Cantares': 22, 'Isaías': 23,
+  'Jeremías': 24, 'Lamentaciones': 25, 'Ezequiel': 26, 'Daniel': 27,
+  'Oseas': 28, 'Joel': 29, 'Amós': 30, 'Abdías': 31, 'Jonás': 32,
+  'Miqueas': 33, 'Nahúm': 34, 'Habacuc': 35, 'Sofonías': 36, 'Hageo': 37,
+  'Zacarías': 38, 'Malaquías': 39, 'Mateo': 40, 'Marcos': 41, 'Lucas': 42,
+  'Juan': 43, 'Hechos': 44, 'Romanos': 45, '1 Corintios': 46, '2 Corintios': 47,
+  'Gálatas': 48, 'Efesios': 49, 'Filipenses': 50, 'Colosenses': 51,
+  '1 Tesalonicenses': 52, '2 Tesalonicenses': 53, '1 Timoteo': 54, '2 Timoteo': 55,
+  'Tito': 56, 'Filemón': 57, 'Hebreos': 58, 'Santiago': 59, '1 Pedro': 60,
+  '2 Pedro': 61, '1 Juan': 62, '2 Juan': 63, '3 Juan': 64, 'Judas': 65,
+  'Apocalipsis': 66
+};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const libro = searchParams.get('libro') || 'Génesis';
   const capitulo = searchParams.get('capitulo') || '1';
-
-  const slug = normalizeBookSlug(libro);
   const capNum = parseInt(capitulo, 10) || 1;
+  const bookId = LIBROS_ID[libro] || 1;
 
   try {
-    // 1. URL directa al archivo JSON en tu repositorio de GitHub (rama master o main)
-    const githubRawUrl = `https://raw.githubusercontent.com/alejandroch1202/biblia-api/main/data/${slug}/${capNum}.json`;
-
-    let res = await fetch(githubRawUrl, {
-      headers: { 'Accept': 'application/json' },
-      next: { revalidate: 2592000 }, // Cache de 30 días
+    // Intento 1: API Bolls desde el servidor Next.js
+    const bollsUrl = `https://bolls.life/get-chapter/RVR1960/${bookId}/${capNum}/`;
+    const resBolls = await fetch(bollsUrl, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      next: { revalidate: 604800 },
     });
 
-    // Fallback si la rama principal es 'master' en lugar de 'main'
-    if (!res.ok) {
-      const fallbackMasterUrl = `https://raw.githubusercontent.com/alejandroch1202/biblia-api/master/data/${slug}/${capNum}.json`;
-      res = await fetch(fallbackMasterUrl, {
-        headers: { 'Accept': 'application/json' },
-        next: { revalidate: 2592000 },
-      });
-    }
-
-    // Fallback directo a la API de respaldo si el archivo no existiera en la ruta
-    if (!res.ok) {
-      const backupUrl = `https://bolls.life/get-chapter/RVR1960/${slug}/${capNum}/`;
-      const backupRes = await fetch(backupUrl, {
-        headers: { 'Accept': 'application/json' },
-        next: { revalidate: 2592000 },
-      });
-
-      if (backupRes.ok) {
-        const backupData = await backupRes.json();
-        if (Array.isArray(backupData)) {
-          const verses = backupData.map((item: { verse: number; text: string }) => ({
-            verse: item.verse,
-            text: item.text.replace(/<[^>]*>?/gm, '').trim(),
-          }));
-          return NextResponse.json({ verses });
-        }
+    if (resBolls.ok) {
+      const data = await resBolls.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const verses = data.map((v: { verse: number; text: string }) => ({
+          verse: v.verse,
+          text: v.text.replace(/<[^>]*>?/gm, '').trim(),
+        }));
+        return NextResponse.json({ verses });
       }
-
-      return NextResponse.json({ verses: [] });
     }
 
-    const data = await res.json();
+    // Intento 2 Fallback: bible-api.com
+    const slug = LIBROS_MAP[libro] || 'genesis';
+    const fallbackUrl = `https://bible-api.com/${slug}+${capNum}?translation=rvr`;
+    const resFallback = await fetch(fallbackUrl, {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 604800 },
+    });
 
-    // Normaliza la estructura si tu JSON entrega { verses: [...] } o un array directo
-    let verses: Array<{ verse: number; text: string }> = [];
-
-    if (Array.isArray(data)) {
-      verses = data.map((v, index) => ({
-        verse: v.verse || v.number || index + 1,
-        text: (v.text || v.verse_text || String(v)).trim(),
-      }));
-    } else if (Array.isArray(data.verses)) {
-      verses = data.verses.map((v: { verse?: number; number?: number; text?: string }, index: number) => ({
-        verse: v.verse || v.number || index + 1,
-        text: (v.text || '').trim(),
-      }));
+    if (resFallback.ok) {
+      const fallbackData = await resFallback.json();
+      if (Array.isArray(fallbackData?.verses) && fallbackData.verses.length > 0) {
+        const verses = fallbackData.verses.map((v: { verse: number; text: string }) => ({
+          verse: v.verse,
+          text: v.text.trim(),
+        }));
+        return NextResponse.json({ verses });
+      }
     }
 
-    return NextResponse.json({ verses });
+    return NextResponse.json({ verses: [] });
   } catch (error) {
-    console.error('Error cargando pasaje bíblico:', error);
-    return NextResponse.json(
-      { error: 'Error al consultar las Escrituras.' },
-      { status: 500 }
-    );
+    console.error('Error en /api/biblia:', error);
+    return NextResponse.json({ verses: [] }, { status: 200 });
   }
 }
