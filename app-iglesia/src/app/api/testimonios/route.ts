@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sendDiscordAlert } from '@/lib/discord-webhook';
 
 const testimonioSchema = z.object({
   autor: z.string().default('Hermano de Iglesia'),
@@ -16,6 +17,20 @@ export async function GET() {
     return NextResponse.json(testimonios, { status: 200 });
   } catch (error) {
     console.error('[TESTIMONIOS_GET_ERROR]', error);
+
+    // Alerta de fallo a Discord
+    await sendDiscordAlert({
+      username: 'DB Watchdog',
+      embeds: [
+        {
+          title: '🚨 Error 500 en GET /api/testimonios',
+          description: String(error),
+          color: 0xff0000, // Rojo
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+
     return NextResponse.json(
       { error: 'Error al consultar testimonios' },
       { status: 500 }
@@ -44,9 +59,41 @@ export async function POST(req: Request) {
       },
     });
 
+    // Notificación en Discord de nuevo testimonio
+    await sendDiscordAlert({
+      username: 'IASD Webhook',
+      embeds: [
+        {
+          title: '✨ Nuevo Testimonio Publicado',
+          description: `**${nuevoTestimonio.titulo}**\n\n"${nuevoTestimonio.contenido.substring(0, 300)}${
+            nuevoTestimonio.contenido.length > 300 ? '...' : ''
+          }"`,
+          color: 0x2ecc71, // Verde esmeralda
+          fields: [
+            { name: '👤 Autor', value: nuevoTestimonio.autor, inline: true },
+            { name: '🆔 ID', value: nuevoTestimonio.id, inline: true },
+          ],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+
     return NextResponse.json(nuevoTestimonio, { status: 201 });
   } catch (error) {
     console.error('[TESTIMONIOS_POST_ERROR]', error);
+
+    await sendDiscordAlert({
+      username: 'DB Watchdog',
+      embeds: [
+        {
+          title: '🚨 Error 500 en POST /api/testimonios',
+          description: String(error),
+          color: 0xff0000,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+
     return NextResponse.json(
       { error: 'Error interno al guardar el testimonio en la base de datos' },
       { status: 500 }
