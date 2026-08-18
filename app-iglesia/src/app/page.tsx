@@ -11,6 +11,7 @@ import { LoginView, RegisterView, ForgotPasswordView } from '@/components/views/
 import { AdminPanelPageView } from '@/components/views/AdminView';
 import { AgendaView } from '@/components/views/AgendaView';
 import { StewardshipView } from '@/components/views/StewardshipView';
+import YouthView from '@/components/views/YouthView';
 
 export default function MainPage() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -47,6 +48,7 @@ export default function MainPage() {
         {currentPage === 'home' && (
           <HomeView navigateTo={handleNavigate} showToast={showToast} />
         )}
+        {currentPage === 'jovenes' && <YouthView />}
         {currentPage === 'biblia' && <BibleView />}
         {currentPage === 'himnario' && <HimnarioPageView showToast={showToast} />}
         {currentPage === 'leccion' && <SabbathLessonPageView showToast={showToast} />}

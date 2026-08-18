@@ -16,7 +16,8 @@ import {
   User, 
   LogOut, 
   Menu, 
-  X 
+  X,
+  Flame 
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -37,6 +38,7 @@ export function Header({
 
   const navItems = [
     { id: 'inicio', label: 'Inicio', icon: Church },
+    { id: 'jovenes', label: 'Jóvenes JA', icon: Flame },
     { id: 'biblia', label: 'Biblia', icon: BookOpen },
     { id: 'leccion', label: 'Lección Diaria', icon: Calendar },
     { id: 'himnario', label: 'Himnario', icon: Music },
@@ -150,7 +152,7 @@ export function Header({
             )}
           </div>
 
-          {/* Botón Menú Móvil / Pantallas pequeñas */}
+          {/* Botón Menú Móvil */}
           <div className="flex items-center space-x-2 xl:hidden">
             <ThemeToggle />
             <button
