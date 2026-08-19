@@ -26,7 +26,9 @@ import {
   Music,
   GraduationCap,
   Coins,
-  Radio
+  Radio,
+  ArrowRight,
+  ChevronRight
 } from 'lucide-react';
 
 interface HomeViewProps {
@@ -72,13 +74,13 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
   };
 
   const renderScheduleIcon = (icon?: string, isDivine?: boolean) => {
-    const iconClass = `w-7 h-7 ${isDivine ? 'text-white' : ''}`;
+    const iconClass = 'w-6 h-6 transition-transform duration-300 group-hover:scale-110';
     switch (icon) {
-      case 'book': return <BookOpen className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
-      case 'church': return <Church className={`${iconClass} ${!isDivine ? 'text-white' : ''}`} />;
-      case 'flame': return <Flame className={`${iconClass} ${!isDivine ? 'text-[#E08A72]' : ''}`} />;
-      case 'heart': return <Heart className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
-      default: return <Church className={`${iconClass} ${!isDivine ? 'text-[#7C9885]' : ''}`} />;
+      case 'book': return <BookOpen className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
+      case 'church': return <Church className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
+      case 'flame': return <Flame className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#E08A72]'}`} />;
+      case 'heart': return <Heart className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
+      default: return <Church className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
     }
   };
 
@@ -275,56 +277,65 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
     },
   ];
 
+  const quickLinks = [
+    { name: 'Santa Biblia', desc: 'Lectura y versículos', icon: BookOpen, page: 'biblia' },
+    { name: 'Escuela Sabática', desc: 'Guía de estudio semanal', icon: Calendar, page: 'leccion' },
+    { name: 'Himnario', desc: 'Cantos de adoración', icon: Music, page: 'himnario' },
+    { name: 'Cursos Bíblicos', desc: 'Estudios interactivos', icon: GraduationCap, page: 'estudios-biblicos' },
+  ];
+
   const filteredMaterials = materials.filter((item) =>
     item.titulo?.toLowerCase().includes(materialSearch.toLowerCase())
   );
 
   return (
-    <div className="space-y-16 pb-12 antialiased">
+    <div className="space-y-16 pb-16 antialiased">
       {/* 1. Hero Section */}
-      <section className="bg-[#E8F0EA] dark:bg-slate-900 pt-12 pb-20 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-10">
-          <div className="w-full md:w-1/2 text-center md:text-left space-y-5">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 px-4 py-1.5 rounded-full text-xs font-bold text-[#546E5C] dark:text-emerald-300 shadow-xs border border-[#C5D8CC] dark:border-slate-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#7C9885] animate-pulse"></span>
-              <span className="flex items-center gap-1">
+      <section className="bg-[#E8F0EA]/70 dark:bg-slate-900/90 pt-12 pb-16 relative overflow-hidden border-b border-[#C5D8CC]/40 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+          <div className="w-full lg:w-1/2 text-center lg:text-left space-y-6">
+            <div className="inline-flex items-center space-x-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-[#546E5C] dark:text-emerald-300 shadow-sm border border-[#C5D8CC] dark:border-slate-700">
+              <span className="w-2 h-2 rounded-full bg-[#7C9885] animate-pulse"></span>
+              <span className="flex items-center gap-1.5 tracking-wide">
                 <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> La Concepción #450, Hualqui
               </span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-bold text-[#2D3831] dark:text-slate-100 leading-tight">
+
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-[#2D3831] dark:text-slate-100 leading-tight tracking-tight">
               Un lugar para <br />
               <span className="text-[#7C9885] dark:text-emerald-400">Creer, Pertenecer</span> <br />
               y Servir.
-            </h2>
-            <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
+            </h1>
+
+            <p className="text-sm sm:text-base text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
               Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la oración y la comunión fraternal en nuestra comuna de Hualqui.
             </p>
             
             {/* CTAs de Modales y Accesos */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
               <button
                 onClick={() => setShowSermonModal(true)}
-                className="px-5 py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2"
+                className="group px-5 py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-medium rounded-2xl text-xs shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer transition-all duration-200 flex items-center gap-2"
               >
-                <Radio className="w-4 h-4" /> Ver En Vivo / Sermón
+                <Radio className="w-4 h-4 group-hover:scale-110 transition-transform" /> Ver En Vivo / Sermón
               </button>
               <button
                 onClick={() => setShowBulletin(true)}
-                className="px-5 py-3 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 text-[#2D3831] dark:text-emerald-300 font-semibold rounded-2xl text-xs shadow-xs border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
+                className="group px-5 py-3 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700/80 text-[#2D3831] dark:text-emerald-300 font-medium rounded-2xl text-xs shadow-sm border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all duration-200"
               >
-                <FileText className="w-4 h-4 text-[#7C9885]" /> Boletín Semanal
+                <FileText className="w-4 h-4 text-[#7C9885] group-hover:scale-110 transition-transform" /> Boletín Semanal
               </button>
               <button
                 onClick={() => setShowPastoral(true)}
-                className="px-5 py-3 bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-700 text-[#546E5C] dark:text-slate-200 font-semibold rounded-2xl text-xs border border-[#C5D8CC] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all"
+                className="group px-5 py-3 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-[#546E5C] dark:text-slate-200 font-medium rounded-2xl text-xs border border-[#C5D8CC] dark:border-slate-700 shadow-sm flex items-center gap-2 cursor-pointer transition-all duration-200"
               >
-                <MessageSquare className="w-4 h-4 text-[#7C9885]" /> Mensaje Pastoral
+                <MessageSquare className="w-4 h-4 text-[#7C9885] group-hover:scale-110 transition-transform" /> Mensaje Pastoral
               </button>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-md h-72 sm:h-88 rounded-3xl overflow-hidden shadow-md border-4 border-[#FAF8F3] dark:border-slate-800 group">
+          <div className="w-full lg:w-1/2 flex justify-center">
+            <div className="relative w-full max-w-md h-72 sm:h-96 rounded-3xl overflow-hidden shadow-xl border-4 border-white/80 dark:border-slate-800/80 group">
               <img
                 src="/landscape.jpg"
                 alt="IASD Central de Hualqui"
@@ -332,14 +343,14 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                   (e.target as HTMLImageElement).src =
                     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
                 }}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/70 via-transparent to-transparent flex items-end p-6">
-                <div className="text-white">
-                  <span className="bg-[#7C9885] text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/90 via-[#2D3831]/20 to-transparent flex items-end p-6">
+                <div className="text-white space-y-1">
+                  <span className="inline-block bg-[#7C9885]/90 backdrop-blur-md text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                     La Concepción 450, Hualqui
                   </span>
-                  <h3 className="text-base font-bold mt-2">Templo Central IASD Hualqui</h3>
+                  <h3 className="text-lg font-bold">Templo Central IASD Hualqui</h3>
                 </div>
               </div>
             </div>
@@ -350,92 +361,97 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       {/* 2. Accesos Rápidos a Módulos del Ecosistema */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <button
-            onClick={() => navigateTo('biblia')}
-            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
-          >
-            <BookOpen className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Santa Biblia</span>
-          </button>
-          <button
-            onClick={() => navigateTo('leccion')}
-            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
-          >
-            <Calendar className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Escuela Sabática</span>
-          </button>
-          <button
-            onClick={() => navigateTo('himnario')}
-            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
-          >
-            <Music className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Himnario</span>
-          </button>
-          <button
-            onClick={() => navigateTo('estudios-biblicos')}
-            className="flex flex-col items-center justify-center p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-400 transition group cursor-pointer shadow-xs"
-          >
-            <GraduationCap className="w-6 h-6 text-[#7C9885] mb-2 group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-xs text-[#2D3831] dark:text-slate-200">Cursos Bíblicos</span>
-          </button>
+          {quickLinks.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={idx}
+                onClick={() => navigateTo(item.page)}
+                className="group flex flex-col items-center text-center p-5 sm:p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885]/50 dark:hover:border-emerald-400/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+              >
+                <div className="p-3.5 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 mb-3 group-hover:bg-[#7C9885] group-hover:text-white transition-colors duration-200 text-[#7C9885] dark:text-emerald-300">
+                  <Icon className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
+                </div>
+                <span className="font-bold text-xs sm:text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                  {item.name}
+                </span>
+                <span className="text-[11px] text-[#66756C] dark:text-slate-400 mt-0.5">
+                  {item.desc}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      {/* 3. Horarios de Culto (Consumidos desde SERVICE_SCHEDULES) */}
+      {/* 3. Horarios de Culto */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-10 space-y-1">
-          <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+        <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
+          <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
             Horarios de Culto
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 pt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100">
             Nuestras Reuniones Semanales
           </h2>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {SERVICE_SCHEDULES.map((item) => {
             const isDivine = item.id === 'culto-divino';
             return (
               <div
                 key={item.id}
-                className={`p-6 rounded-3xl border space-y-2 transition-colors ${
+                className={`group p-6 rounded-3xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between space-y-4 ${
                   isDivine
-                    ? 'bg-[#7C9885] dark:bg-slate-900 text-white border-[#6B8774] dark:border-slate-800 shadow-xs'
-                    : 'bg-[#FAF8F3] dark:bg-slate-900 border-[#E2DEC9] dark:border-slate-800'
+                    ? 'bg-gradient-to-br from-[#7C9885] to-[#6B8774] dark:from-slate-900 dark:to-slate-800 text-white border-[#6B8774] dark:border-slate-700 shadow-md shadow-[#7C9885]/10'
+                    : 'bg-[#FAF8F3] dark:bg-slate-900 border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885]/40'
                 }`}
               >
-                {renderScheduleIcon(item.iconName, isDivine)}
-                <span
-                  className={`text-[10px] font-bold uppercase block ${
-                    isDivine
-                      ? 'text-[#E8EFEA]'
-                      : item.iconName === 'flame'
-                      ? 'text-[#E08A72]'
-                      : 'text-[#7C9885]'
-                  }`}
-                >
-                  {item.day}
-                </span>
-                <h4
-                  className={`text-base font-bold ${
-                    isDivine ? 'text-white dark:text-emerald-100' : 'text-[#2D3831] dark:text-emerald-100'
-                  }`}
-                >
-                  {item.name}
-                </h4>
-                <p
-                  className={`text-2xl font-black flex items-baseline gap-1 ${
-                    isDivine ? 'text-white dark:text-emerald-300' : 'text-[#2D3831] dark:text-emerald-300'
-                  }`}
-                >
-                  {item.time}{' '}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-2.5 rounded-2xl ${isDivine ? 'bg-white/10' : 'bg-[#E8F0EA] dark:bg-slate-800'}`}>
+                      {renderScheduleIcon(item.iconName, isDivine)}
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                        isDivine
+                          ? 'bg-white/20 text-[#E8EFEA]'
+                          : item.iconName === 'flame'
+                          ? 'bg-[#E08A72]/15 text-[#E08A72]'
+                          : 'bg-[#7C9885]/15 text-[#546E5C] dark:text-emerald-400'
+                      }`}
+                    >
+                      {item.day}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <h4
+                      className={`text-base font-bold ${
+                        isDivine ? 'text-white dark:text-emerald-100' : 'text-[#2D3831] dark:text-emerald-100'
+                      }`}
+                    >
+                      {item.name}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-baseline gap-1">
                   <span
-                    className={`text-xs font-normal ${
-                      isDivine ? 'text-[#E8EFEA]' : 'text-[#66756C]'
+                    className={`text-3xl font-black ${
+                      isDivine ? 'text-white dark:text-emerald-300' : 'text-[#2D3831] dark:text-emerald-300'
+                    }`}
+                  >
+                    {item.time}
+                  </span>
+                  <span
+                    className={`text-xs font-medium ${
+                      isDivine ? 'text-[#E8EFEA]' : 'text-[#66756C] dark:text-slate-400'
                     }`}
                   >
                     hrs
                   </span>
-                </p>
+                </div>
               </div>
             );
           })}
@@ -444,31 +460,33 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
       {/* 4. Banner de Mayordomía */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between p-8 rounded-3xl bg-gradient-to-r from-[#FAF8F3] to-[#E8F0EA] dark:from-slate-900 dark:to-slate-950 border border-[#E2DEC9] dark:border-slate-800 gap-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7C9885]">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#FAF8F3] via-[#FAF8F3] to-[#E8F0EA] dark:from-slate-900 dark:to-slate-950 border border-[#E2DEC9] dark:border-slate-800 shadow-sm gap-6">
+          <div className="space-y-2 text-center sm:text-left max-w-xl">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider">
               <Coins className="w-4 h-4" /> Pacto y Fidelidad
             </div>
-            <h3 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100">Mayordomía Cristiana</h3>
-            <p className="text-xs text-[#526157] dark:text-slate-300 max-w-xl">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100">
+              Mayordomía Cristiana
+            </h3>
+            <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 leading-relaxed">
               Devuelve tus diezmos y pacta tus ofrendas de forma online y segura para el sostenimiento de la misión.
             </p>
           </div>
           <button
             onClick={() => navigateTo('mayordomia')}
-            className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-xs cursor-pointer transition-all flex items-center gap-2 shrink-0"
+            className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer transition-all flex items-center gap-2 shrink-0 group"
           >
-            <Coins className="w-4 h-4" /> Ofrendar en Línea
+            <Coins className="w-4 h-4 group-hover:scale-110 transition-transform" /> Ofrendar en Línea
           </button>
         </div>
       </section>
 
       {/* 5. Sermones Recientes */}
-      <section className="bg-[#FAF8F3] dark:bg-slate-900 py-12 border-y border-[#E2DEC9] dark:border-slate-800">
+      <section className="bg-[#FAF8F3] dark:bg-slate-900/60 py-14 border-y border-[#E2DEC9] dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+              <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
                 Predicaciones
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
@@ -476,31 +494,36 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               </h2>
             </div>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {sermons.map((s) => (
               <div
                 key={s.id}
                 onClick={() => setSelectedSermon && setSelectedSermon(s)}
-                className="bg-white dark:bg-slate-950 rounded-3xl overflow-hidden border border-[#E2DEC9] dark:border-slate-800 shadow-xs hover:border-[#7C9885] cursor-pointer group transition-all"
+                className="bg-white dark:bg-slate-950 rounded-3xl overflow-hidden border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-[#7C9885]/50 dark:hover:border-emerald-400/50 cursor-pointer group transition-all duration-300 flex flex-col justify-between"
               >
-                <div className="relative aspect-video bg-slate-800">
+                <div className="relative aspect-video bg-slate-800 overflow-hidden">
                   <img
                     src={s.thumbnail}
                     alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
-                  <div className="absolute inset-0 bg-[#2D3831]/30 flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-[#7C9885] text-white flex items-center justify-center shadow-md">
-                      <Play className="w-4 h-4 fill-current ml-0.5" />
+                  <div className="absolute inset-0 bg-[#2D3831]/40 flex items-center justify-center group-hover:bg-[#2D3831]/20 transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-[#7C9885] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
                   </div>
                 </div>
-                <div className="p-5 space-y-1.5">
-                  <span className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400">
+                <div className="p-5 space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-900 px-2 py-0.5 rounded-md">
                     {s.category}
                   </span>
-                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100">{s.title}</h4>
-                  <p className="text-xs text-[#66756C] dark:text-slate-400">🎙️ {s.speaker}</p>
+                  <h4 className="text-sm sm:text-base font-bold text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                    {s.title}
+                  </h4>
+                  <p className="text-xs text-[#66756C] dark:text-slate-400 flex items-center gap-1.5">
+                    🎙️ {s.speaker}
+                  </p>
                 </div>
               </div>
             ))}
@@ -512,7 +535,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+            <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
               Recursos
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
@@ -521,9 +544,9 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
           </div>
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5 self-start sm:self-auto"
+            className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center gap-2 self-start sm:self-auto group"
           >
-            <Upload className="w-4 h-4" /> Subir Material
+            <Upload className="w-4 h-4 group-hover:scale-110 transition-transform" /> Subir Material
           </button>
         </div>
 
@@ -534,27 +557,31 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
             placeholder="Buscar recurso por título..."
             value={materialSearch}
             onChange={(e) => setMaterialSearch(e.target.value)}
-            className="w-full bg-[#FAF8F3] dark:bg-slate-900 text-xs pl-10 pr-4 py-2.5 rounded-xl border border-[#E2DEC9] dark:border-slate-800 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+            className="w-full bg-[#FAF8F3] dark:bg-slate-900 text-xs pl-10 pr-4 py-3 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all shadow-xs"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {filteredMaterials.length === 0 ? (
-            <p className="text-xs text-[#66756C] dark:text-slate-400 col-span-3 text-center py-6">
-              No hay archivos o materiales registrados.
-            </p>
+            <div className="col-span-3 text-center py-10 bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl border border-[#E2DEC9] dark:border-slate-800">
+              <FileText className="w-8 h-8 text-[#7C9885]/50 mx-auto mb-2" />
+              <p className="text-xs text-[#66756C] dark:text-slate-400">
+                No hay archivos o materiales registrados.
+              </p>
+            </div>
           ) : (
             filteredMaterials.map((m) => (
               <div
                 key={m.id}
-                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-5 border border-[#E2DEC9] dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-4"
+                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-md hover:border-[#7C9885]/40 transition-all flex flex-col justify-between space-y-4 group"
               >
-                <div className="space-y-2">
-                  <span className="bg-[#E8F0EA] dark:bg-slate-800 text-[#546E5C] dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                <div className="space-y-3">
+                  <span className="inline-block bg-[#E8F0EA] dark:bg-slate-800 text-[#546E5C] dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     {getExtensionLabel(m.mimeType, m.path)}
                   </span>
-                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100 flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-[#7C9885]" /> {m.titulo}
+                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100 flex items-start gap-2 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                    <FileText className="w-4 h-4 text-[#7C9885] shrink-0 mt-0.5" /> 
+                    <span>{m.titulo}</span>
                   </h4>
                   <p className="text-xs text-[#66756C] dark:text-slate-400">
                     Subido por: {m.usuario?.nombre || 'Miembro de Iglesia'}
@@ -563,7 +590,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 <button
                   type="button"
                   onClick={() => handleDownload(m)}
-                  className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 bg-white dark:bg-slate-800 hover:bg-[#7C9885] hover:text-white dark:hover:bg-[#7C9885] text-[#546E5C] dark:text-slate-200 border border-[#C5D8CC] dark:border-slate-700 hover:border-[#7C9885] font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all duration-200 flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" /> Descargar Archivo
                 </button>
@@ -575,45 +602,50 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
       {/* 7. Muro de Testimonios */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-1">
-          <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
             Agradecimientos y Fe
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 pt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100">
             Muro de Testimonios
           </h2>
-          <p className="text-xs text-[#66756C] dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
             Compartiendo las grandes bendiciones que Dios realiza en Hualqui.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonies.length === 0 ? (
-            <p className="text-xs text-[#66756C] dark:text-slate-400 col-span-3 text-center py-6">
-              Aún no hay testimonios compartidos. ¡Sé el primero en publicar!
-            </p>
+            <div className="col-span-3 text-center py-10 bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl border border-[#E2DEC9] dark:border-slate-800">
+              <Sparkles className="w-8 h-8 text-[#7C9885]/50 mx-auto mb-2" />
+              <p className="text-xs text-[#66756C] dark:text-slate-400">
+                Aún no hay testimonios compartidos. ¡Sé el primero en publicar!
+              </p>
+            </div>
           ) : (
             testimonies.map((t) => (
               <div
                 key={t.id}
-                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-xs space-y-3 flex flex-col justify-between"
+                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between"
               >
-                <div className="space-y-2">
-                  <Sparkles className="w-5 h-5 text-[#7C9885]" />
+                <div className="space-y-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885]">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
                   <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100">
                     {t.titulo || 'Agradecimiento al Señor'}
                   </h4>
-                  <p className="text-xs text-[#526157] dark:text-slate-300 leading-relaxed italic">
+                  <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 leading-relaxed italic">
                     "{t.contenido || 'Sin contenido'}"
                   </p>
                 </div>
-                <div className="pt-3 border-t border-[#E8E4D5] dark:border-slate-800 flex justify-between items-center text-xs text-[#66756C]">
-                  <span>👤 {t.autor || 'Hermano de Iglesia'}</span>
+                <div className="pt-4 border-t border-[#E8E4D5] dark:border-slate-800 flex justify-between items-center text-xs text-[#66756C]">
+                  <span className="font-medium">👤 {t.autor || 'Hermano de Iglesia'}</span>
                   <button
                     onClick={() => handleLikeTestimonio(t.id)}
-                    className="px-3 py-1 bg-[#E8F0EA] dark:bg-slate-800 hover:bg-[#D8E6DB] text-[#546E5C] dark:text-emerald-300 font-semibold rounded-xl text-[11px] cursor-pointer transition-colors flex items-center gap-1"
+                    className="px-3 py-1.5 bg-[#E8F0EA] dark:bg-slate-800 hover:bg-[#D8E6DB] text-[#546E5C] dark:text-emerald-300 font-semibold rounded-xl text-[11px] cursor-pointer transition-colors flex items-center gap-1.5"
                   >
-                    <Heart className="w-3 h-3 fill-current" /> Amén ({t.likes || 0})
+                    <Heart className="w-3.5 h-3.5 fill-current text-[#E08A72]" /> Amén ({t.likes || 0})
                   </button>
                 </div>
               </div>
@@ -622,18 +654,18 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
         </div>
 
         {/* Publicar Testimonio */}
-        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 max-w-2xl mx-auto space-y-4">
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-sm">
           <h4 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm text-center flex items-center justify-center gap-1.5">
             <MessageSquare className="w-4 h-4 text-[#7C9885]" /> ¿Tienes un testimonio para compartir?
           </h4>
-          <form onSubmit={handleTestimonySubmit} className="space-y-3 text-xs">
+          <form onSubmit={handleTestimonySubmit} className="space-y-3.5 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
                 type="text"
                 placeholder="Tu Nombre o Familia"
                 value={testimonyAuthor}
                 onChange={(e) => setTestimonyAuthor(e.target.value)}
-                className="bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                className="bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
               />
               <input
                 type="text"
@@ -641,7 +673,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                 placeholder="Título del Testimonio *"
                 value={testimonyTitle}
                 onChange={(e) => setTestimonyTitle(e.target.value)}
-                className="bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                className="bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
               />
             </div>
             <textarea
@@ -650,12 +682,12 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               placeholder="Escribe brevemente tu testimonio de gratitud... *"
               value={testimonyContent}
               onChange={(e) => setTestimonyContent(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
             ></textarea>
             <button
               type="submit"
               disabled={loadingTestimony}
-              className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-sm hover:shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
               <Send className="w-3.5 h-3.5" /> {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio en el Muro'}
             </button>
@@ -665,11 +697,15 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
 
       {/* 8. Formulario de Petición de Oración */}
       <section className="max-w-3xl mx-auto px-4">
-        <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xs border border-[#E2DEC9] dark:border-slate-800 space-y-5">
-          <div className="text-center space-y-1">
-            <Heart className="w-8 h-8 text-[#E08A72] mx-auto" />
-            <h2 className="text-xl font-bold text-[#2D3831] dark:text-emerald-100">¿Podemos Orar por Ti?</h2>
-            <p className="text-xs text-[#66756C] dark:text-slate-400">
+        <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-sm border border-[#E2DEC9] dark:border-slate-800 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 rounded-full bg-[#E08A72]/15 text-[#E08A72] flex items-center justify-center mx-auto">
+              <Heart className="w-6 h-6 fill-current" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100">
+              ¿Podemos Orar por Ti?
+            </h2>
+            <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
               Escribe tu motivo de oración para que nuestra comunidad interceda por ti.
             </p>
           </div>
@@ -680,7 +716,7 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               placeholder="Tu Nombre (Opcional)"
               value={prayerName}
               onChange={(e) => setPrayerName(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
             />
             <textarea
               rows={3}
@@ -688,26 +724,26 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
               placeholder="Escribe aquí tu motivo o pedido de oración... *"
               value={prayerRequest}
               onChange={(e) => setPrayerRequest(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
             ></textarea>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2.5 px-1">
               <input
                 type="checkbox"
                 id="priv"
                 checked={prayerPrivate}
                 onChange={(e) => setPrayerPrivate(e.target.checked)}
-                className="accent-[#7C9885]"
+                className="w-4 h-4 rounded accent-[#7C9885] cursor-pointer"
               />
-              <label htmlFor="priv" className="text-xs text-[#526157] dark:text-slate-300 cursor-pointer">
+              <label htmlFor="priv" className="text-xs text-[#526157] dark:text-slate-300 cursor-pointer select-none">
                 Mantener este pedido en privado (solo con equipo pastoral)
               </label>
             </div>
             <button
               type="submit"
               disabled={loadingPrayer}
-              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
-              <Send className="w-4 h-4" /> {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
+              <Send className="w-3.5 h-3.5" /> {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
             </button>
           </form>
         </div>
@@ -716,22 +752,22 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
       {/* MODAL: Subida de Materiales R2 */}
       {uploadModalOpen && (
         <div className="fixed inset-0 z-50 bg-[#2D3831]/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#FAF8F3] dark:bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden shadow-xl p-6 space-y-4 border border-[#E2DEC9] dark:border-slate-800">
-            <div className="flex justify-between items-center border-b border-[#E8E4D5] dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm flex items-center gap-1.5">
+          <div className="bg-[#FAF8F3] dark:bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-8 space-y-5 border border-[#E2DEC9] dark:border-slate-800">
+            <div className="flex justify-between items-center border-b border-[#E8E4D5] dark:border-slate-800 pb-4">
+              <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm sm:text-base flex items-center gap-2">
                 <Upload className="w-4 h-4 text-[#7C9885]" /> Subir Nuevo Material
               </h3>
               <button 
                 onClick={() => setUploadModalOpen(false)} 
-                className="text-[#66756C] hover:text-[#2D3831] p-1 cursor-pointer"
+                className="text-[#66756C] hover:text-[#2D3831] dark:hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1.5">
                   Título del Recurso *
                 </label>
                 <input
@@ -740,26 +776,26 @@ export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewP
                   placeholder="Ej. Guía de Escuela Sabática"
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-950 p-3 rounded-xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885]"
+                  className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1">
+                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1.5">
                   Seleccionar Archivo (PDF, PPTX, MP3) *
                 </label>
                 <input
                   type="file"
                   required
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-[#526157] dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E8F0EA] file:text-[#546E5C] hover:file:bg-[#D8E6DB]"
+                  className="w-full text-xs text-[#526157] dark:text-slate-400 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E8F0EA] file:text-[#546E5C] hover:file:bg-[#D8E6DB] cursor-pointer"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loadingUpload}
-                className="w-full py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-md shadow-[#7C9885]/20 disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center gap-2"
               >
                 <Upload className="w-4 h-4" /> {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
               </button>
