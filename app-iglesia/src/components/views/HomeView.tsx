@@ -1,813 +1,307 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
-import { Testimonio, Material } from '@/types';
-import { SERVICE_SCHEDULES } from '@/data/mockData';
-import { BulletinModal } from '@/components/modales/BulletinModal';
-import { PastoralModal } from '@/components/modales/PastoralModal';
-import { SermonModal } from '@/components/modales/SermonModal';
+import React from 'react';
 import { 
-  BookOpen, 
-  Church, 
-  Flame, 
-  Heart, 
-  Upload, 
-  Play, 
-  Download, 
-  Search, 
-  X, 
-  Sparkles, 
-  MapPin, 
   Calendar, 
-  Send, 
-  FileText,
-  MessageSquare,
-  Music,
-  GraduationCap,
-  Coins,
-  Radio,
+  Clock, 
+  MapPin, 
+  BookOpen, 
+  FileText, 
+  Music, 
+  Play, 
   ArrowRight,
-  ChevronRight
+  Sparkles,
+  Flame,
+  MessageCircle
 } from 'lucide-react';
+import { SERVICE_SCHEDULES } from '@/data/mockData';
 
 interface HomeViewProps {
   navigateTo: (page: string) => void;
-  showToast: (msg: string) => void;
-  setSelectedSermon?: (sermon: unknown) => void;
+  setBulletinModalOpen?: (open: boolean) => void;
 }
 
-export function HomeView({ navigateTo, showToast, setSelectedSermon }: HomeViewProps) {
-  // Modales
-  const [showBulletin, setShowBulletin] = useState(false);
-  const [showPastoral, setShowPastoral] = useState(false);
-  const [showSermonModal, setShowSermonModal] = useState(false);
-
-  // Testimonios
-  const [testimonies, setTestimonies] = useState<Testimonio[]>([]);
-  const [testimonyTitle, setTestimonyTitle] = useState('');
-  const [testimonyAuthor, setTestimonyAuthor] = useState('');
-  const [testimonyContent, setTestimonyContent] = useState('');
-  const [loadingTestimony, setLoadingTestimony] = useState(false);
-
-  // Oraciones
-  const [prayerName, setPrayerName] = useState('');
-  const [prayerRequest, setPrayerRequest] = useState('');
-  const [prayerPrivate, setPrayerPrivate] = useState(false);
-  const [loadingPrayer, setLoadingPrayer] = useState(false);
-
-  // Materiales (Cloudflare R2)
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [uploadTitle, setUploadTitle] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [loadingUpload, setLoadingUpload] = useState(false);
-  const [materialSearch, setMaterialSearch] = useState('');
-
-  const getExtensionLabel = (mimeType: string, path: string) => {
-    if (mimeType?.includes('pdf') || path?.endsWith('.pdf')) return 'PDF';
-    if (mimeType?.includes('word') || mimeType?.includes('officedocument') || path?.endsWith('.docx')) return 'DOCX';
-    if (mimeType?.includes('presentation') || path?.endsWith('.pptx')) return 'PPTX';
-    if (mimeType?.includes('plain') || path?.endsWith('.txt')) return 'TXT';
-    if (mimeType?.includes('mpeg') || mimeType?.includes('mp3') || path?.endsWith('.mp3')) return 'MP3';
-    return 'DOCUMENTO';
-  };
-
-  const renderScheduleIcon = (icon?: string, isDivine?: boolean) => {
-    const iconClass = 'w-6 h-6 transition-transform duration-300 group-hover:scale-110';
-    switch (icon) {
-      case 'book': return <BookOpen className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
-      case 'church': return <Church className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
-      case 'flame': return <Flame className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#E08A72]'}`} />;
-      case 'heart': return <Heart className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
-      default: return <Church className={`${iconClass} ${isDivine ? 'text-white' : 'text-[#7C9885]'}`} />;
-    }
-  };
-
-  const fetchTestimonies = async () => {
-    try {
-      const data = await apiClient.getTestimonios();
-      const response = data as unknown as Record<string, unknown>;
-      if (Array.isArray(data)) {
-        setTestimonies(data);
-      } else if (Array.isArray(response?.testimonios)) {
-        setTestimonies(response.testimonios as Testimonio[]);
-      } else {
-        setTestimonies([]);
-      }
-    } catch (err) {
-      console.error('Error cargando testimonios:', err);
-    }
-  };
-
-  const fetchMaterials = async () => {
-    try {
-      const data = await apiClient.getMateriales();
-      const response = data as unknown as Record<string, unknown>;
-      if (Array.isArray(data)) {
-        setMaterials(data);
-      } else if (Array.isArray(response?.archivos)) {
-        setMaterials(response.archivos as Material[]);
-      } else {
-        setMaterials([]);
-      }
-    } catch (err) {
-      console.error('Error cargando archivos:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchTestimonies();
-    fetchMaterials();
-  }, []);
-
-  const handlePrayerSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prayerRequest.trim()) return;
-
-    setLoadingPrayer(true);
-    try {
-      await apiClient.createOracion({
-        nombre: prayerName.trim() || 'Anónimo',
-        peticion: prayerRequest,
-        esPrivado: prayerPrivate,
-      });
-
-      setPrayerName('');
-      setPrayerRequest('');
-      setPrayerPrivate(false);
-      showToast('¡Pedido de oración guardado!');
-    } catch {
-      showToast('Error al enviar pedido de oración');
-    } finally {
-      setLoadingPrayer(false);
-    }
-  };
-
-  const handleTestimonySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!testimonyContent.trim() || !testimonyTitle.trim()) return;
-
-    setLoadingTestimony(true);
-    try {
-      await apiClient.createTestimonio({
-        autor: testimonyAuthor.trim() || 'Hermano de Iglesia',
-        titulo: testimonyTitle.trim(),
-        contenido: testimonyContent.trim(),
-      });
-
-      setTestimonyTitle('');
-      setTestimonyAuthor('');
-      setTestimonyContent('');
-      showToast('¡Testimonio publicado con éxito!');
-      await fetchTestimonies();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al publicar testimonio';
-      showToast(msg);
-    } finally {
-      setLoadingTestimony(false);
-    }
-  };
-
-  const handleLikeTestimonio = async (id: string) => {
-    try {
-      setTestimonies((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, likes: (t.likes || 0) + 1 } : t))
-      );
-      showToast('¡Amén!');
-      await apiClient.likeTestimonio(id);
-    } catch (err) {
-      console.error('Error enviando Amén:', err);
-    }
-  };
-
-  const handleUploadSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFile) {
-      showToast('Selecciona un archivo');
-      return;
-    }
-
-    setLoadingUpload(true);
-    try {
-      const presignedRes = await fetch('/api/archivos/presigned', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: selectedFile.name,
-          fileType: selectedFile.type || 'application/octet-stream',
-        }),
-      });
-
-      if (!presignedRes.ok) {
-        const errData = await presignedRes.json().catch(() => ({}));
-        throw new Error(errData.error || 'Error obteniendo permiso de subida');
-      }
-
-      const { uploadUrl, publicUrl } = await presignedRes.json();
-
-      const uploadToR2Res = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': selectedFile.type || 'application/octet-stream',
-        },
-        body: selectedFile,
-      });
-
-      if (!uploadToR2Res.ok) {
-        throw new Error('Error al enviar archivo a Cloudflare R2');
-      }
-
-      const dbRes = await fetch('/api/archivos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          titulo: uploadTitle || selectedFile.name,
-          path: publicUrl,
-          mimeType: selectedFile.type || 'application/octet-stream',
-          tamano: selectedFile.size,
-        }),
-      });
-
-      if (!dbRes.ok) throw new Error('Error al registrar archivo en la base de datos');
-
-      showToast('¡Material subido con éxito!');
-      setUploadModalOpen(false);
-      setUploadTitle('');
-      setSelectedFile(null);
-      await fetchMaterials();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al subir archivo';
-      showToast(msg);
-    } finally {
-      setLoadingUpload(false);
-    }
-  };
-
-  const handleDownload = (m: Material) => {
-    try {
-      window.open(m.path, '_blank');
-    } catch (error) {
-      console.error('Error al descargar:', error);
-      showToast('Error al abrir la descarga');
-    }
-  };
-
-  const sermons = [
+export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
+  // Datos mock para eventos destacados del Home (máximo 3 para no saturar)
+  const upcomingEvents = [
     {
       id: '1',
-      title: 'Firmeza y Fe en las Promesas de Dios',
-      speaker: 'Pr. Alejandro Silva',
-      category: 'Sermón Sabático',
-      thumbnail: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=800&q=80',
+      title: 'Sociedad de Jóvenes (JA)',
+      date: 'Sábado, 18:30 hrs',
+      location: 'Templo Central',
+      badge: 'Jóvenes'
     },
     {
       id: '2',
-      title: 'El Poder de la Oración en Familia',
-      speaker: 'Pr. Marcos Rodríguez',
-      category: 'Culto de Oración',
-      thumbnail: 'https://images.unsplash.com/photo-1499209974431-9dac3ada00d7?auto=format&fit=crop&w=800&q=80',
+      title: 'Semana de Oración Familiar',
+      date: 'Miércoles a Viernes, 20:00 hrs',
+      location: 'Templo & Online',
+      badge: 'Especial'
     },
     {
       id: '3',
-      title: 'Jesús: Nuestra Esperanza Viva',
-      speaker: 'Hno. Claudio Morales',
-      category: 'Jóvenes JA',
-      thumbnail: 'https://images.unsplash.com/photo-1509021436468-d51039746b20?auto=format&fit=crop&w=800&q=80',
-    },
+      title: 'Culto de Adoración Sabática',
+      date: 'Sábado, 10:45 hrs',
+      location: 'Templo Central',
+      badge: 'Culto'
+    }
   ];
-
-  const quickLinks = [
-    { name: 'Santa Biblia', desc: 'Lectura y versículos', icon: BookOpen, page: 'biblia' },
-    { name: 'Escuela Sabática', desc: 'Guía de estudio semanal', icon: Calendar, page: 'leccion' },
-    { name: 'Himnario', desc: 'Cantos de adoración', icon: Music, page: 'himnario' },
-    { name: 'Cursos Bíblicos', desc: 'Estudios interactivos', icon: GraduationCap, page: 'estudios-biblicos' },
-  ];
-
-  const filteredMaterials = materials.filter((item) =>
-    item.titulo?.toLowerCase().includes(materialSearch.toLowerCase())
-  );
 
   return (
-    <div className="space-y-16 pb-16 antialiased">
-      {/* 1. Hero Section */}
-      <section className="bg-[#E8F0EA]/70 dark:bg-slate-900/90 pt-12 pb-16 relative overflow-hidden border-b border-[#C5D8CC]/40 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-          <div className="w-full lg:w-1/2 text-center lg:text-left space-y-6">
-            <div className="inline-flex items-center space-x-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-[#546E5C] dark:text-emerald-300 shadow-sm border border-[#C5D8CC] dark:border-slate-700">
-              <span className="w-2 h-2 rounded-full bg-[#7C9885] animate-pulse"></span>
-              <span className="flex items-center gap-1.5 tracking-wide">
-                <MapPin className="w-3.5 h-3.5 text-[#7C9885]" /> La Concepción #450, Hualqui
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-[#2D3831] dark:text-slate-100 leading-tight tracking-tight">
-              Un lugar para <br />
-              <span className="text-[#7C9885] dark:text-emerald-400">Creer, Pertenecer</span> <br />
-              y Servir.
-            </h1>
-
-            <p className="text-sm sm:text-base text-[#526157] dark:text-slate-300 max-w-xl leading-relaxed">
-              Bienvenido a la casa de Dios. Te invitamos a compartir con nosotros el estudio de la Biblia, la oración y la comunión fraternal en nuestra comuna de Hualqui.
-            </p>
-            
-            {/* CTAs de Modales y Accesos */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
-              <button
-                onClick={() => setShowSermonModal(true)}
-                className="group px-5 py-3 bg-[#7C9885] hover:bg-[#6B8774] text-white font-medium rounded-2xl text-xs shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer transition-all duration-200 flex items-center gap-2"
-              >
-                <Radio className="w-4 h-4 group-hover:scale-110 transition-transform" /> Ver En Vivo / Sermón
-              </button>
-              <button
-                onClick={() => setShowBulletin(true)}
-                className="group px-5 py-3 bg-[#FAF8F3] dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700/80 text-[#2D3831] dark:text-emerald-300 font-medium rounded-2xl text-xs shadow-sm border border-[#E2DEC9] dark:border-slate-700 flex items-center gap-2 cursor-pointer transition-all duration-200"
-              >
-                <FileText className="w-4 h-4 text-[#7C9885] group-hover:scale-110 transition-transform" /> Boletín Semanal
-              </button>
-              <button
-                onClick={() => setShowPastoral(true)}
-                className="group px-5 py-3 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-[#546E5C] dark:text-slate-200 font-medium rounded-2xl text-xs border border-[#C5D8CC] dark:border-slate-700 shadow-sm flex items-center gap-2 cursor-pointer transition-all duration-200"
-              >
-                <MessageSquare className="w-4 h-4 text-[#7C9885] group-hover:scale-110 transition-transform" /> Mensaje Pastoral
-              </button>
-            </div>
-          </div>
-
-          <div className="w-full lg:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-md h-72 sm:h-96 rounded-3xl overflow-hidden shadow-xl border-4 border-white/80 dark:border-slate-800/80 group">
-              <img
-                src="/landscape.jpg"
-                alt="IASD Central de Hualqui"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
-                }}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#2D3831]/90 via-[#2D3831]/20 to-transparent flex items-end p-6">
-                <div className="text-white space-y-1">
-                  <span className="inline-block bg-[#7C9885]/90 backdrop-blur-md text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                    La Concepción 450, Hualqui
-                  </span>
-                  <h3 className="text-lg font-bold">Templo Central IASD Hualqui</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Accesos Rápidos a Módulos del Ecosistema */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {quickLinks.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={idx}
-                onClick={() => navigateTo(item.page)}
-                className="group flex flex-col items-center text-center p-5 sm:p-6 rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885]/50 dark:hover:border-emerald-400/50 hover:shadow-md transition-all duration-200 cursor-pointer"
-              >
-                <div className="p-3.5 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 mb-3 group-hover:bg-[#7C9885] group-hover:text-white transition-colors duration-200 text-[#7C9885] dark:text-emerald-300">
-                  <Icon className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
-                </div>
-                <span className="font-bold text-xs sm:text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
-                  {item.name}
-                </span>
-                <span className="text-[11px] text-[#66756C] dark:text-slate-400 mt-0.5">
-                  {item.desc}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. Horarios de Culto */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
-          <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
-            Horarios de Culto
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100">
-            Nuestras Reuniones Semanales
-          </h2>
-        </div>
+    <div className="space-y-16 sm:space-y-24 pb-12 antialiased">
+      
+      {/* 1. HERO SECTION */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#2D3831] via-[#1E2621] to-[#141A16] text-white px-6 py-20 sm:py-28 text-center shadow-xl">
+        {/* Glow decorativo sutil de fondo */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(124,152,133,0.25)_0%,_transparent_65%)] pointer-events-none" />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SERVICE_SCHEDULES.map((item) => {
-            const isDivine = item.id === 'culto-divino';
-            return (
-              <div
-                key={item.id}
-                className={`group p-6 rounded-3xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between space-y-4 ${
-                  isDivine
-                    ? 'bg-gradient-to-br from-[#7C9885] to-[#6B8774] dark:from-slate-900 dark:to-slate-800 text-white border-[#6B8774] dark:border-slate-700 shadow-md shadow-[#7C9885]/10'
-                    : 'bg-[#FAF8F3] dark:bg-slate-900 border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885]/40'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2.5 rounded-2xl ${isDivine ? 'bg-white/10' : 'bg-[#E8F0EA] dark:bg-slate-800'}`}>
-                      {renderScheduleIcon(item.iconName, isDivine)}
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                        isDivine
-                          ? 'bg-white/20 text-[#E8EFEA]'
-                          : item.iconName === 'flame'
-                          ? 'bg-[#E08A72]/15 text-[#E08A72]'
-                          : 'bg-[#7C9885]/15 text-[#546E5C] dark:text-emerald-400'
-                      }`}
-                    >
-                      {item.day}
-                    </span>
-                  </div>
-                  
-                  <div>
-                    <h4
-                      className={`text-base font-bold ${
-                        isDivine ? 'text-white dark:text-emerald-100' : 'text-[#2D3831] dark:text-emerald-100'
-                      }`}
-                    >
-                      {item.name}
-                    </h4>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-baseline gap-1">
-                  <span
-                    className={`text-3xl font-black ${
-                      isDivine ? 'text-white dark:text-emerald-300' : 'text-[#2D3831] dark:text-emerald-300'
-                    }`}
-                  >
-                    {item.time}
-                  </span>
-                  <span
-                    className={`text-xs font-medium ${
-                      isDivine ? 'text-[#E8EFEA]' : 'text-[#66756C] dark:text-slate-400'
-                    }`}
-                  >
-                    hrs
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. Banner de Mayordomía */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-[#FAF8F3] via-[#FAF8F3] to-[#E8F0EA] dark:from-slate-900 dark:to-slate-950 border border-[#E2DEC9] dark:border-slate-800 shadow-sm gap-6">
-          <div className="space-y-2 text-center sm:text-left max-w-xl">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider">
-              <Coins className="w-4 h-4" /> Pacto y Fidelidad
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100">
-              Mayordomía Cristiana
-            </h3>
-            <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 leading-relaxed">
-              Devuelve tus diezmos y pacta tus ofrendas de forma online y segura para el sostenimiento de la misión.
-            </p>
+        <div className="relative max-w-3xl mx-auto space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#7C9885]/20 border border-[#7C9885]/30 text-emerald-200 text-xs font-semibold uppercase tracking-widest backdrop-blur-sm">
+            <Sparkles className="w-3.5 h-3.5" /> Bienvenido a Casa
           </div>
-          <button
-            onClick={() => navigateTo('mayordomia')}
-            className="px-6 py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold rounded-2xl text-xs shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer transition-all flex items-center gap-2 shrink-0 group"
-          >
-            <Coins className="w-4 h-4 group-hover:scale-110 transition-transform" /> Ofrendar en Línea
-          </button>
+
+          <h1 className="text-4xl sm:text-6xl font-serif font-bold tracking-tight text-white leading-tight">
+            Un lugar para <br className="hidden sm:inline" />
+            <span className="text-[#E0A96D] italic">crecer en fe</span> y comunidad
+          </h1>
+
+          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
+            Somos una iglesia apasionada por proclamar el evangelio eterno, la adoración en espíritu y el servicio mutuo en Hualqui.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
+            <button
+              onClick={() => {
+                const el = document.getElementById('horarios-cultos');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full sm:w-auto px-6 py-3 bg-[#E0A96D] hover:bg-[#D09657] text-[#2D3831] font-bold text-xs sm:text-sm rounded-xl shadow-md transition-transform active:scale-95 cursor-pointer"
+            >
+              Planifica tu visita
+            </button>
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noreferrer"
+              className="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs sm:text-sm rounded-xl backdrop-blur-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-white" /> Ver Online
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* 5. Sermones Recientes */}
-      <section className="bg-[#FAF8F3] dark:bg-slate-900/60 py-14 border-y border-[#E2DEC9] dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
-                Predicaciones
+      {/* 2. PRÓXIMO CULTO & HORARIOS */}
+      <section id="horarios-cultos" className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row items-stretch gap-6 bg-[#FAF8F3] dark:bg-slate-900/60 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs">
+          
+          <div className="md:w-1/3 flex flex-col justify-between space-y-4 border-b md:border-b-0 md:border-r border-[#E2DEC9] dark:border-slate-800 pb-6 md:pb-0 md:pr-6">
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="w-4 h-4" /> Horarios de Adoración
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
-                Sermones Recientes
+              <h2 className="text-2xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+                Únete a nuestros cultos
               </h2>
+              <p className="text-xs text-[#526157] dark:text-slate-400 leading-relaxed">
+                Nuestras puertas están siempre abiertas para adorar juntos cada semana.
+              </p>
+            </div>
+            <div className="text-[11px] text-[#66756C] dark:text-slate-500 font-medium">
+              📍 Bulnes #450, Hualqui
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {sermons.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => setSelectedSermon && setSelectedSermon(s)}
-                className="bg-white dark:bg-slate-950 rounded-3xl overflow-hidden border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-[#7C9885]/50 dark:hover:border-emerald-400/50 cursor-pointer group transition-all duration-300 flex flex-col justify-between"
+          <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {SERVICE_SCHEDULES.map((schedule) => (
+              <div 
+                key={schedule.id}
+                className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-[#E8E4D5] dark:border-slate-700/80 space-y-1.5"
               >
-                <div className="relative aspect-video bg-slate-800 overflow-hidden">
-                  <img
-                    src={s.thumbnail}
-                    alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-[#2D3831]/40 flex items-center justify-center group-hover:bg-[#2D3831]/20 transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-[#7C9885] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
-                      <Play className="w-5 h-5 fill-current ml-0.5" />
-                    </div>
-                  </div>
-                </div>
-                <div className="p-5 space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-900 px-2 py-0.5 rounded-md">
-                    {s.category}
-                  </span>
-                  <h4 className="text-sm sm:text-base font-bold text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
-                    {s.title}
-                  </h4>
-                  <p className="text-xs text-[#66756C] dark:text-slate-400 flex items-center gap-1.5">
-                    🎙️ {s.speaker}
-                  </p>
-                </div>
+                <span className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-widest">
+                  {schedule.day}
+                </span>
+                <h3 className="font-bold text-sm text-[#2D3831] dark:text-slate-200">
+                  {schedule.name}
+                </h3>
+                <p className="text-xs text-[#526157] dark:text-slate-400 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-[#7C9885]" /> {schedule.time} hrs
+                </p>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* 6. Descargas de Materiales (Cloudflare R2) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
-              Recursos
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 mt-2">
-              Materiales y Documentos
-            </h2>
-          </div>
-          <button
-            onClick={() => setUploadModalOpen(true)}
-            className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center gap-2 self-start sm:self-auto group"
-          >
-            <Upload className="w-4 h-4 group-hover:scale-110 transition-transform" /> Subir Material
-          </button>
-        </div>
-
-        <div className="relative max-w-md">
-          <Search className="w-4 h-4 text-[#7C9885] absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Buscar recurso por título..."
-            value={materialSearch}
-            onChange={(e) => setMaterialSearch(e.target.value)}
-            className="w-full bg-[#FAF8F3] dark:bg-slate-900 text-xs pl-10 pr-4 py-3 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all shadow-xs"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {filteredMaterials.length === 0 ? (
-            <div className="col-span-3 text-center py-10 bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl border border-[#E2DEC9] dark:border-slate-800">
-              <FileText className="w-8 h-8 text-[#7C9885]/50 mx-auto mb-2" />
-              <p className="text-xs text-[#66756C] dark:text-slate-400">
-                No hay archivos o materiales registrados.
-              </p>
-            </div>
-          ) : (
-            filteredMaterials.map((m) => (
-              <div
-                key={m.id}
-                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-md hover:border-[#7C9885]/40 transition-all flex flex-col justify-between space-y-4 group"
-              >
-                <div className="space-y-3">
-                  <span className="inline-block bg-[#E8F0EA] dark:bg-slate-800 text-[#546E5C] dark:text-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    {getExtensionLabel(m.mimeType, m.path)}
-                  </span>
-                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100 flex items-start gap-2 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
-                    <FileText className="w-4 h-4 text-[#7C9885] shrink-0 mt-0.5" /> 
-                    <span>{m.titulo}</span>
-                  </h4>
-                  <p className="text-xs text-[#66756C] dark:text-slate-400">
-                    Subido por: {m.usuario?.nombre || 'Miembro de Iglesia'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleDownload(m)}
-                  className="w-full py-2.5 bg-white dark:bg-slate-800 hover:bg-[#7C9885] hover:text-white dark:hover:bg-[#7C9885] text-[#546E5C] dark:text-slate-200 border border-[#C5D8CC] dark:border-slate-700 hover:border-[#7C9885] font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all duration-200 flex items-center justify-center gap-1.5"
-                >
-                  <Download className="w-3.5 h-3.5" /> Descargar Archivo
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* 7. Muro de Testimonios */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="inline-block bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3.5 py-1 rounded-full border border-[#7C9885]/30 tracking-wide uppercase">
-            Agradecimientos y Fe
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100">
-            Muro de Testimonios
+      {/* 3. ACCESOS RÁPIDOS DIARIOS (Recursos clave para los miembros) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
+        <div className="text-center space-y-1.5">
+          <h2 className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-widest">
+            Recursos Espirituales
           </h2>
-          <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
-            Compartiendo las grandes bendiciones que Dios realiza en Hualqui.
+          <p className="text-2xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+            Estudio y adoración diaria
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonies.length === 0 ? (
-            <div className="col-span-3 text-center py-10 bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl border border-[#E2DEC9] dark:border-slate-800">
-              <Sparkles className="w-8 h-8 text-[#7C9885]/50 mx-auto mb-2" />
-              <p className="text-xs text-[#66756C] dark:text-slate-400">
-                Aún no hay testimonios compartidos. ¡Sé el primero en publicar!
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Card: Lección Diaria */}
+          <div 
+            onClick={() => navigateTo('leccion')}
+            className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                Lección de Escuela Sabática
+              </h3>
+              <p className="text-xs text-[#526157] dark:text-slate-400 leading-relaxed">
+                Estudio diario de la palabra de Dios para toda la familia.
               </p>
             </div>
-          ) : (
-            testimonies.map((t) => (
-              <div
-                key={t.id}
-                className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 border border-[#E2DEC9] dark:border-slate-800 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885]">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-sm font-bold text-[#2D3831] dark:text-slate-100">
-                    {t.titulo || 'Agradecimiento al Señor'}
-                  </h4>
-                  <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-300 leading-relaxed italic">
-                    "{t.contenido || 'Sin contenido'}"
-                  </p>
-                </div>
-                <div className="pt-4 border-t border-[#E8E4D5] dark:border-slate-800 flex justify-between items-center text-xs text-[#66756C]">
-                  <span className="font-medium">👤 {t.autor || 'Hermano de Iglesia'}</span>
-                  <button
-                    onClick={() => handleLikeTestimonio(t.id)}
-                    className="px-3 py-1.5 bg-[#E8F0EA] dark:bg-slate-800 hover:bg-[#D8E6DB] text-[#546E5C] dark:text-emerald-300 font-semibold rounded-xl text-[11px] cursor-pointer transition-colors flex items-center gap-1.5"
-                  >
-                    <Heart className="w-3.5 h-3.5 fill-current text-[#E08A72]" /> Amén ({t.likes || 0})
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+          </div>
 
-        {/* Publicar Testimonio */}
-        <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 max-w-2xl mx-auto space-y-4 shadow-sm">
-          <h4 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm text-center flex items-center justify-center gap-1.5">
-            <MessageSquare className="w-4 h-4 text-[#7C9885]" /> ¿Tienes un testimonio para compartir?
-          </h4>
-          <form onSubmit={handleTestimonySubmit} className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                type="text"
-                placeholder="Tu Nombre o Familia"
-                value={testimonyAuthor}
-                onChange={(e) => setTestimonyAuthor(e.target.value)}
-                className="bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-              />
-              <input
-                type="text"
-                required
-                placeholder="Título del Testimonio *"
-                value={testimonyTitle}
-                onChange={(e) => setTestimonyTitle(e.target.value)}
-                className="bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-              />
+          {/* Card: Boletín Sabático */}
+          <div 
+            onClick={() => setBulletinModalOpen ? setBulletinModalOpen(true) : navigateTo('boletin')}
+            className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <FileText className="w-5 h-5" />
             </div>
-            <textarea
-              rows={3}
-              required
-              placeholder="Escribe brevemente tu testimonio de gratitud... *"
-              value={testimonyContent}
-              onChange={(e) => setTestimonyContent(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-            ></textarea>
-            <button
-              type="submit"
-              disabled={loadingTestimony}
-              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-sm hover:shadow-md cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-              <Send className="w-3.5 h-3.5" /> {loadingTestimony ? 'Publicando...' : 'Publicar Testimonio en el Muro'}
-            </button>
-          </form>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                Boletín Sabático
+              </h3>
+              <p className="text-xs text-[#526157] dark:text-slate-400 leading-relaxed">
+                Orden de culto, avisos importantes y anuncios de la semana.
+              </p>
+            </div>
+          </div>
+
+          {/* Card: Himnario */}
+          <div 
+            onClick={() => navigateTo('himnario')}
+            className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <Music className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                Himnario Adventista
+              </h3>
+              <p className="text-xs text-[#526157] dark:text-slate-400 leading-relaxed">
+                Cantos de alabanza y adoración con letras completas.
+              </p>
+            </div>
+          </div>
+
+          {/* Card: Jóvenes JA */}
+          <div 
+            onClick={() => navigateTo('jovenes')}
+            className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <Flame className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-[#2D3831] dark:text-slate-100 group-hover:text-[#7C9885] dark:group-hover:text-emerald-400 transition-colors">
+                Ministerio Joven (JA)
+              </h3>
+              <p className="text-xs text-[#526157] dark:text-slate-400 leading-relaxed">
+                Actividades, proyectos comunitarios y sociedad de jóvenes.
+              </p>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* 8. Formulario de Petición de Oración */}
-      <section className="max-w-3xl mx-auto px-4">
-        <div className="bg-[#FAF8F3] dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-sm border border-[#E2DEC9] dark:border-slate-800 space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#E08A72]/15 text-[#E08A72] flex items-center justify-center mx-auto">
-              <Heart className="w-6 h-6 fill-current" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100">
-              ¿Podemos Orar por Ti?
+      {/* 4. EVENTOS PRÓXIMOS / AGENDA CORTA */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xs font-bold text-[#7C9885] dark:text-emerald-400 uppercase tracking-widest">
+              Comunidad Activa
             </h2>
-            <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
-              Escribe tu motivo de oración para que nuestra comunidad interceda por ti.
+            <h3 className="text-2xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+              Próximos Eventos
+            </h3>
+          </div>
+          <button 
+            onClick={() => navigateTo('agenda')}
+            className="text-xs font-semibold text-[#7C9885] dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            Ver toda la agenda <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {upcomingEvents.map((ev) => (
+            <div 
+              key={ev.id}
+              className="bg-white dark:bg-slate-900/60 p-5 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 flex flex-col justify-between space-y-4 shadow-2xs"
+            >
+              <div className="space-y-2">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E8F0EA] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-400 border border-[#C5D8CC]/50">
+                  {ev.badge}
+                </span>
+                <h4 className="font-bold text-sm text-[#2D3831] dark:text-slate-200">
+                  {ev.title}
+                </h4>
+              </div>
+
+              <div className="space-y-1 text-xs text-[#526157] dark:text-slate-400 border-t border-[#E8E4D5] dark:border-slate-800 pt-3">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-[#7C9885]" />
+                  <span>{ev.date}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#7C9885]" />
+                  <span>{ev.location}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. CONTACTO Y UBICACIÓN RÁPIDA (CTA Final) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="bg-[#E8F0EA] dark:bg-slate-800/60 border border-[#C5D8CC] dark:border-slate-700 rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <h3 className="text-2xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+              ¿Te gustaría estudiar la Biblia o pedir oración?
+            </h3>
+            <p className="text-xs sm:text-sm text-[#526157] dark:text-slate-400 max-w-xl">
+              Estamos a tu disposición para acompañarte espiritualmente y responder tus dudas sobre la fe.
             </p>
           </div>
 
-          <form onSubmit={handlePrayerSubmit} className="space-y-4 text-xs">
-            <input
-              type="text"
-              placeholder="Tu Nombre (Opcional)"
-              value={prayerName}
-              onChange={(e) => setPrayerName(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-            />
-            <textarea
-              rows={3}
-              required
-              placeholder="Escribe aquí tu motivo o pedido de oración... *"
-              value={prayerRequest}
-              onChange={(e) => setPrayerRequest(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-            ></textarea>
-            <div className="flex items-center space-x-2.5 px-1">
-              <input
-                type="checkbox"
-                id="priv"
-                checked={prayerPrivate}
-                onChange={(e) => setPrayerPrivate(e.target.checked)}
-                className="w-4 h-4 rounded accent-[#7C9885] cursor-pointer"
-              />
-              <label htmlFor="priv" className="text-xs text-[#526157] dark:text-slate-300 cursor-pointer select-none">
-                Mantener este pedido en privado (solo con equipo pastoral)
-              </label>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <button
-              type="submit"
-              disabled={loadingPrayer}
-              className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-md shadow-[#7C9885]/20 hover:shadow-lg hover:shadow-[#7C9885]/30 cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              onClick={() => navigateTo('estudios-biblicos')}
+              className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer text-center"
             >
-              <Send className="w-3.5 h-3.5" /> {loadingPrayer ? 'Guardando...' : 'Enviar Pedido de Oración'}
+              Solicitar Estudio Bíblico
             </button>
-          </form>
+            <a
+              href="https://wa.me/56912345678"
+              target="_blank"
+              rel="noreferrer"
+              className="px-5 py-2.5 bg-white dark:bg-slate-700 border border-[#DCD7C5] dark:border-slate-600 text-[#2D3831] dark:text-slate-200 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+            >
+              <MessageCircle className="w-4 h-4 text-[#7C9885] dark:text-emerald-400" /> WhatsApp Pastoral
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* MODAL: Subida de Materiales R2 */}
-      {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#2D3831]/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#FAF8F3] dark:bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-8 space-y-5 border border-[#E2DEC9] dark:border-slate-800">
-            <div className="flex justify-between items-center border-b border-[#E8E4D5] dark:border-slate-800 pb-4">
-              <h3 className="font-bold text-[#2D3831] dark:text-emerald-100 text-sm sm:text-base flex items-center gap-2">
-                <Upload className="w-4 h-4 text-[#7C9885]" /> Subir Nuevo Material
-              </h3>
-              <button 
-                onClick={() => setUploadModalOpen(false)} 
-                className="text-[#66756C] hover:text-[#2D3831] dark:hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1.5">
-                  Título del Recurso *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej. Guía de Escuela Sabática"
-                  value={uploadTitle}
-                  onChange={(e) => setUploadTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-950 p-3.5 rounded-2xl border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 outline-none focus:border-[#7C9885] focus:ring-2 focus:ring-[#7C9885]/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#2D3831] dark:text-slate-200 mb-1.5">
-                  Seleccionar Archivo (PDF, PPTX, MP3) *
-                </label>
-                <input
-                  type="file"
-                  required
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-[#526157] dark:text-slate-400 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#E8F0EA] file:text-[#546E5C] hover:file:bg-[#D8E6DB] cursor-pointer"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loadingUpload}
-                className="w-full py-3.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-2xl shadow-md shadow-[#7C9885]/20 disabled:opacity-50 cursor-pointer transition-all flex items-center justify-center gap-2"
-              >
-                <Upload className="w-4 h-4" /> {loadingUpload ? 'Guardando en Cloudflare R2...' : 'Publicar Archivo'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODALES MONTADOS */}
-      {showBulletin && <BulletinModal isOpen={showBulletin} onClose={() => setShowBulletin(false)} />}
-      {showPastoral && <PastoralModal onClose={() => setShowPastoral(false)} />}
-      {showSermonModal && <SermonModal onClose={() => setShowSermonModal(false)} />}
     </div>
   );
 }

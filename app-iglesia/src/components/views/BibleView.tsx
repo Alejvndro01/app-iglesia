@@ -1,196 +1,389 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  BookOpen, 
+  Search, 
+  ChevronLeft, 
+  ChevronRight, 
+  Sparkles, 
+  Copy, 
+  Check, 
+  Loader2,
+  Bookmark,
+  Layers
+} from 'lucide-react';
 
-const LIBROS_BIBLIA = [
-  'Génesis', 'Éxodo', 'Levítico', 'Números', 'Deuteronomio',
-  'Josué', 'Jueces', 'Rut', '1 Samuel', '2 Samuel', '1 Reyes', '2 Reyes',
-  '1 Crónicas', '2 Crónicas', 'Esdras', 'Nehemías', 'Ester', 'Job', 'Salmos',
-  'Proverbios', 'Eclesiastés', 'Cantares', 'Isaías', 'Jeremías', 'Lamentaciones',
-  'Ezequiel', 'Daniel', 'Oseas', 'Joel', 'Amós', 'Abdías', 'Jonás', 'Miqueas',
-  'Nahúm', 'Habacuc', 'Sofonías', 'Hageo', 'Zacarías', 'Malaquías', 'Mateo',
-  'Marcos', 'Lucas', 'Juan', 'Hechos', 'Romanos', '1 Corintios', '2 Corintios',
-  'Gálatas', 'Efesios', 'Filipenses', 'Colosenses', '1 Tesalonicenses',
-  '2 Tesalonicenses', '1 Timoteo', '2 Timoteo', 'Tito', 'Filemón', 'Hebreos',
-  'Santiago', '1 Pedro', '2 Pedro', '1 Juan', '2 Juan', '3 Juan', 'Judas', 'Apocalipsis'
-];
-
-interface Versiculo {
+interface Verse {
   verse: number;
   text: string;
 }
 
+// Canónicos completos (66 libros con capítulos exactos)
+const CANON_BOOKS = [
+  // Antiguo Testamento (39)
+  { name: 'Génesis', testament: 'AT', chapters: 50 },
+  { name: 'Éxodo', testament: 'AT', chapters: 40 },
+  { name: 'Levítico', testament: 'AT', chapters: 27 },
+  { name: 'Números', testament: 'AT', chapters: 36 },
+  { name: 'Deuteronomio', testament: 'AT', chapters: 34 },
+  { name: 'Josué', testament: 'AT', chapters: 24 },
+  { name: 'Jueces', testament: 'AT', chapters: 21 },
+  { name: 'Rut', testament: 'AT', chapters: 4 },
+  { name: '1 Samuel', testament: 'AT', chapters: 31 },
+  { name: '2 Samuel', testament: 'AT', chapters: 24 },
+  { name: '1 Reyes', testament: 'AT', chapters: 22 },
+  { name: '2 Reyes', testament: 'AT', chapters: 25 },
+  { name: '1 Crónicas', testament: 'AT', chapters: 29 },
+  { name: '2 Crónicas', testament: 'AT', chapters: 36 },
+  { name: 'Esdras', testament: 'AT', chapters: 10 },
+  { name: 'Nehemías', testament: 'AT', chapters: 13 },
+  { name: 'Ester', testament: 'AT', chapters: 10 },
+  { name: 'Job', testament: 'AT', chapters: 42 },
+  { name: 'Salmos', testament: 'AT', chapters: 150 },
+  { name: 'Proverbios', testament: 'AT', chapters: 31 },
+  { name: 'Eclesiastés', testament: 'AT', chapters: 12 },
+  { name: 'Cantares', testament: 'AT', chapters: 8 },
+  { name: 'Isaías', testament: 'AT', chapters: 66 },
+  { name: 'Jeremías', testament: 'AT', chapters: 52 },
+  { name: 'Lamentaciones', testament: 'AT', chapters: 5 },
+  { name: 'Ezequiel', testament: 'AT', chapters: 48 },
+  { name: 'Daniel', testament: 'AT', chapters: 12 },
+  { name: 'Oseas', testament: 'AT', chapters: 14 },
+  { name: 'Joel', testament: 'AT', chapters: 3 },
+  { name: 'Amós', testament: 'AT', chapters: 9 },
+  { name: 'Abdías', testament: 'AT', chapters: 1 },
+  { name: 'Jonás', testament: 'AT', chapters: 4 },
+  { name: 'Miqueas', testament: 'AT', chapters: 7 },
+  { name: 'Nahúm', testament: 'AT', chapters: 3 },
+  { name: 'Habacuc', testament: 'AT', chapters: 3 },
+  { name: 'Sofonías', testament: 'AT', chapters: 3 },
+  { name: 'Hageo', testament: 'AT', chapters: 2 },
+  { name: 'Zacarías', testament: 'AT', chapters: 14 },
+  { name: 'Malaquías', testament: 'AT', chapters: 4 },
+
+  // Nuevo Testamento (27)
+  { name: 'Mateo', testament: 'NT', chapters: 28 },
+  { name: 'Marcos', testament: 'NT', chapters: 16 },
+  { name: 'Lucas', testament: 'NT', chapters: 24 },
+  { name: 'Juan', testament: 'NT', chapters: 21 },
+  { name: 'Hechos', testament: 'NT', chapters: 28 },
+  { name: 'Romanos', testament: 'NT', chapters: 16 },
+  { name: '1 Corintios', testament: 'NT', chapters: 16 },
+  { name: '2 Corintios', testament: 'NT', chapters: 13 },
+  { name: 'Gálatas', testament: 'NT', chapters: 6 },
+  { name: 'Efesios', testament: 'NT', chapters: 6 },
+  { name: 'Filipenses', testament: 'NT', chapters: 4 },
+  { name: 'Colosenses', testament: 'NT', chapters: 4 },
+  { name: '1 Tesalonicenses', testament: 'NT', chapters: 5 },
+  { name: '2 Tesalonicenses', testament: 'NT', chapters: 3 },
+  { name: '1 Timoteo', testament: 'NT', chapters: 6 },
+  { name: '2 Timoteo', testament: 'NT', chapters: 4 },
+  { name: 'Tito', testament: 'NT', chapters: 3 },
+  { name: 'Filemón', testament: 'NT', chapters: 1 },
+  { name: 'Hebreos', testament: 'NT', chapters: 13 },
+  { name: 'Santiago', testament: 'NT', chapters: 5 },
+  { name: '1 Pedro', testament: 'NT', chapters: 5 },
+  { name: '2 Pedro', testament: 'NT', chapters: 3 },
+  { name: '1 Juan', testament: 'NT', chapters: 5 },
+  { name: '2 Juan', testament: 'NT', chapters: 1 },
+  { name: '3 Juan', testament: 'NT', chapters: 1 },
+  { name: 'Judas', testament: 'NT', chapters: 1 },
+  { name: 'Apocalipsis', testament: 'NT', chapters: 22 }
+];
+
+const BIBLE_VERSIONS = [
+  { id: 'RVR1960', name: 'Reina Valera 1960 (RVR1960)' },
+  { id: 'NVI', name: 'Nueva Versión Internacional (NVI)' },
+  { id: 'LBLA', name: 'La Biblia de las Américas (LBLA)' },
+  { id: 'DHH', name: 'Dios Habla Hoy (DHH)' },
+  { id: 'PDT', name: 'Palabra de Dios para Todos (PDT)' },
+  { id: 'NTV', name: 'Nueva Traducción Viviente (NTV)' }
+];
+
 export function BibleView() {
-  const [libro, setLibro] = useState('Génesis');
-  const [capitulo, setCapitulo] = useState('1');
-  const [versiculos, setVersiculos] = useState<Versiculo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<string>('RVR1960');
+  const [selectedTestament, setSelectedTestament] = useState<'AT' | 'NT'>('NT');
+  const [selectedBook, setSelectedBook] = useState<string>('Juan');
+  const [selectedChapter, setSelectedChapter] = useState<number>(3);
+  const [searchFilter, setSearchFilter] = useState('');
   
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const [verses, setVerses] = useState<Verse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
 
+  const currentBookData = CANON_BOOKS.find((b) => b.name === selectedBook) || CANON_BOOKS[42];
+
+  // Carga asíncrona conectada al API
   useEffect(() => {
-    // Cancelar la petición anterior si sigue en vuelo
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    let isMounted = true;
+    setLoading(true);
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    async function fetchCapitulo() {
-      setLoading(true);
-      setErrorMsg(null);
-
-      try {
-        const res = await fetch(
-          `/api/biblia?libro=${encodeURIComponent(libro)}&capitulo=${capitulo}`,
-          { signal: controller.signal }
-        );
-
-        if (!res.ok) throw new Error('Error en el servidor');
-
-        const data = await res.json();
-
-        if (Array.isArray(data?.verses) && data.verses.length > 0) {
-          setVersiculos(data.verses);
-        } else {
-          setVersiculos([]);
-          setErrorMsg('No se encontraron versículos para este capítulo.');
+    fetch(`/api/biblia?libro=${encodeURIComponent(selectedBook)}&capitulo=${selectedChapter}&version=${selectedVersion}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted) {
+          setVerses(data.verses || []);
+          setLoading(false);
         }
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') {
-          return; // Petición cancelada deliberadamente, no mostrar error
+      })
+      .catch((err) => {
+        console.error('Error cargando pasaje bíblico:', err);
+        if (isMounted) {
+          setVerses([]);
+          setLoading(false);
         }
-        console.error('Error cargando pasaje:', err);
-        setErrorMsg('Error de conexión al consultar las Sagradas Escrituras.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCapitulo();
+      });
 
     return () => {
-      controller.abort();
+      isMounted = false;
     };
-  }, [libro, capitulo]);
+  }, [selectedBook, selectedChapter, selectedVersion]);
 
-  const handlePrevCapitulo = () => {
-    const num = parseInt(capitulo, 10);
-    if (num > 1) {
-      setCapitulo((num - 1).toString());
-    }
+  const handleBookChange = (bookName: string) => {
+    setSelectedBook(bookName);
+    setSelectedChapter(1);
   };
 
-  const handleNextCapitulo = () => {
-    const num = parseInt(capitulo, 10);
-    setCapitulo((num + 1).toString());
+  const handleCopyChapter = () => {
+    const textToCopy = verses.map((v) => `${v.verse}. ${v.text}`).join('\n');
+    navigator.clipboard.writeText(`${selectedBook} ${selectedChapter} (${selectedVersion})\n\n${textToCopy}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const filteredBooks = CANON_BOOKS.filter(
+    (b) =>
+      b.testament === selectedTestament &&
+      b.name.toLowerCase().includes(searchFilter.toLowerCase())
+  );
+
+  const getFontSizeClass = () => {
+    switch (fontSize) {
+      case 'sm': return 'text-xs sm:text-sm';
+      case 'lg': return 'text-base sm:text-lg';
+      default: return 'text-sm sm:text-base';
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 antialiased">
-      {/* Encabezado */}
-      <div className="text-center max-w-xl mx-auto space-y-2">
-        <span className="bg-[#E8F0EA] text-[#546E5C] dark:bg-emerald-950/50 dark:text-emerald-300 text-[11px] font-bold px-3 py-1 rounded-full border border-[#7C9885]/30">
-          Escrituras Sagradas
-        </span>
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center justify-center gap-2">
-          <BookOpen className="w-6 h-6 text-[#7C9885]" /> Santa Biblia
-        </h2>
-        <p className="text-xs sm:text-sm text-[#66756C] dark:text-slate-400">
-          Lectura y meditación de la Palabra de Dios — Reina-Valera 1960
-        </p>
-      </div>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 antialiased text-[#2D3831] dark:text-slate-200">
+      
+      {/* 1. ENCABEZADO Y SELECTOR DE VERSIONES */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E2DEC9] dark:border-slate-800 pb-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-[#E8F0EA] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-400">
+              <BookOpen className="w-4 h-4" />
+            </span>
+            <span className="text-[11px] font-bold tracking-widest uppercase text-[#7C9885] dark:text-emerald-400">
+              Santas Escrituras
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+            {selectedBook} {selectedChapter}
+          </h1>
+        </div>
 
-      {/* Selector de Libro y Capítulo */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#FAF8F3] dark:bg-slate-900 p-4 rounded-3xl shadow-xs border border-[#E2DEC9] dark:border-slate-800">
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Controles de Versión y Testamento */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Selector de Traducción */}
           <select
-            value={libro}
-            onChange={(e) => { setLibro(e.target.value); setCapitulo('1'); }}
-            className="bg-white dark:bg-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl outline-none border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 focus:border-[#7C9885] cursor-pointer"
+            value={selectedVersion}
+            onChange={(e) => setSelectedVersion(e.target.value)}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#FAF8F3] dark:bg-slate-900 border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-200 outline-none focus:border-[#7C9885] cursor-pointer"
           >
-            {LIBROS_BIBLIA.map((b) => (
-              <option key={b} value={b}>{b}</option>
+            {BIBLE_VERSIONS.map((v) => (
+              <option key={v.id} value={v.id}>{v.name}</option>
             ))}
           </select>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#66756C] dark:text-slate-400">Capítulo:</span>
+          {/* Testamento */}
+          <div className="flex gap-1 p-1 bg-[#E8F0EA] dark:bg-slate-800 rounded-xl border border-[#C5D8CC]/60 dark:border-slate-700">
+            <button
+              onClick={() => setSelectedTestament('AT')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedTestament === 'AT' ? 'bg-[#7C9885] text-white shadow-xs' : 'text-[#526157] dark:text-slate-300'
+              }`}
+            >
+              AT (39)
+            </button>
+            <button
+              onClick={() => setSelectedTestament('NT')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedTestament === 'NT' ? 'bg-[#7C9885] text-white shadow-xs' : 'text-[#526157] dark:text-slate-300'
+              }`}
+            >
+              NT (27)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. SPLIT CANÓNICO: SELECTOR DE LIBROS (4 Cols) & LECTURA (8 Cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Panel Lateral: Libros y Capítulos */}
+        <div className="lg:col-span-4 bg-[#FAF8F3] dark:bg-slate-900/70 border border-[#E2DEC9] dark:border-slate-800 rounded-3xl p-5 space-y-4 shadow-xs">
+          
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7C9885]" />
             <input
-              type="number"
-              min="1"
-              max="150"
-              value={capitulo}
-              onChange={(e) => setCapitulo(e.target.value || '1')}
-              className="w-16 bg-white dark:bg-slate-950 text-xs font-bold p-2.5 rounded-xl outline-none text-center border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-100 focus:border-[#7C9885]"
+              type="text"
+              placeholder="Buscar libro bíblico..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-200 focus:outline-none focus:border-[#7C9885]"
             />
           </div>
-        </div>
 
-        {/* Botones de navegación */}
-        <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
-          <button
-            type="button"
-            onClick={handlePrevCapitulo}
-            disabled={parseInt(capitulo, 10) <= 1}
-            className="p-2.5 bg-white dark:bg-slate-950 hover:bg-[#E8F0EA] dark:hover:bg-slate-800 disabled:opacity-40 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-700 rounded-xl cursor-pointer transition-colors"
-            title="Capítulo anterior"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleNextCapitulo}
-            className="p-2.5 bg-white dark:bg-slate-950 hover:bg-[#E8F0EA] dark:hover:bg-slate-800 text-[#2D3831] dark:text-slate-200 border border-[#DCD7C5] dark:border-slate-700 rounded-xl cursor-pointer transition-colors"
-            title="Capítulo siguiente"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Contenedor del Texto */}
-      <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs transition-colors">
-        <div className="border-b border-[#E8E4D5] dark:border-slate-800 pb-4 mb-6 flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[#7C9885]" /> {libro} {capitulo}
-          </h2>
-          <span className="text-xs font-semibold text-[#7C9885] dark:text-emerald-400 bg-[#E8F0EA] dark:bg-slate-800 px-3 py-1 rounded-full">
-            Reina-Valera 1960
-          </span>
-        </div>
-
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-16 space-y-2 text-[#7C9885]">
-            <Loader2 className="w-6 h-6 animate-spin" />
-            <p className="text-xs font-semibold text-[#66756C] dark:text-slate-400">
-              Cargando las Escrituras...
-            </p>
+          <div className="grid grid-cols-2 gap-1.5 max-h-[260px] overflow-y-auto pr-1">
+            {filteredBooks.map((b) => {
+              const isSelected = selectedBook === b.name;
+              return (
+                <button
+                  key={b.name}
+                  onClick={() => handleBookChange(b.name)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold text-left transition-all cursor-pointer truncate ${
+                    isSelected
+                      ? 'bg-[#7C9885] text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-800 border border-[#E8E4D5] dark:border-slate-700/80 text-[#2D3831] dark:text-slate-200 hover:border-[#7C9885]'
+                  }`}
+                >
+                  {b.name}
+                </button>
+              );
+            })}
           </div>
-        )}
 
-        {errorMsg && !loading && (
-          <div className="p-4 bg-[#F8F5EC] dark:bg-slate-800/80 border border-[#E8E4D5] dark:border-slate-700 text-[#E08A72] dark:text-amber-400 rounded-2xl text-xs font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" /> {errorMsg}
+          <div className="pt-3 border-t border-[#E8E4D5] dark:border-slate-700/80 space-y-2">
+            <div className="flex justify-between items-center text-xs">
+              <span className="font-bold text-[#66756C] dark:text-slate-400 uppercase">Capítulos</span>
+              <span className="font-semibold text-[#7C9885] dark:text-emerald-400">{currentBookData.chapters} caps</span>
+            </div>
+            
+            <div className="grid grid-cols-6 gap-1.5 max-h-[160px] overflow-y-auto pr-1">
+              {Array.from({ length: currentBookData.chapters }, (_, i) => i + 1).map((cap) => {
+                const isSelected = selectedChapter === cap;
+                return (
+                  <button
+                    key={cap}
+                    onClick={() => setSelectedChapter(cap)}
+                    className={`h-8 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                      isSelected
+                        ? 'bg-[#7C9885] text-white shadow-xs'
+                        : 'bg-white dark:bg-slate-800 border border-[#E8E4D5] dark:border-slate-700/80 text-[#526157] dark:text-slate-300 hover:border-[#7C9885]'
+                    }`}
+                  >
+                    {cap}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
 
-        {!loading && !errorMsg && versiculos.length > 0 && (
-          <div className="space-y-3.5 leading-relaxed text-sm sm:text-base text-[#3A473E] dark:text-slate-200">
-            {versiculos.map((v) => (
-              <p key={v.verse} className="text-justify leading-relaxed">
-                <sup className="font-bold text-[#7C9885] dark:text-emerald-400 mr-1.5 text-xs select-none">
-                  {v.verse}
-                </sup>
-                {v.text}
+        </div>
+
+        {/* Panel de Lectura del Capítulo */}
+        <div className="lg:col-span-8 bg-[#FAF8F3] dark:bg-slate-900/80 border border-[#E2DEC9] dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2DEC9] dark:border-slate-800 pb-5">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#7C9885] dark:text-emerald-400">
+                Lectura Sagrada
+              </span>
+              <h2 className="text-2xl font-serif font-bold text-[#2D3831] dark:text-emerald-100">
+                {selectedBook} {selectedChapter}
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyChapter}
+                className="px-3 py-1.5 rounded-xl border border-[#DCD7C5] dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copiado' : 'Copiar'}
+              </button>
+
+              <div className="flex items-center gap-1 p-1 bg-[#E8F0EA] dark:bg-slate-800 rounded-xl border border-[#C5D8CC]/60 dark:border-slate-700">
+                <button
+                  onClick={() => setFontSize('sm')}
+                  className={`px-2 py-0.5 rounded-md text-xs font-bold transition-colors ${
+                    fontSize === 'sm' ? 'bg-[#7C9885] text-white' : 'text-[#526157] dark:text-slate-300'
+                  }`}
+                >
+                  A-
+                </button>
+                <button
+                  onClick={() => setFontSize('base')}
+                  className={`px-2 py-0.5 rounded-md text-xs font-bold transition-colors ${
+                    fontSize === 'base' ? 'bg-[#7C9885] text-white' : 'text-[#526157] dark:text-slate-300'
+                  }`}
+                >
+                  A
+                </button>
+                <button
+                  onClick={() => setFontSize('lg')}
+                  className={`px-2 py-0.5 rounded-md text-xs font-bold transition-colors ${
+                    fontSize === 'lg' ? 'bg-[#7C9885] text-white' : 'text-[#526157] dark:text-slate-300'
+                  }`}
+                >
+                  A+
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Versículos */}
+          {loading ? (
+            <div className="py-20 flex flex-col items-center justify-center space-y-3 text-[#7C9885]">
+              <Loader2 className="w-7 h-7 animate-spin" />
+              <p className="text-xs font-semibold text-[#66756C] dark:text-slate-400">
+                Cargando {selectedBook} {selectedChapter} ({selectedVersion})...
               </p>
-            ))}
+            </div>
+          ) : verses.length > 0 ? (
+            <div className={`space-y-3 font-serif leading-relaxed text-[#2D3831] dark:text-slate-200 ${getFontSizeClass()}`}>
+              {verses.map((v) => (
+                <p key={v.verse} className="flex items-start gap-2.5 hover:bg-[#E8F0EA]/30 dark:hover:bg-slate-800/40 p-1.5 rounded-lg transition-colors">
+                  <span className="text-[11px] font-sans font-bold text-[#7C9885] dark:text-emerald-400 select-none min-w-[20px] pt-0.5">
+                    {v.verse}
+                  </span>
+                  <span>{v.text}</span>
+                </p>
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center text-xs text-[#66756C] dark:text-slate-400">
+              No se encontraron versículos disponibles para este capítulo en la versión seleccionada.
+            </div>
+          )}
+
+          {/* Navegación Inferior */}
+          <div className="pt-6 border-t border-[#E8E4D5] dark:border-slate-800 flex items-center justify-between gap-4">
+            <button
+              disabled={selectedChapter <= 1}
+              onClick={() => setSelectedChapter((prev) => Math.max(1, prev - 1))}
+              className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-[#DCD7C5] dark:border-slate-700 text-xs font-bold text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft className="w-4 h-4" /> Capítulo Anterior
+            </button>
+
+            <button
+              disabled={selectedChapter >= currentBookData.chapters}
+              onClick={() => setSelectedChapter((prev) => Math.min(currentBookData.chapters, prev + 1))}
+              className="px-4 py-2 rounded-xl bg-[#7C9885] hover:bg-[#6B8774] text-white text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              Capítulo Siguiente <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        )}
+
+        </div>
+
       </div>
+
     </div>
   );
 }
