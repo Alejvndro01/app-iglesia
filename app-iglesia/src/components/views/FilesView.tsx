@@ -52,6 +52,9 @@ export function FilesView() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
+  // Estado para feedback de descarga
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   // Visor / Preview Modal
   const [previewFile, setPreviewFile] = useState<ArchivoItem | null>(null);
 
@@ -93,6 +96,39 @@ export function FilesView() {
     return <FileIcon className="w-5 h-5 text-[#7C9885]" />;
   };
 
+  // Forzar la descarga directa del blob sin redirección ni pestañas nuevas
+  const handleDirectDownload = async (fileUrl: string, fileName: string, fileId?: string) => {
+    try {
+      if (fileId) setDownloadingId(fileId);
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error('Error al obtener el archivo para descarga.');
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Obtener o inferir la extensión del archivo original si hace falta
+      const extension = fileUrl.split('.').pop()?.split('?')[0];
+      const hasExtension = fileName.includes('.');
+      const finalFileName = hasExtension || !extension ? fileName : `${fileName}.${extension}`;
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = finalFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Liberar el objeto URL de memoria
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('[DOWNLOAD_ERROR]', err);
+      // Fallback a enlace normal en caso de fallo estricto de CORS
+      window.location.href = fileUrl;
+    } finally {
+      if (fileId) setDownloadingId(null);
+    }
+  };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selected = e.target.files[0];
@@ -116,7 +152,6 @@ export function FilesView() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Subida con feedback progresivo
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title.trim()) {
@@ -130,7 +165,6 @@ export function FilesView() {
     setUploadProgress(0);
 
     try {
-      // 1. Obtener URL presignada
       setProgressStatus('Solicitando autorización segura...');
       const presignedRes = await fetch('/api/archivos/presigned', {
         method: 'POST',
@@ -144,7 +178,6 @@ export function FilesView() {
       if (!presignedRes.ok) throw new Error('No se pudo generar el enlace de subida presignado.');
       const { uploadUrl, publicUrl }: UploadResponse = await presignedRes.json();
 
-      // 2. Subida directa con tracking XMLHttpRequest
       setProgressStatus('Transfiriendo archivo al storage R2...');
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -170,7 +203,6 @@ export function FilesView() {
         xhr.send(file);
       });
 
-      // 3. Persistir en la base de datos
       setProgressStatus('Registrando en base de datos...');
       const dbRes = await fetch('/api/archivos', {
         method: 'POST',
@@ -219,7 +251,7 @@ export function FilesView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Panel de Subida (4 Cols) */}
+        {/* Panel de Subida */}
         <div className="lg:col-span-4 bg-[#FAF8F3] dark:bg-slate-900/70 border border-[#E2DEC9] dark:border-slate-800 rounded-3xl p-6 space-y-4 shadow-xs">
           <h2 className="text-xs font-bold uppercase tracking-wider text-[#66756C] dark:text-slate-400">
             Cargar Recurso
@@ -232,7 +264,7 @@ export function FilesView() {
               </label>
               <input
                 type="text"
-                placeholder="Nombre del documento, lección o audio..."
+                placeholder="Nombre del recurso..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={uploading}
@@ -240,7 +272,6 @@ export function FilesView() {
               />
             </div>
 
-            {/* Zona Dropzone */}
             {!file ? (
               <div
                 onDragOver={(e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragOver(true); }}
@@ -303,7 +334,6 @@ export function FilesView() {
               </div>
             )}
 
-            {/* Barra de Progreso */}
             {uploading && (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[11px] font-semibold text-[#7C9885] dark:text-emerald-400">
@@ -319,7 +349,6 @@ export function FilesView() {
               </div>
             )}
 
-            {/* Alertas de Estado */}
             {error && (
               <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -341,7 +370,7 @@ export function FilesView() {
             >
               {uploading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Procesando subida...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Procesando...
                 </>
               ) : (
                 <>
@@ -352,7 +381,7 @@ export function FilesView() {
           </form>
         </div>
 
-        {/* Lista y Visualizador (8 Cols) */}
+        {/* Lista y Visualizador */}
         <div className="lg:col-span-8 bg-[#FAF8F3] dark:bg-slate-900/80 border border-[#E2DEC9] dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           <div className="flex items-center justify-between border-b border-[#E2DEC9] dark:border-slate-800 pb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#66756C] dark:text-slate-400">
@@ -378,67 +407,71 @@ export function FilesView() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {archivos.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-[#E8E4D5] dark:border-slate-700 flex flex-col justify-between space-y-3 hover:border-[#7C9885] transition-all shadow-2xs"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#E8F0EA] dark:bg-slate-700/60 shrink-0">
-                      {getFileIcon(item.mimeType)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-[#2D3831] dark:text-slate-200 truncate" title={item.titulo}>
-                        {item.titulo}
-                      </p>
-                      <p className="text-[10px] text-[#66756C] dark:text-slate-400 mt-0.5">
-                        {formatFileSize(item.tamano)} • {item.mimeType.split('/')[1]?.toUpperCase() || 'ARCHIVO'}
-                      </p>
-                      <div className="flex items-center gap-2 text-[10px] text-[#66756C] dark:text-slate-400 mt-1">
-                        {item.usuario?.name && (
-                          <span className="flex items-center gap-1 truncate">
-                            <User className="w-2.5 h-2.5" /> {item.usuario.name}
+              {archivos.map((item) => {
+                const isDownloading = downloadingId === item.id;
+                return (
+                  <div 
+                    key={item.id} 
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-[#E8E4D5] dark:border-slate-700 flex flex-col justify-between space-y-3 hover:border-[#7C9885] transition-all shadow-2xs"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#E8F0EA] dark:bg-slate-700/60 shrink-0">
+                        {getFileIcon(item.mimeType)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-[#2D3831] dark:text-slate-200 truncate" title={item.titulo}>
+                          {item.titulo}
+                        </p>
+                        <p className="text-[10px] text-[#66756C] dark:text-slate-400 mt-0.5">
+                          {formatFileSize(item.tamano)} • {item.mimeType.split('/')[1]?.toUpperCase() || 'ARCHIVO'}
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] text-[#66756C] dark:text-slate-400 mt-1">
+                          {item.usuario?.name && (
+                            <span className="flex items-center gap-1 truncate">
+                              <User className="w-2.5 h-2.5" /> {item.usuario.name}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-2.5 h-2.5" /> {new Date(item.createdAt).toLocaleDateString()}
                           </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-2.5 h-2.5" /> {new Date(item.createdAt).toLocaleDateString()}
-                        </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Acciones */}
-                  <div className="pt-2 border-t border-[#E8E4D5] dark:border-slate-700/60 flex items-center justify-end gap-2">
-                    {/* Botón Ver / Reproducir */}
-                    <button
-                      onClick={() => setPreviewFile(item)}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#E8F0EA] dark:bg-slate-700 hover:bg-[#7C9885] hover:text-white text-[#526157] dark:text-slate-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      {item.mimeType.startsWith('video/') || item.mimeType.startsWith('audio/') ? (
-                        <>
-                          <Play className="w-3 h-3" /> Reproducir
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="w-3 h-3" /> Ver
-                        </>
-                      )}
-                    </button>
+                    <div className="pt-2 border-t border-[#E8E4D5] dark:border-slate-700/60 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => setPreviewFile(item)}
+                        className="px-2.5 py-1.5 rounded-lg bg-[#E8F0EA] dark:bg-slate-700 hover:bg-[#7C9885] hover:text-white text-[#526157] dark:text-slate-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        {item.mimeType.startsWith('video/') || item.mimeType.startsWith('audio/') ? (
+                          <>
+                            <Play className="w-3 h-3" /> Reproducir
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3 h-3" /> Ver
+                          </>
+                        )}
+                      </button>
 
-                    {/* Descarga directa */}
-                    <a
-                      href={item.path}
-                      download={item.titulo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg border border-[#DCD7C5] dark:border-slate-700 text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] dark:hover:bg-slate-700 transition-colors"
-                      title="Descargar archivo"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </a>
+                      {/* Descarga directa binaria */}
+                      <button
+                        type="button"
+                        onClick={() => handleDirectDownload(item.path, item.titulo, item.id)}
+                        disabled={isDownloading}
+                        className="p-1.5 rounded-lg border border-[#DCD7C5] dark:border-slate-700 text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] dark:hover:bg-slate-700 transition-colors cursor-pointer disabled:opacity-50"
+                        title="Descargar directamente"
+                      >
+                        {isDownloading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -450,7 +483,6 @@ export function FilesView() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-4xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh]">
             
-            {/* Header del Modal */}
             <div className="flex items-center justify-between pb-3 border-b border-[#E2DEC9] dark:border-slate-800">
               <div className="flex items-center gap-2 truncate pr-4">
                 {getFileIcon(previewFile.mimeType)}
@@ -466,7 +498,6 @@ export function FilesView() {
               </button>
             </div>
 
-            {/* Contenido según MIME */}
             <div className="flex-1 overflow-auto my-4 flex items-center justify-center min-h-[300px]">
               {previewFile.mimeType.startsWith('video/') ? (
                 <video 
@@ -478,7 +509,7 @@ export function FilesView() {
               ) : previewFile.mimeType.startsWith('audio/') ? (
                 <div className="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl border border-[#E8E4D5] dark:border-slate-700 flex flex-col items-center space-y-4">
                   <FileAudio className="w-16 h-16 text-[#7C9885] animate-pulse" />
-                  <p className="text-xs font-bold">{previewFile.titulo}</p>
+                  <p className="text-xs font-bold text-center truncate w-full">{previewFile.titulo}</p>
                   <audio 
                     src={previewFile.path} 
                     controls 
@@ -501,17 +532,14 @@ export function FilesView() {
               )}
             </div>
 
-            {/* Footer Modal */}
             <div className="flex justify-end gap-2 pt-3 border-t border-[#E2DEC9] dark:border-slate-800">
-              <a
-                href={previewFile.path}
-                download={previewFile.titulo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-[#7C9885] hover:bg-[#6B8774] text-white text-xs font-bold transition-all flex items-center gap-1.5"
+              <button
+                type="button"
+                onClick={() => handleDirectDownload(previewFile.path, previewFile.titulo)}
+                className="px-4 py-2 rounded-xl bg-[#7C9885] hover:bg-[#6B8774] text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Download className="w-3.5 h-3.5" /> Descargar Archivo
-              </a>
+              </button>
             </div>
 
           </div>
