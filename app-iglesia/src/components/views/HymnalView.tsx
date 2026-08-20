@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { HimnoDetail } from '@/types';
 import { Search, Music, BookOpen, Volume2, Mic, Loader2 } from 'lucide-react';
@@ -15,6 +15,10 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
   const [loading, setLoading] = useState(true);
   const [selectedHymn, setSelectedHymn] = useState<HimnoDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Referencias a los elementos de audio para control mutuo
+  const vocalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const instrAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
@@ -33,6 +37,16 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
   }, [search]);
 
   const handleSelectHymn = async (number: number) => {
+    // Detener y resetear cualquier audio en reproducción previa
+    if (vocalAudioRef.current) {
+      vocalAudioRef.current.pause();
+      vocalAudioRef.current.currentTime = 0;
+    }
+    if (instrAudioRef.current) {
+      instrAudioRef.current.pause();
+      instrAudioRef.current.currentTime = 0;
+    }
+
     setLoadingDetail(true);
     try {
       const data = await apiClient.getHimno(number);
@@ -42,6 +56,20 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
       showToast?.('Error al cargar el himno seleccionado');
     } finally {
       setLoadingDetail(false);
+    }
+  };
+
+  // Pausar audio instrumental cuando suena la versión cantada
+  const handleVocalPlay = () => {
+    if (instrAudioRef.current && !instrAudioRef.current.paused) {
+      instrAudioRef.current.pause();
+    }
+  };
+
+  // Pausar versión cantada cuando suena el audio instrumental
+  const handleInstrPlay = () => {
+    if (vocalAudioRef.current && !vocalAudioRef.current.paused) {
+      vocalAudioRef.current.pause();
     }
   };
 
@@ -137,7 +165,7 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                 )}
               </div>
 
-              {/* Reproductor de Audio */}
+              {/* Reproductor de Audio Exclusivo */}
               {(selectedHymn.mp3Url || selectedHymn.mp3UrlInstr) && (
                 <div className="bg-[#E8F0EA] dark:bg-slate-800/80 p-4 rounded-2xl border border-[#C5D8CC] dark:border-slate-700 space-y-4">
                   <h4 className="text-xs font-bold text-[#2D3831] dark:text-emerald-200 flex items-center gap-1.5">
@@ -150,8 +178,10 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                         <Mic className="w-3 h-3" /> Audio Cantado:
                       </p>
                       <audio
+                        ref={vocalAudioRef}
                         key={`cantado-${selectedHymn.number}`}
                         controls
+                        onPlay={handleVocalPlay}
                         preload="metadata"
                         className="w-full h-9 rounded-lg"
                         src={selectedHymn.mp3Url}
@@ -167,8 +197,10 @@ export function HimnarioPageView({ showToast }: HimnarioPageViewProps) {
                         <Music className="w-3 h-3" /> Pista / Instrumental:
                       </p>
                       <audio
+                        ref={instrAudioRef}
                         key={`instr-${selectedHymn.number}`}
                         controls
+                        onPlay={handleInstrPlay}
                         preload="metadata"
                         className="w-full h-9 rounded-lg"
                         src={selectedHymn.mp3UrlInstr}

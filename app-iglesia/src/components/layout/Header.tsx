@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { BulletinModal } from '../modales/BulletinModal';
 import { ThemeToggle } from '../ThemeToggle';
@@ -17,7 +17,15 @@ import {
   LogOut, 
   Menu, 
   X,
-  Flame 
+  Flame,
+  ChevronDown,
+  Sparkles,
+  Users,
+  Compass,
+  Home,
+  Radio,
+  Share2,
+  FolderUp
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -25,6 +33,22 @@ interface HeaderProps {
   navigateTo: (page: string) => void;
   setBulletinModalOpen?: (open: boolean) => void;
   showToast?: (msg: string) => void;
+}
+
+interface NavSubItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  description?: string;
+  action?: () => void;
+}
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon?: React.ElementType;
+  children?: NavSubItem[];
+  action?: () => void;
 }
 
 export function Header({
@@ -35,26 +59,125 @@ export function Header({
   const { data: session, status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bulletinOpen, setBulletinOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
 
-  const navItems = [
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown desktop al hacer clic fuera del componente
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const navItems: NavItem[] = [
     { id: 'inicio', label: 'Inicio', icon: Church },
-    { id: 'jovenes', label: 'Jóvenes JA', icon: Flame },
-    { id: 'biblia', label: 'Biblia', icon: BookOpen },
-    { id: 'leccion', label: 'Lección Diaria', icon: Calendar },
-    { id: 'himnario', label: 'Himnario', icon: Music },
-    { id: 'estudios-biblicos', label: 'Estudios Bíblicos', icon: GraduationCap },
-    { id: 'mayordomia', label: 'Mayordomía', icon: HeartHandshake },
-    { id: 'agenda', label: 'Agenda', icon: Calendar },
-    { id: 'boletin', label: 'Boletín Sabático', icon: FileText, action: () => setBulletinOpen(true) },
+    { id: 'historia', label: 'Nuestra Historia', icon: Compass },
+    {
+      id: 'ministerios',
+      label: 'Ministerios',
+      icon: Users,
+      children: [
+        { 
+          id: 'jovenes', 
+          label: 'Jóvenes JA', 
+          icon: Flame, 
+          description: 'Sociedad JA, proyectos juveniles y Misión Caleb' 
+        },
+        { 
+          id: 'musica', 
+          label: 'Ministerio de Música', 
+          icon: Music, 
+          description: 'Coros, alabanza congregacional y partes especiales' 
+        },
+        { 
+          id: 'ministerio-personal', 
+          label: 'Ministerio Personal', 
+          icon: Share2, 
+          description: 'Evangelismo, parejas misioneras y discipulado' 
+        },
+        { 
+          id: 'hogar-familia', 
+          label: 'Hogar y Familia', 
+          icon: Home, 
+          description: 'Matrimonios, crianza bíblica y consejería familiar' 
+        },
+        { 
+          id: 'comunicaciones', 
+          label: 'Comunicaciones & Medios', 
+          icon: Radio, 
+          description: 'Transmisiones en vivo, avisos y producción digital' 
+        },
+        { 
+          id: 'mayordomia', 
+          label: 'Mayordomía Cristiana', 
+          icon: HeartHandshake, 
+          description: 'Fidelidad, calculadora de diezmos y ofrendas' 
+        },
+      ],
+    },
+    {
+      id: 'recursos',
+      label: 'Recursos',
+      icon: Sparkles,
+      children: [
+        { 
+          id: 'biblia', 
+          label: 'Biblia Online', 
+          icon: BookOpen, 
+          description: 'Texto bíblico y lecturas RVR1960' 
+        },
+        { 
+          id: 'leccion', 
+          label: 'Lección Diaria', 
+          icon: Calendar, 
+          description: 'Escuela Sabática adultos y jóvenes' 
+        },
+        { 
+          id: 'himnario', 
+          label: 'Himnario Adventista', 
+          icon: Music, 
+          description: 'Cantos de alabanza y letras completas' 
+        },
+        { 
+          id: 'estudios-biblicos', 
+          label: 'Estudios Bíblicos', 
+          icon: GraduationCap, 
+          description: 'Cursos de fe con validación OTP' 
+        },
+        { 
+          id: 'archivos', 
+          label: 'Archivos & Documentos', 
+          icon: FolderUp, 
+          description: 'Descarga y subida de recursos comunitarios' 
+        },
+      ],
+    },
+    { 
+      id: 'boletin', 
+      label: 'Boletín Sabático', 
+      icon: FileText, 
+      action: () => setBulletinOpen(true) 
+    },
   ];
 
-  const handleNavClick = (item: { id: string; label: string; action?: () => void }) => {
-    if (item.action) {
-      item.action();
+  const handleNavClick = (id: string, action?: () => void) => {
+    if (action) {
+      action();
     } else {
-      navigateTo(item.id);
+      navigateTo(id);
     }
+    setOpenDropdown(null);
     setMobileMenuOpen(false);
+  };
+
+  const toggleMobileSubmenu = (id: string) => {
+    setMobileExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleLogout = async () => {
@@ -74,78 +197,138 @@ export function Header({
 
   return (
     <>
-      <header className="bg-[#FAF8F3] dark:bg-slate-900 border-b border-[#E2DEC9] dark:border-slate-800 sticky top-0 z-40 shadow-xs transition-colors duration-300 antialiased">
+      <header className="sticky top-0 z-40 w-full bg-[#FAF8F3]/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-[#E2DEC9] dark:border-slate-800 transition-colors duration-300 antialiased">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          
           {/* Logo Identidad */}
           <div 
             onClick={() => navigateTo('inicio')} 
-            className="flex items-center space-x-2.5 cursor-pointer"
+            className="flex items-center space-x-3 cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 font-bold border border-[#C5D8CC] dark:border-slate-700 shadow-xs">
+            <div className="w-9 h-9 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 border border-[#C5D8CC] dark:border-slate-700 shadow-xs transition-transform group-hover:scale-105">
               <Church className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-bold text-[#2D3831] dark:text-emerald-100 text-xs sm:text-sm leading-none">
-                IASD CENTRAL
+              <h1 className="font-serif font-bold text-[#2D3831] dark:text-emerald-100 text-sm sm:text-base leading-none tracking-tight">
+                IASD Central
               </h1>
-              <span className="text-[10px] text-[#66756C] dark:text-slate-400 font-semibold uppercase tracking-widest">
-                DE HUALQUI
+              <span className="text-[10px] text-[#66756C] dark:text-slate-400 font-semibold uppercase tracking-wider">
+                Hualqui
               </span>
             </div>
           </div>
 
-          {/* Menú Desktop */}
-          <nav className="hidden xl:flex items-center space-x-1">
+          {/* Menú Desktop con Dropdowns */}
+          <nav ref={navRef} className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio');
+              const hasChildren = Boolean(item.children && item.children.length > 0);
+              const isChildActive = item.children?.some((child) => child.id === currentPage);
+              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+              const isOpen = openDropdown === item.id;
+
+              if (hasChildren) {
+                return (
+                  <div key={item.id} className="relative">
+                    <button
+                      onClick={() => setOpenDropdown(isOpen ? null : item.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-[#E8F0EA] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-300'
+                          : 'text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA]/60 dark:hover:bg-slate-800 hover:text-[#2D3831]'
+                      }`}
+                    >
+                      {item.label}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#7C9885]' : 'opacity-60'}`} />
+                    </button>
+
+                    {/* Menú desplegable flotante */}
+                    {isOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-72 bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 rounded-2xl shadow-lg p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                        {item.children?.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = currentPage === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => handleNavClick(sub.id, sub.action)}
+                              className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 cursor-pointer ${
+                                isSubActive
+                                  ? 'bg-[#7C9885] text-white shadow-xs'
+                                  : 'hover:bg-[#E8F0EA] dark:hover:bg-slate-800 text-[#2D3831] dark:text-slate-200'
+                              }`}
+                            >
+                              <div className={`p-1.5 rounded-lg mt-0.5 ${isSubActive ? 'bg-white/20 text-white' : 'bg-[#E8F0EA] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-400'}`}>
+                                <SubIcon className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold leading-tight">{sub.label}</div>
+                                {sub.description && (
+                                  <div className={`text-[10px] mt-0.5 leading-tight line-clamp-1 ${isSubActive ? 'text-white/80' : 'text-[#66756C] dark:text-slate-400'}`}>
+                                    {sub.description}
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleNavClick(item)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  onClick={() => handleNavClick(item.id, item.action)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     isActive
                       ? 'bg-[#7C9885] text-white shadow-xs'
                       : 'text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] dark:hover:bg-slate-800 hover:text-[#2D3831]'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#7C9885]'}`} />
                   {item.label}
                 </button>
               );
             })}
           </nav>
 
-          {/* Botones Autenticación & ThemeToggle Desktop */}
-          <div className="hidden xl:flex items-center space-x-3">
+          {/* Autenticación Desktop */}
+          <div className="hidden lg:flex items-center space-x-3">
             <ThemeToggle />
 
             {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 bg-[#E8F0EA]/70 dark:bg-slate-800/80 p-1 pl-3 rounded-xl border border-[#C5D8CC]/60 dark:border-slate-700">
+                <span className="text-xs font-semibold text-[#2D3831] dark:text-slate-200 flex items-center gap-1.5">
+                  {userRole === 'ADMIN' ? (
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#7C9885] dark:text-emerald-400" />
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-[#7C9885] dark:text-emerald-400" />
+                  )}
+                  {userName}
+                </span>
+
                 {userRole === 'ADMIN' && (
                   <button
                     onClick={() => navigateTo('admin')}
-                    className="px-3.5 py-1.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
+                    className="px-2.5 py-1 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5" /> Admin ({userName})
+                    Admin
                   </button>
                 )}
-                {userRole !== 'ADMIN' && (
-                  <span className="text-xs font-semibold text-[#2D3831] dark:text-slate-200 px-2 flex items-center gap-1">
-                    <User className="w-3.5 h-3.5 text-[#7C9885]" /> {userName}
-                  </span>
-                )}
+
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-1.5 border border-[#DCD7C5] dark:border-slate-700 text-[#526157] dark:text-slate-300 font-semibold text-xs rounded-xl hover:bg-[#E8F0EA] dark:hover:bg-slate-800 cursor-pointer transition-colors flex items-center gap-1"
+                  className="p-1.5 hover:bg-[#DCD7C5]/50 dark:hover:bg-slate-700 rounded-lg text-[#526157] dark:text-slate-300 transition-colors cursor-pointer"
+                  title="Cerrar Sesión"
                 >
-                  <LogOut className="w-3.5 h-3.5 text-[#E08A72]" /> Salir
+                  <LogOut className="w-3.5 h-3.5 text-[#E08A72]" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => navigateTo('login')}
-                className="px-5 py-2 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all"
+                className="px-4 py-2 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all"
               >
                 Iniciar Sesión
               </button>
@@ -153,7 +336,7 @@ export function Header({
           </div>
 
           {/* Botón Menú Móvil */}
-          <div className="flex items-center space-x-2 xl:hidden">
+          <div className="flex items-center space-x-2 lg:hidden">
             <ThemeToggle />
             <button
               type="button"
@@ -166,29 +349,73 @@ export function Header({
           </div>
         </div>
 
-        {/* Menú Desplegable Móvil */}
+        {/* Menú Desplegable Móvil con Acordeones */}
         {mobileMenuOpen && (
-          <div className="xl:hidden bg-[#FAF8F3] dark:bg-slate-900 border-b border-[#E2DEC9] dark:border-slate-800 px-4 pt-2 pb-6 space-y-2">
+          <div className="lg:hidden bg-[#FAF8F3] dark:bg-slate-900 border-b border-[#E2DEC9] dark:border-slate-800 px-4 pt-3 pb-6 space-y-1 max-h-[80vh] overflow-y-auto">
             {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio');
+              const hasChildren = Boolean(item.children && item.children.length > 0);
+              const isExpanded = mobileExpanded[item.id];
+              const isChildActive = item.children?.some((child) => child.id === currentPage);
+              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+
+              if (hasChildren) {
+                return (
+                  <div key={item.id} className="space-y-1">
+                    <button
+                      onClick={() => toggleMobileSubmenu(item.id)}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                        isActive
+                          ? 'bg-[#E8F0EA] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-400'
+                          : 'text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA]/60 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-[#7C9885]' : 'opacity-60'}`} />
+                    </button>
+
+                    {isExpanded && (
+                      <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-[#C5D8CC] dark:border-slate-700 ml-3">
+                        {item.children?.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = currentPage === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => handleNavClick(sub.id, sub.action)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-2 ${
+                                isSubActive
+                                  ? 'bg-[#7C9885] text-white shadow-xs'
+                                  : 'text-[#526157] dark:text-slate-400 hover:bg-[#E8F0EA] dark:hover:bg-slate-800'
+                              }`}
+                            >
+                              <SubIcon className="w-3.5 h-3.5" />
+                              {sub.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleNavClick(item)}
+                  onClick={() => handleNavClick(item.id, item.action)}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 ${
                     isActive
                       ? 'bg-[#7C9885] text-white shadow-xs'
                       : 'text-[#526157] dark:text-slate-300 hover:bg-[#E8F0EA] dark:hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#7C9885]'}`} />
                   {item.label}
                 </button>
               );
             })}
 
-            <div className="pt-3 border-t border-[#E8E4D5] dark:border-slate-800 flex flex-col space-y-2">
+            {/* Acciones de Cuenta Móvil */}
+            <div className="pt-4 mt-2 border-t border-[#E8E4D5] dark:border-slate-800 flex flex-col space-y-2">
               {isAuthenticated ? (
                 <>
                   {userRole === 'ADMIN' && (
@@ -219,7 +446,6 @@ export function Header({
         )}
       </header>
 
-      {/* Modal del Boletín Sabático */}
       <BulletinModal isOpen={bulletinOpen} onClose={() => setBulletinOpen(false)} />
     </>
   );
