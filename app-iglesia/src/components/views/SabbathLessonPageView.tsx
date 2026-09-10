@@ -47,6 +47,7 @@ interface ScriptureModalState {
 interface SabbathLessonPageViewProps {
   showToast?: (msg: string) => void;
   navigateTo?: (page: string) => void;
+  initialData?: LessonData;
 }
 
 // Lista canónica completa de libros
