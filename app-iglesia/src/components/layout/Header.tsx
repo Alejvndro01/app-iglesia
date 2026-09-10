@@ -326,7 +326,7 @@ export function Header({
               </div>
             ) : (
               <button
-                onClick={() => navigateTo('login')}
+                onClick={() => router.push('/login')}
                 className="px-4 py-2 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all"
               >
                 Iniciar Sesión
@@ -376,7 +376,7 @@ export function Header({
                       <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-[#C5D8CC] dark:border-slate-700 ml-3">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon;
-                          const isSubActive = currentPage === sub.id;
+                          const isSubActive = pathname.includes(sub.id);
                           return (
                             <button
                               key={sub.id}
@@ -419,7 +419,7 @@ export function Header({
                 <>
                   {userRole === 'ADMIN' && (
                     <button
-                      onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
+                      onClick={() => { router.push('/admin'); setMobileMenuOpen(false); }}
                       className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center flex items-center justify-center gap-1.5"
                     >
                       <ShieldCheck className="w-4 h-4" /> Admin ({userName})
@@ -434,7 +434,7 @@ export function Header({
                 </>
               ) : (
                 <button
-                  onClick={() => { navigateTo('login'); setMobileMenuOpen(false); }}
+                  onClick={() => { router.push('/login'); setMobileMenuOpen(false); }}
                   className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center"
                 >
                   Iniciar Sesión

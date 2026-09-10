@@ -286,7 +286,7 @@ export function HomeView({ setBulletinModalOpen }: HomeViewProps) {
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <button
-              onClick={() => navigateTo('estudios-biblicos')}
+              onClick={() => router.push('/estudios-biblicos')}
               className="px-5 py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer text-center"
             >
               Solicitar Estudio Bíblico
