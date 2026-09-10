@@ -74,9 +74,6 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const pathname = usePathname();
-  const router = useRouter();
-
   const navItems: NavItem[] = [
     { id: 'inicio', label: 'Inicio', icon: Church },
     { id: 'historia', label: 'Nuestra Historia', icon: Compass },
@@ -187,7 +184,7 @@ export function Header({
       await fetch('/api/auth/logout', { method: 'POST' });
       await signOut({ redirect: false });
       showToast?.('Sesión cerrada correctamente');
-      navigateTo('inicio');
+      router.push('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -203,8 +200,8 @@ export function Header({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* Logo Identidad */}
-          <div 
-            onClick={() => navigateTo('inicio')} 
+          <div
+            onClick={() => router.push('/')}
             className="flex items-center space-x-3 cursor-pointer group"
           >
             <div className="w-9 h-9 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 border border-[#C5D8CC] dark:border-slate-700 shadow-xs transition-transform group-hover:scale-105">
@@ -248,7 +245,7 @@ export function Header({
                       <div className="absolute top-full left-0 mt-2 w-72 bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 rounded-2xl shadow-lg p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon;
-                          const isSubActive = currentPage === sub.id;
+                          const isSubActive = pathname.includes(sub.id);
                           return (
                             <button
                               key={sub.id}
@@ -312,7 +309,7 @@ export function Header({
 
                 {userRole === 'ADMIN' && (
                   <button
-                    onClick={() => navigateTo('admin')}
+                    onClick={() => router.push('/admin')}
                     className="px-2.5 py-1 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
                   >
                     Admin
