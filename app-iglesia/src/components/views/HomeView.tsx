@@ -1,14 +1,15 @@
 'use client';
 
 import React from 'react';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  BookOpen, 
-  FileText, 
-  Music, 
-  Play, 
+import { useRouter } from 'next/navigation';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  BookOpen,
+  FileText,
+  Music,
+  Play,
   ArrowRight,
   Sparkles,
   Flame,
@@ -17,11 +18,11 @@ import {
 import { SERVICE_SCHEDULES } from '@/data/mockData';
 
 interface HomeViewProps {
-  navigateTo: (page: string) => void;
   setBulletinModalOpen?: (open: boolean) => void;
 }
 
-export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
+export function HomeView({ setBulletinModalOpen }: HomeViewProps) {
+  const router = useRouter();
   // Datos mock para eventos destacados del Home (máximo 3 para no saturar)
   const upcomingEvents = [
     {
@@ -148,8 +149,8 @@ export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Card: Lección Diaria */}
-          <div 
-            onClick={() => navigateTo('leccion')}
+          <div
+            onClick={() => router.push('/leccion')}
             className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
@@ -166,8 +167,8 @@ export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
           </div>
 
           {/* Card: Boletín Sabático */}
-          <div 
-            onClick={() => setBulletinModalOpen ? setBulletinModalOpen(true) : navigateTo('boletin')}
+          <div
+            onClick={() => setBulletinModalOpen ? setBulletinModalOpen(true) : router.push('/boletin')}
             className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
@@ -184,8 +185,8 @@ export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
           </div>
 
           {/* Card: Himnario */}
-          <div 
-            onClick={() => navigateTo('himnario')}
+          <div
+            onClick={() => router.push('/himnario')}
             className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
@@ -202,8 +203,8 @@ export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
           </div>
 
           {/* Card: Jóvenes JA */}
-          <div 
-            onClick={() => navigateTo('jovenes')}
+          <div
+            onClick={() => router.push('/jovenes')}
             className="group bg-[#FAF8F3] dark:bg-slate-900/60 p-6 rounded-2xl border border-[#E2DEC9] dark:border-slate-800 hover:border-[#7C9885] dark:hover:border-emerald-500/50 transition-all cursor-pointer space-y-4"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 group-hover:scale-110 transition-transform">
@@ -234,7 +235,7 @@ export function HomeView({ navigateTo, setBulletinModalOpen }: HomeViewProps) {
             </h3>
           </div>
           <button 
-            onClick={() => navigateTo('agenda')}
+            onClick={() => router.push('/agenda')}
             className="text-xs font-semibold text-[#7C9885] dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
             Ver toda la agenda <ArrowRight className="w-3.5 h-3.5" />

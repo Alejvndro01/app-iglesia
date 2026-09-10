@@ -1,0 +1,66 @@
+import { HymnalDetailView } from '@/components/views/hymnal/HymnalDetailView';
+import { notFound } from 'next/navigation';
+import { HimnoDetail } from '@/types';
+
+async function getHymn(id: string): Promise<HimnoDetail | null> {
+  try {
+    const res = await fetch(`https://himnario-api.qhar.in/hymn/${id}`, {
+      headers: { 'Content-Type': 'application/json' },
+      next: { revalidate: 86400 }, // ISR: Cache for 24 hours
+    });
+
+    if (!res.ok) return null;
+
+    const himno = await res.json();
+
+    // Helper to proxy audio URLs (same logic as API route)
+    const getProxyAudioUrl = (url?: string) => {
+      if (!url) return null;
+      const match = url.match(/\\/d\\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `/api/audio-proxy?id=${match[1]}`;
+      }
+      return url;
+    };
+
+    return {
+      number: himno.number,
+      title: himno.title,
+      bibleReference: himno.bibleReference,
+      mp3Url: getProxyAudioUrl(himno.mp3Url),
+      mp3UrlInstr: getProxyAudioUrl(himno.mp3UrlInstr),
+      verses: (himno.verses || []).map((v: any) => ({
+        type: v.number === 0 ? 'chorus' : 'verse',
+        number: v.number,
+        text: (v.contents || []).map((c: any) => c.content).join('\\n'),
+      })),
+    };
+  } catch (error) {
+    console.error('Error fetching hymn:', error);
+    return null;
+  }
+}
+
+// Pre-render common hymns for maximum speed
+export async function generateStaticParams() {
+  // In a real scenario, we could fetch all IDs. For now, we pre-render a range or leave it to be generated on demand.
+  // To truly optimize, we could fetch the list of all hymn numbers.
+  return [];
+}
+
+export default async function HymnDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const hymn = await getHymn(id);
+
+  if (!hymn) {
+    notFound();
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4 sm:p-8">
+      <div className="w-full max-w-3xl">
+        <HymnalDetailView hymn={hymn} />
+      </div>
+    </div>
+  );
+}

@@ -2,20 +2,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
 import { BulletinModal } from '../modales/BulletinModal';
 import { ThemeToggle } from '../ThemeToggle';
-import { 
-  Church, 
-  BookOpen, 
-  Calendar, 
-  Music, 
-  GraduationCap, 
-  HeartHandshake, 
-  FileText, 
-  ShieldCheck, 
-  User, 
-  LogOut, 
-  Menu, 
+import {
+  Church,
+  BookOpen,
+  Calendar,
+  Music,
+  GraduationCap,
+  HeartHandshake,
+  FileText,
+  ShieldCheck,
+  User,
+  LogOut,
+  Menu,
   X,
   Flame,
   ChevronDown,
@@ -29,8 +30,6 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  currentPage: string;
-  navigateTo: (page: string) => void;
   setBulletinModalOpen?: (open: boolean) => void;
   showToast?: (msg: string) => void;
 }
@@ -52,11 +51,11 @@ interface NavItem {
 }
 
 export function Header({
-  currentPage,
-  navigateTo,
   showToast,
 }: HeaderProps) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bulletinOpen, setBulletinOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -75,6 +74,9 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const pathname = usePathname();
+  const router = useRouter();
+
   const navItems: NavItem[] = [
     { id: 'inicio', label: 'Inicio', icon: Church },
     { id: 'historia', label: 'Nuestra Historia', icon: Compass },
@@ -83,41 +85,41 @@ export function Header({
       label: 'Ministerios',
       icon: Users,
       children: [
-        { 
-          id: 'jovenes', 
-          label: 'Jóvenes JA', 
-          icon: Flame, 
-          description: 'Sociedad JA, proyectos juveniles y Misión Caleb' 
+        {
+          id: 'jovenes',
+          label: 'Jóvenes JA',
+          icon: Flame,
+          description: 'Sociedad JA, proyectos juveniles y Misión Caleb'
         },
-        { 
-          id: 'musica', 
-          label: 'Ministerio de Música', 
-          icon: Music, 
-          description: 'Coros, alabanza congregacional y partes especiales' 
+        {
+          id: 'musica',
+          label: 'Ministerio de Música',
+          icon: Music,
+          description: 'Coros, alabanza congregacional y partes especiales'
         },
-        { 
-          id: 'ministerio-personal', 
-          label: 'Ministerio Personal', 
-          icon: Share2, 
-          description: 'Evangelismo, parejas misioneras y discipulado' 
+        {
+          id: 'ministerio-personal',
+          label: 'Ministerio Personal',
+          icon: Share2,
+          description: 'Evangelismo, parejas misioneras y discipulado'
         },
-        { 
-          id: 'hogar-familia', 
-          label: 'Hogar y Familia', 
-          icon: Home, 
-          description: 'Matrimonios, crianza bíblica y consejería familiar' 
+        {
+          id: 'hogar-familia',
+          label: 'Hogar y Familia',
+          icon: Home,
+          description: 'Matrimonios, crianza bíblica y consejería familiar'
         },
-        { 
-          id: 'comunicaciones', 
-          label: 'Comunicaciones & Medios', 
-          icon: Radio, 
-          description: 'Transmisiones en vivo, avisos y producción digital' 
+        {
+          id: 'comunicaciones',
+          label: 'Comunicaciones & Medios',
+          icon: Radio,
+          description: 'Transmisiones en vivo, avisos y producción digital'
         },
-        { 
-          id: 'mayordomia', 
-          label: 'Mayordomía Cristiana', 
-          icon: HeartHandshake, 
-          description: 'Fidelidad, calculadora de diezmos y ofrendas' 
+        {
+          id: 'mayordomia',
+          label: 'Mayordomía Cristiana',
+          icon: HeartHandshake,
+          description: 'Fidelidad, calculadora de diezmos y ofrendas'
         },
       ],
     },
@@ -126,43 +128,43 @@ export function Header({
       label: 'Recursos',
       icon: Sparkles,
       children: [
-        { 
-          id: 'biblia', 
-          label: 'Biblia Online', 
-          icon: BookOpen, 
-          description: 'Texto bíblico y lecturas RVR1960' 
+        {
+          id: 'biblia',
+          label: 'Biblia Online',
+          icon: BookOpen,
+          description: 'Texto bíblico y lecturas RVR1960'
         },
-        { 
-          id: 'leccion', 
-          label: 'Lección Diaria', 
-          icon: Calendar, 
-          description: 'Escuela Sabática adultos y jóvenes' 
+        {
+          id: 'leccion',
+          label: 'Lección Diaria',
+          icon: Calendar,
+          description: 'Escuela Sabática adultos y jóvenes'
         },
-        { 
-          id: 'himnario', 
-          label: 'Himnario Adventista', 
-          icon: Music, 
-          description: 'Cantos de alabanza y letras completas' 
+        {
+          id: 'himnario',
+          label: 'Himnario Adventista',
+          icon: Music,
+          description: 'Cantos de alabanza y letras completas'
         },
-        { 
-          id: 'estudios-biblicos', 
-          label: 'Estudios Bíblicos', 
-          icon: GraduationCap, 
-          description: 'Cursos de fe con validación OTP' 
+        {
+          id: 'estudios-biblicos',
+          label: 'Estudios Bíblicos',
+          icon: GraduationCap,
+          description: 'Cursos de fe con validación OTP'
         },
-        { 
-          id: 'archivos', 
-          label: 'Archivos & Documentos', 
-          icon: FolderUp, 
-          description: 'Descarga y subida de recursos comunitarios' 
+        {
+          id: 'archivos',
+          label: 'Archivos & Documentos',
+          icon: FolderUp,
+          description: 'Descarga y subida de recursos comunitarios'
         },
       ],
     },
-    { 
-      id: 'boletin', 
-      label: 'Boletín Sabático', 
-      icon: FileText, 
-      action: () => setBulletinOpen(true) 
+    {
+      id: 'boletin',
+      label: 'Boletín Sabático',
+      icon: FileText,
+      action: () => setBulletinOpen(true)
     },
   ];
 
@@ -170,7 +172,7 @@ export function Header({
     if (action) {
       action();
     } else {
-      navigateTo(id);
+      router.push(`/${id === 'inicio' ? '' : id}`);
     }
     setOpenDropdown(null);
     setMobileMenuOpen(false);
@@ -222,8 +224,8 @@ export function Header({
           <nav ref={navRef} className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
               const hasChildren = Boolean(item.children && item.children.length > 0);
-              const isChildActive = item.children?.some((child) => child.id === currentPage);
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+              const isChildActive = item.children?.some((child) => pathname.includes(child.id));
+              const isActive = pathname === `/${item.id}` || (pathname === '/' && item.id === 'inicio') || isChildActive;
               const isOpen = openDropdown === item.id;
 
               if (hasChildren) {
@@ -355,8 +357,8 @@ export function Header({
             {navItems.map((item) => {
               const hasChildren = Boolean(item.children && item.children.length > 0);
               const isExpanded = mobileExpanded[item.id];
-              const isChildActive = item.children?.some((child) => child.id === currentPage);
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+              const isChildActive = item.children?.some((child) => pathname.includes(child.id));
+              const isActive = pathname === `/${item.id}` || (pathname === '/' && item.id === 'inicio') || isChildActive;
 
               if (hasChildren) {
                 return (

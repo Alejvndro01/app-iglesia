@@ -1,0 +1,13 @@
+import React from 'react';
+import { HomeView } from '@/components/views/HomeView';
+
+export default function MainPage() {
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-700 dark:text-slate-200 transition-colors duration-300">
+      <HomeView
+        navigateTo={(page) => {}} // This will now be handled by the Header's routing
+        setBulletinModalOpen={() => {}} // This should be handled by a global state or modal provider
+      />
+    </div>
+  );
+}
