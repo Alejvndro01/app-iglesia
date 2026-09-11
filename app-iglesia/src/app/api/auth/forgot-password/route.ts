@@ -20,24 +20,14 @@ export async function POST(request: Request) {
 
     const emailNormalized = email.toLowerCase().trim();
 
-    // 1. Verificar si el usuario existe
+    // 1. Verificar si el usuario existe (sin revelar información)
     const user = await prisma.usuario.findUnique({
       where: { email: emailNormalized },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'No existe ninguna cuenta registrada con este correo.' },
-        { status: 404 }
-      );
-    }
-
-    // 2. Si el usuario se registró únicamente con Google (password NULL)
-    if (!user.password) {
-      return NextResponse.json(
-        { error: 'Esta cuenta utiliza inicio de sesión con Google. Inicia sesión directamente con Google.' },
-        { status: 400 }
-      );
+    // Si el usuario no existe o se registró con Google, devolvemos success igualmente
+    if (!user || !user.password) {
+      return NextResponse.json({ success: true });
     }
 
     // 3. Generar código OTP de 6 dígitos

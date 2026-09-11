@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import nodemailer from 'nodemailer';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { env } from '@/env';
 
 // Transportador SMTP reutilizando las variables de entorno de Gmail
 const transporter = nodemailer.createTransport({
@@ -105,9 +108,19 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    try {
+      const secret = new TextEncoder().encode(env.JWT_SECRET);
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.role !== 'ADMIN') return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    } catch {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
     const solicitudes = await prisma.solicitudCurso.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+          orderBy: { createdAt: 'desc' },
+        });
     return NextResponse.json({ solicitudes });
   } catch (error) {
     console.error('[CURSOS_GET_ERROR]', error);

@@ -35,11 +35,9 @@ export async function POST(request: Request) {
         where: { email: emailNormalized },
       });
 
+      // Si ya existe, igual devolvemos success para no revelar información
       if (existingUser) {
-        return NextResponse.json(
-          { error: 'Este correo ya está registrado.' },
-          { status: 400 }
-        );
+        return NextResponse.json({ success: true, tokenIdentifier: 'duplicate', channel: 'email' });
       }
 
       await prisma.verificationToken.deleteMany({

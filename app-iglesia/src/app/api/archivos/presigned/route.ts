@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { env as envVars } from '@/env';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { r2Client } from '@/lib/r2';
 import { env } from '@/env';
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (!token) return NextResponse.json({ error: 'Debes iniciar sesión' }, { status: 401 });
+    try {
+      const secret = new TextEncoder().encode(envVars.JWT_SECRET);
+      await jwtVerify(token, secret);
+    } catch {
+      return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 });
+    }
     const { fileName, fileType } = await request.json();
 
     if (!fileName) {

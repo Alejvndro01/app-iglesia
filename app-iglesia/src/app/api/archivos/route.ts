@@ -53,16 +53,9 @@ export async function POST(request: Request) {
     }
 
     if (!userId) {
-      const defaultUser = await prisma.usuario.findFirst();
-      if (defaultUser) {
-        userId = defaultUser.id;
-      }
-    }
-
-    if (!userId) {
       return NextResponse.json(
-        { error: 'No se encontró un usuario válido para asociar el archivo' },
-        { status: 400 }
+        { error: 'Debes iniciar sesión para subir archivos' },
+        { status: 401 }
       );
     }
 

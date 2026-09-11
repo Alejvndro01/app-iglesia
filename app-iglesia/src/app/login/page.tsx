@@ -37,10 +37,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleSocialAuth = (provider: string) => {
-    // Puedes conectar aquí con NextAuth o la API correspondiente
-    console.log(`Iniciando sesión con ${provider}`);
-  };
 
   return (
     <div className="min-h-screen w-full bg-slate-100 flex items-center justify-center p-0 md:p-6 font-sans select-none">
@@ -174,69 +170,7 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Social Auth Icons Section */}
-          <div className="mt-8">
-            <div className="flex items-center justify-center space-x-4 sm:space-x-5">
-              
-              {/* Google Auth Button */}
-              <button
-                type="button"
-                onClick={() => handleSocialAuth('Google')}
-                title="Iniciar sesión con Google"
-                className="w-16 h-12 sm:w-20 sm:h-14 bg-[#fbf6ee] hover:bg-white rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-sm hover:shadow transition-all duration-200 active:scale-95 border border-amber-100/50"
-              >
-                <svg className="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 48 48">
-                  <path
-                    fill="#EA4335"
-                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-                  />
-                  <path
-                    fill="#4285F4"
-                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                  />
-                </svg>
-              </button>
 
-              {/* Facebook Auth Button */}
-              <button
-                type="button"
-                onClick={() => handleSocialAuth('Facebook')}
-                title="Iniciar sesión con Facebook"
-                className="w-16 h-12 sm:w-20 sm:h-14 bg-[#2176f2] hover:bg-[#1b6cd9] rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-sm hover:shadow transition-all duration-200 active:scale-95"
-              >
-                <svg
-                  className="w-6 h-6 sm:w-7 sm:h-7 fill-white"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              </button>
-
-              {/* X Auth Button */}
-              <button
-                type="button"
-                onClick={() => handleSocialAuth('X')}
-                title="Iniciar sesión con X"
-                className="w-16 h-12 sm:w-20 sm:h-14 bg-[#393b3e] hover:bg-[#28292b] rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-sm hover:shadow transition-all duration-200 active:scale-95"
-              >
-                <svg
-                  className="w-5 h-5 sm:w-6 sm:h-6 fill-white"
-                  viewBox="0 0 1200 1227"
-                >
-                  <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.694H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" />
-                </svg>
-              </button>
-
-            </div>
-          </div>
 
         </div>
 

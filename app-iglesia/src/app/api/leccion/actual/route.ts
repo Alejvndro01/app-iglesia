@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+function getCurrentQuarter(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const quarterNum = month <= 3 ? '01' : month <= 6 ? '02' : month <= 9 ? '03' : '04';
+  return `${year}-${quarterNum}`;
+}
+
+function getQuarterLabel(quarterStr: string): string {
+  const q = quarterStr.split('-')[1];
+  if (q === '01') return '1er Trimestre';
+  if (q === '02') return '2do Trimestre';
+  if (q === '03') return '3er Trimestre';
+  return '4to Trimestre';
+}
+
 // Convertir string DD/MM/YYYY a objeto Date real de JS
 function parseSpanishDate(dateStr: string): Date {
   if (!dateStr) return new Date();
@@ -18,7 +34,7 @@ export async function GET() {
   try {
     // 1. Obtener el trimestre de Adventech
     const quarterRes = await fetch(
-      'https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/index.json',
+      `https://sabbath-school.adventech.io/api/v2/es/quarterlies/${getCurrentQuarter()}/index.json`,
       { next: { revalidate: 3600 } }
     );
 
@@ -45,7 +61,7 @@ export async function GET() {
 
     // 3. Obtener el detalle de días
     const lessonDetailRes = await fetch(
-      `https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/lessons/${currentLesson.id}/index.json`
+      `https://sabbath-school.adventech.io/api/v2/es/quarterlies/${getCurrentQuarter()}/lessons/${currentLesson.id}/index.json`
     );
     const lessonDetail = await lessonDetailRes.json();
     const daysList = lessonDetail.days || [];
@@ -55,7 +71,7 @@ export async function GET() {
       daysList.map(async (d: any) => {
         try {
           const dayRes = await fetch(
-            `https://sabbath-school.adventech.io/api/v2/es/quarterlies/2026-03/lessons/${currentLesson.id}/days/${d.id}/read/index.json`
+            `https://sabbath-school.adventech.io/api/v2/es/quarterlies/${getCurrentQuarter()}/lessons/${currentLesson.id}/days/${d.id}/read/index.json`
           );
           if (dayRes.ok) {
             const readData = await dayRes.json();
@@ -90,7 +106,7 @@ export async function GET() {
     await prisma.leccionCache.upsert({
       where: { id: 'actual' },
       update: {
-        quarter: '3er Trimestre 2026',
+        quarter: `${getQuarterLabel(getCurrentQuarter())} ${new Date().getFullYear()}`,
         lessonNumber: parseInt(currentLesson.id, 10) || 1,
         title: responsePayload.tituloSemana,
         memoryVerse: '',
@@ -98,7 +114,7 @@ export async function GET() {
       },
       create: {
         id: 'actual',
-        quarter: '3er Trimestre 2026',
+        quarter: `${getQuarterLabel(getCurrentQuarter())} ${new Date().getFullYear()}`,
         lessonNumber: parseInt(currentLesson.id, 10) || 1,
         title: responsePayload.tituloSemana,
         memoryVerse: '',
