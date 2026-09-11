@@ -3,9 +3,9 @@ import Dexie, { Table } from 'dexie';
 export interface LocalHymn {
   number: number;
   title: string;
-  bibleReference: string;
-  mp3Url: string;
-  mp3UrlInstr: string;
+  bibleReference?: string;
+  mp3Url?: string;
+  mp3UrlInstr?: string;
   verses: any[];
 }
 

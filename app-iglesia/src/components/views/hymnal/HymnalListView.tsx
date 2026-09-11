@@ -29,9 +29,9 @@ export function HymnalListView() {
 
         if (apiHymns.length > 0) {
           // Bulk add/update to local DB
-          await db.transaction('rw', async () => {
+          await db.transaction('rw', db.hymns, async () => {
             for (const h of apiHymns) {
-              await db.hymns.put(h);
+              await db.hymns.put(h as import('@/lib/db').LocalHymn);
             }
           });
           setHymns(apiHymns);

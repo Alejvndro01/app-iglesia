@@ -34,7 +34,7 @@ export function HymnalDetailView({ hymn: initialHymn, hymnId }: HymnalDetailView
         // 2. Sync with API to get latest data and update local DB
         const apiHymn = await apiClient.getHimno(hymnId);
         if (apiHymn) {
-          await db.hymns.put(apiHymn);
+          await db.hymns.put(apiHymn as import('@/lib/db').LocalHymn);
           setHymn(apiHymn);
         }
       } catch (error) {
