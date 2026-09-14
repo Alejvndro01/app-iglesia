@@ -307,15 +307,6 @@ export function Header({
                   {userName}
                 </span>
 
-                {userRole === 'ADMIN' && (
-                  <button
-                    onClick={() => router.push('/admin')}
-                    className="px-2.5 py-1 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
-                  >
-                    Admin
-                  </button>
-                )}
-
                 <button
                   onClick={handleLogout}
                   className="p-1.5 hover:bg-[#DCD7C5]/50 dark:hover:bg-slate-700 rounded-lg text-[#526157] dark:text-slate-300 transition-colors cursor-pointer"
@@ -326,7 +317,7 @@ export function Header({
               </div>
             ) : (
               <button
-                onClick={() => router.push('/login')}
+                onClick={() => router.push('/api/auth/signin')}
                 className="px-4 py-2 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all"
               >
                 Iniciar Sesión
@@ -417,14 +408,6 @@ export function Header({
             <div className="pt-4 mt-2 border-t border-[#E8E4D5] dark:border-slate-800 flex flex-col space-y-2">
               {isAuthenticated ? (
                 <>
-                  {userRole === 'ADMIN' && (
-                    <button
-                      onClick={() => { router.push('/admin'); setMobileMenuOpen(false); }}
-                      className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center flex items-center justify-center gap-1.5"
-                    >
-                      <ShieldCheck className="w-4 h-4" /> Admin ({userName})
-                    </button>
-                  )}
                   <button
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="w-full py-2.5 border border-[#DCD7C5] dark:border-slate-700 text-[#526157] dark:text-slate-300 font-semibold text-xs rounded-xl text-center flex items-center justify-center gap-1.5"
@@ -434,7 +417,7 @@ export function Header({
                 </>
               ) : (
                 <button
-                  onClick={() => { router.push('/login'); setMobileMenuOpen(false); }}
+                  onClick={() => { router.push('/api/auth/signin'); setMobileMenuOpen(false); }}
                   className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center"
                 >
                   Iniciar Sesión
