@@ -21,14 +21,9 @@ export function middleware(request: NextRequest) {
     request.cookies.get('next-auth.session-token')?.value ||
     request.cookies.get('__Secure-next-auth.session-token')?.value;
 
-  // 3. Redirigir fuera del login si ya tiene sesión
-  if (token && pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  // 4. Proteger rutas privadas
+  // 3. Proteger rutas privadas (el login ahora lo maneja NextAuth en /api/auth/signin)
   if ((pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/api/auth/signin?callbackUrl=/dashboard', request.url));
   }
 
   return NextResponse.next();
