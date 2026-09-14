@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname, host } = request.nextUrl;
+  const { host } = request.nextUrl;
   const canonicalHost = 'iasd-hualqui.vercel.app';
 
   // 1. Forzar el dominio de producción si el usuario entra por una URL de preview de Vercel (*.vercel.app)
@@ -11,19 +11,6 @@ export function middleware(request: NextRequest) {
     url.host = canonicalHost;
     url.protocol = 'https';
     return NextResponse.redirect(url, 301);
-  }
-
-  // 2. Extraer los tokens soportados (NextAuth / JWT personalizado)
-  const token =
-    request.cookies.get('auth_token')?.value ||
-    request.cookies.get('authjs.session-token')?.value ||
-    request.cookies.get('__Secure-authjs.session-token')?.value ||
-    request.cookies.get('next-auth.session-token')?.value ||
-    request.cookies.get('__Secure-next-auth.session-token')?.value;
-
-  // 3. Proteger rutas privadas (el login ahora lo maneja NextAuth en /api/auth/signin)
-  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) && !token) {
-    return NextResponse.redirect(new URL('/api/auth/signin?callbackUrl=/dashboard', request.url));
   }
 
   return NextResponse.next();
