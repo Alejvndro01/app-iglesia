@@ -25,7 +25,7 @@ export async function GET(
     response.headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
 
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Archivo no encontrado en el servidor' }, { status: 404 });
   }
 }

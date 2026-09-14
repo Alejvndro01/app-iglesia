@@ -8,19 +8,12 @@ import {
   ShieldCheck, 
   Send, 
   RotateCcw, 
-  Sparkles, 
   GraduationCap, 
-  Phone, 
-  MapPin, 
   Search,
   Check,
   Clock,
-  Heart,
   Eye,
-  X,
-  Compass,
-  Flame,
-  Award
+  X
 } from 'lucide-react';
 
 export interface BibleCourseItem {

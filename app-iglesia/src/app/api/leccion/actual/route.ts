@@ -30,6 +30,21 @@ function parseSpanishDate(dateStr: string): Date {
   return new Date(dateStr);
 }
 
+// Campos de la API de Adventech usados en la búsqueda de la lección actual
+interface AdventechLesson {
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  cover?: string;
+}
+
+interface AdventechDay {
+  id: string;
+  title: string;
+  date: string;
+}
+
 export async function GET() {
   try {
     // 1. Obtener el trimestre de Adventech
@@ -47,7 +62,7 @@ export async function GET() {
     today.setHours(0, 0, 0, 0);
 
     // 2. Buscar lección correspondiente a la semana
-    let currentLesson = lessons.find((l: any) => {
+    let currentLesson = lessons.find((l: AdventechLesson) => {
       const start = parseSpanishDate(l.start_date);
       const end = parseSpanishDate(l.end_date);
       start.setHours(0, 0, 0, 0);
@@ -68,7 +83,7 @@ export async function GET() {
 
     // 4. Obtener contenido HTML de cada día
     const daysWithContent = await Promise.all(
-      daysList.map(async (d: any) => {
+      daysList.map(async (d: AdventechDay) => {
         try {
           const dayRes = await fetch(
             `https://sabbath-school.adventech.io/api/v2/es/quarterlies/${getCurrentQuarter()}/lessons/${currentLesson.id}/days/${d.id}/read/index.json`

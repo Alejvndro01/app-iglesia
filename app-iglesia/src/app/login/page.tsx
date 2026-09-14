@@ -1,12 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+
+const FALLBACK_IMG =
+  'https://placehold.co/800x1000/f8c3d9/50687c?text=Coloca+landscape.jpg+en+/public';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imgSrc, setImgSrc] = useState('/landscape.jpg');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +33,7 @@ export default function LoginPage() {
         throw new Error(data.error || 'Error al iniciar sesión');
       }
 
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -47,15 +54,17 @@ export default function LoginPage() {
         {/* ==================== LEFT PANEL: LANDSCAPE IMAGE ==================== */}
         <div className="relative w-full md:w-1/2 h-64 md:h-full flex-shrink-0 overflow-hidden">
           {/* Imagen cargada desde la carpeta /public/landscape.jpg */}
-          <img
-            src="/landscape.jpg"
+          <Image
+            src={imgSrc}
             alt="Paisaje IASD Central de Hualqui"
-            onError={(e) => {
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority
+            className="object-cover"
+            onError={() => {
               // Imagen de reemplazo si no encuentra /landscape.jpg
-              (e.target as HTMLImageElement).src =
-                'https://placehold.co/800x1000/f8c3d9/50687c?text=Coloca+landscape.jpg+en+/public';
+              setImgSrc(FALLBACK_IMG);
             }}
-            className="w-full h-full object-cover absolute inset-0"
           />
 
           {/* Curva divisoria orgánica suave entre el panel izquierdo y derecho */}

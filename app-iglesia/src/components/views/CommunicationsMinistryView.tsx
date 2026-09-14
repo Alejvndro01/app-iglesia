@@ -3,20 +3,13 @@
 import React, { useState } from 'react';
 import {
   Radio,
-  Video,
   Mic2,
   Tv,
-  UploadCloud,
   FileImage,
-  Share2,
   Download,
-  Calendar,
   CheckCircle2,
   Send,
   Sparkles,
-  ExternalLink,
-  Camera,
-  Layers,
   MonitorPlay
 } from 'lucide-react';
 

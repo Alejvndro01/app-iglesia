@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, ChangeEvent, DragEvent } from 'react';
+import Image from 'next/image';
 import { 
   UploadCloud, 
   FileText, 
@@ -63,7 +64,6 @@ export function FilesView() {
 
   const fetchArchivos = async () => {
     try {
-      setLoadingList(true);
       const res = await fetch('/api/archivos');
       const data = await res.json();
       if (res.ok) {
@@ -77,7 +77,24 @@ export function FilesView() {
   };
 
   useEffect(() => {
-    fetchArchivos();
+    // Carga inicial del repositorio. Se usa una IIFE async para que los
+    // setState ocurran solo dentro de callbacks (tras await) y no de forma
+    // sincrónica en el cuerpo del efecto (react-hooks/set-state-in-effect).
+    // fetchArchivos() sigue siendo la versión compartida para refrescar
+    // tras subir o con el botón "Refrescar".
+    (async () => {
+      try {
+        const res = await fetch('/api/archivos');
+        const data = await res.json();
+        if (res.ok) {
+          setArchivos(data.archivos || []);
+        }
+      } catch (err) {
+        console.error('[FILES_FETCH_ERROR]', err);
+      } finally {
+        setLoadingList(false);
+      }
+    })();
   }, []);
 
   const formatFileSize = (bytes: number): string => {
@@ -123,7 +140,7 @@ export function FilesView() {
     } catch (err) {
       console.error('[DOWNLOAD_ERROR]', err);
       // Fallback a enlace normal en caso de fallo estricto de CORS
-      window.location.href = fileUrl;
+      window.location.assign(fileUrl);
     } finally {
       if (fileId) setDownloadingId(null);
     }
@@ -219,6 +236,7 @@ export function FilesView() {
 
       setSuccessMessage(`¡"${title.trim()}" se subió y registró correctamente!`);
       resetForm();
+      setLoadingList(true);
       fetchArchivos();
     } catch (err: unknown) {
       console.error(err);
@@ -388,7 +406,10 @@ export function FilesView() {
               Archivos Registrados ({archivos.length})
             </h2>
             <button
-              onClick={fetchArchivos}
+              onClick={() => {
+                setLoadingList(true);
+                fetchArchivos();
+              }}
               disabled={loadingList}
               className="text-xs font-bold text-[#7C9885] hover:underline cursor-pointer"
             >
@@ -518,10 +539,13 @@ export function FilesView() {
                   />
                 </div>
               ) : previewFile.mimeType.startsWith('image/') ? (
-                <img 
-                  src={previewFile.path} 
-                  alt={previewFile.titulo} 
-                  className="max-h-[65vh] object-contain rounded-2xl"
+                <Image
+                  src={previewFile.path}
+                  alt={previewFile.titulo}
+                  width={1200}
+                  height={800}
+                  unoptimized
+                  className="max-h-[65vh] w-auto object-contain rounded-2xl"
                 />
               ) : (
                 <iframe 

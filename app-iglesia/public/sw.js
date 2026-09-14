@@ -13,7 +13,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Precargando assets estáticos...');
+      console.warn('Precargando assets estáticos...');
       return cache.addAll(STATIC_ASSETS);
     })
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Flame,
   Clock,
@@ -45,7 +45,7 @@ export default function YouthView() {
   ];
 
   // Cálculo simple para próximo sábado 18:00 hrs
-  const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 8, minutes: 24 });
+  const [timeLeft] = useState({ days: 3, hours: 8, minutes: 24 });
 
   const handleCalebSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,18 +77,19 @@ export default function YouthView() {
 
         {/* Selector de Perspectiva */}
         <div className="flex items-center gap-1.5 p-1 bg-[#E8F0EA]/70 dark:bg-slate-800/80 rounded-2xl border border-[#C5D8CC]/60 dark:border-slate-700 self-start md:self-auto overflow-x-auto max-w-full">
-          {[
+          {( [
             { id: 'todos', label: 'Todo el Ecosistema', icon: Layers },
             { id: 'comunion', label: 'Comunión & GP', icon: Users },
             { id: 'servicio', label: 'Acción & Caleb', icon: Compass },
             { id: 'devocion', label: 'Retos & Música', icon: Sparkles }
-          ].map((tab) => {
+          ] as { id: 'todos' | 'comunion' | 'servicio' | 'devocion'; label: string; icon: typeof Layers }[]
+          ).map((tab) => {
             const Icon = tab.icon;
             const active = activeFilter === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveFilter(tab.id as any)}
+                onClick={() => setActiveFilter(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                   active
                     ? 'bg-[#7C9885] text-white shadow-xs'

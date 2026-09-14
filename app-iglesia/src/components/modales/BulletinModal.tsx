@@ -4,11 +4,9 @@ import React, { useState } from 'react';
 import { 
   FileText, 
   Megaphone, 
-  Church, 
   X, 
   Check, 
   Clock, 
-  Calendar, 
   MapPin, 
   Share2, 
   Sparkles,
@@ -105,7 +103,7 @@ export function BulletinModal({ isOpen, onClose }: BulletinModalProps) {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'orden' | 'anuncios' | 'horarios')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     active
                       ? 'bg-[#FAF8F3] dark:bg-slate-800 text-[#7C9885] dark:text-emerald-300 shadow-xs'

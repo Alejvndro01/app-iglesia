@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 
+// Campos de la API externa de himnario usados en la normalización
+interface HymnApiItem {
+  number?: number | string;
+  id?: number | string;
+  title?: string;
+  bibleReference?: string;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -23,7 +31,7 @@ export async function GET(request: Request) {
     const list = Array.isArray(data) ? data : [];
 
     // Normalizar esquema Hymn
-    const himnos = list.map((h: any) => ({
+    const himnos = list.map((h: HymnApiItem) => ({
       number: h.number || h.id,
       title: h.title,
       bibleReference: h.bibleReference || '',

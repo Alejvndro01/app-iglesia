@@ -26,7 +26,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json({ oraciones });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error al obtener oraciones' }, { status: 500 });
   }
 }
@@ -44,7 +44,7 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json({ oracion });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error al actualizar oración' }, { status: 500 });
   }
 }

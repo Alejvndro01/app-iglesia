@@ -10,7 +10,8 @@ export function ThemeToggle() {
 
   // Evita desincronización de hidratación entre servidor y cliente
   useEffect(() => {
-    setMounted(true);
+    const t = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(t);
   }, []);
 
   if (!mounted) return <div className="w-9 h-9" />;

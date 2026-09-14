@@ -4,6 +4,12 @@ import bcrypt from 'bcryptjs';
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
 
+// Campos de VerificationToken usados en la validación del OTP
+interface VerificationTokenRecord {
+  token: string;
+  expires: Date;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
     });
 
     const cleanCode = code.toString().trim();
-    const validRecord = records.find((r) => {
+    const validRecord = records.find((r: VerificationTokenRecord) => {
       const [savedCode] = r.token.split(':');
       return savedCode === cleanCode && new Date(r.expires) > new Date();
     });

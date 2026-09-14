@@ -20,7 +20,7 @@ async function main() {
     },
   });
 
-  console.log('Usuario administrador actualizado/creado:', admin.email);
+  console.warn('Usuario administrador actualizado/creado:', admin.email);
 }
 
 main()

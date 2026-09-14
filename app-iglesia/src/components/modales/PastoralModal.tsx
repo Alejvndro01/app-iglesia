@@ -30,7 +30,7 @@ export function PastoralModal({ onClose }: PastoralModalProps) {
             Les damos la más cordial bienvenida a nuestra comunidad. Que la gracia y la paz de nuestro Señor Jesucristo acompañen sus vidas y familias durante esta semana.
           </p>
           <p className="italic text-[#7C9885] dark:text-emerald-400">
-            "Jehová te bendiga, y te guarde; Jehová haga resplandecer su rostro sobre ti..." — Números 6:24-25
+            &quot;Jehová te bendiga, y te guarde; Jehová haga resplandecer su rostro sobre ti...&quot; — Números 6:24-25
           </p>
         </div>
       </div>

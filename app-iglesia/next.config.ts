@@ -20,6 +20,26 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /* El Dockerfile copia .next/standalone, por lo que el build debe generarlo. */
+  output: "standalone",
+
+  /* No exponer la versión de Next.js en los headers de respuesta. */
+  poweredByHeader: false,
+
+  /* Quitar console.* del bundle de producción (se conservan error y warn). */
+  compiler: {
+    removeConsole: {
+      exclude: ["error", "warn"],
+    },
+  },
+
+  /* Permite next/image con la URL remota de respaldo del login. */
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "placehold.co" },
+    ],
+  },
+
   async headers() {
     return [
       {

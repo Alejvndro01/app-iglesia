@@ -21,22 +21,23 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const fetchArchivos = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/archivos');
-      if (res.ok) {
-        const data = await res.json();
-        setArchivos(data.archivos || []);
-      }
-    } catch (err) {
-      console.error('Error al cargar archivos', err);
-    } finally {
-      setLoading(false);
+  // Retorna los archivos sin tocar estado: los setState quedan en los
+  // call sites (.then/.catch o tras await), nunca sincrónicos en el efecto.
+  const fetchArchivos = async (): Promise<Archivo[]> => {
+    const res = await fetch('/api/archivos');
+    if (!res.ok) {
+      throw new Error('Error al cargar archivos');
     }
+    const data = await res.json();
+    return data.archivos || [];
   };
 
-  useEffect(() => { fetchArchivos(); }, []);
+  useEffect(() => {
+    fetchArchivos()
+      .then((lista) => setArchivos(lista))
+      .catch((err) => console.error('Error al cargar archivos', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +72,14 @@ export default function DashboardPage() {
 
       setFile(null);
       setTitle('');
-      await fetchArchivos();
+      setLoading(true);
+      try {
+        setArchivos(await fetchArchivos());
+      } catch (err) {
+        console.error('Error al cargar archivos', err);
+      } finally {
+        setLoading(false);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {

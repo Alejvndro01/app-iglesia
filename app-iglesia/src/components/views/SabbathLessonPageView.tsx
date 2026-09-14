@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { apiClient } from '@/lib/api-client';
 import { 
   BookOpen, 
@@ -86,7 +87,7 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
   
   const [bibleVersion, setBibleVersion] = useState<string>('RVR1960');
   const [modalVerses, setModalVerses] = useState<VerseData[]>([]);
-  const [modalLoading, setModalLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -108,7 +109,6 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
     if (!modalState.isOpen || !modalState.book || !modalState.chapter) return;
 
     let isMounted = true;
-    setModalLoading(true);
 
     fetch(`/api/biblia?libro=${encodeURIComponent(modalState.book)}&capitulo=${modalState.chapter}&version=${bibleVersion}`)
       .then((res) => res.json())
@@ -254,9 +254,12 @@ export function SabbathLessonPageView({ showToast }: SabbathLessonPageViewProps)
       <div className="rounded-3xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 p-6 sm:p-8 shadow-xs relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
           {lessonData.portada ? (
-            <img
+            <Image
               src={lessonData.portada}
               alt="Portada Lección"
+              width={96}
+              height={128}
+              unoptimized
               className="w-24 h-32 sm:w-28 sm:h-36 object-cover rounded-2xl shadow-md flex-shrink-0 border border-[#DCD7C5] dark:border-slate-700"
             />
           ) : (
