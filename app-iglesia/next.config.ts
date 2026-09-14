@@ -20,8 +20,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  /* El Dockerfile copia .next/standalone, por lo que el build debe generarlo. */
-  output: "standalone",
+  /* Standalone solo fuera de Vercel: en Vercel el adaptador de despliegue
+     choca con output:"standalone" en Next 16.3 (ENOENT next-server.js.nft.json).
+     Vercel ignora .next/standalone de todos modos; el Dockerfile lo sigue usando. */
+  output: process.env.VERCEL ? undefined : "standalone",
 
   /* No exponer la versión de Next.js en los headers de respuesta. */
   poweredByHeader: false,
