@@ -9,7 +9,7 @@ export function PwaRegister() {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')
-          .then((reg) => console.log('PWA SW activo:', reg.scope))
+          .then((reg) => console.warn('PWA SW activo:', reg.scope))
           .catch((err) => console.error('Error cargando PWA SW:', err));
       });
     }

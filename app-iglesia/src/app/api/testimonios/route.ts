@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { sendDiscordAlert } from '@/lib/discord-webhook';
+import { limiter } from '@/lib/ratelimit';
 
 const testimonioSchema = z.object({
   autor: z.string().default('Hermano de Iglesia'),
@@ -103,6 +104,11 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+    const limitResult = await limiter.limit(`likes_${ip}`);
+    if (!limitResult.success) {
+      return NextResponse.json({ error: 'Límite alcanzado. Intenta más tarde.' }, { status: 429 });
+    }
     const { id } = await req.json();
     if (!id) {
       return NextResponse.json({ error: 'ID es requerido' }, { status: 400 });

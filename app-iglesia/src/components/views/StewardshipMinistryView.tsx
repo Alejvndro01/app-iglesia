@@ -7,15 +7,11 @@ import {
   PieChart,
   Copy,
   Check,
-  ShieldCheck,
   Coins,
   Clock,
   Sparkles,
   Heart,
-  HelpCircle,
-  TrendingUp,
-  Landmark,
-  ArrowRight
+  Landmark
 } from 'lucide-react';
 
 export default function StewardshipMinistryView() {

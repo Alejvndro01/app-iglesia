@@ -11,12 +11,23 @@ interface Message {
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: '¡Hola! Soy Esperanza 📖. ¿En qué te puedo ayudar hoy sobre la Biblia o nuestra iglesia en Hualqui?',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('esperanza_chat_history');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return [
+      {
+        role: 'assistant',
+        content: '¡Hola! Soy Esperanza 📖. ¿En qué te puedo ayudar hoy sobre la Biblia o nuestra iglesia en Hualqui?',
+      },
+    ];
+  });
   const [loading, setLoading] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -25,6 +36,12 @@ export function ChatWidget() {
       chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('esperanza_chat_history', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

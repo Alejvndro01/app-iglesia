@@ -38,7 +38,9 @@ const DENO_BOOK_SLUGS: Record<string, string> = {
   'Apocalipsis': 'apocalipsis'
 };
 
-const cacheMap = new Map<string, Array<{ verse: number; text: string }>>();
+const cacheMap = new Map<string, { data: Array<{ verse: number; text: string }>; expiresAt: number }>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_MAX_SIZE = 500;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -51,9 +53,11 @@ export async function GET(request: Request) {
   const slug = DENO_BOOK_SLUGS[libro] || 'juan';
 
   const cacheKey = `${version}-${bookId}-${capitulo}`;
-  if (cacheMap.has(cacheKey)) {
-    return NextResponse.json({ verses: cacheMap.get(cacheKey) });
+  const cached = cacheMap.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return NextResponse.json({ verses: cached.data });
   }
+  cacheMap.delete(cacheKey);
 
   try {
     // CASO 1: Dios Habla Hoy (DHH) -> Ruta directa a Deno API
@@ -67,7 +71,11 @@ export async function GET(request: Request) {
             verse: v.number,
             text: v.verse.replace(/<[^>]*>?/gm, '').replace(/\[\d+\]/g, '').trim()
           }));
-          cacheMap.set(cacheKey, verses);
+          if (cacheMap.size >= CACHE_MAX_SIZE) {
+        const oldestKey = cacheMap.keys().next().value;
+        if (oldestKey) cacheMap.delete(oldestKey);
+      }
+      cacheMap.set(cacheKey, { data: verses, expiresAt: Date.now() + CACHE_TTL_MS });
           return NextResponse.json({ verses });
         }
       }
@@ -96,7 +104,11 @@ export async function GET(request: Request) {
             .replace(/\[\d+\]/g, '')
             .trim()
         }));
-        cacheMap.set(cacheKey, verses);
+        if (cacheMap.size >= CACHE_MAX_SIZE) {
+        const oldestKey = cacheMap.keys().next().value;
+        if (oldestKey) cacheMap.delete(oldestKey);
+      }
+      cacheMap.set(cacheKey, { data: verses, expiresAt: Date.now() + CACHE_TTL_MS });
         return NextResponse.json({ verses });
       }
     }
@@ -119,7 +131,11 @@ export async function GET(request: Request) {
           verse: v.number,
           text: v.verse.replace(/<[^>]*>?/gm, '').replace(/\[\d+\]/g, '').trim()
         }));
-        cacheMap.set(cacheKey, verses);
+        if (cacheMap.size >= CACHE_MAX_SIZE) {
+        const oldestKey = cacheMap.keys().next().value;
+        if (oldestKey) cacheMap.delete(oldestKey);
+      }
+      cacheMap.set(cacheKey, { data: verses, expiresAt: Date.now() + CACHE_TTL_MS });
         return NextResponse.json({ verses });
       }
     }

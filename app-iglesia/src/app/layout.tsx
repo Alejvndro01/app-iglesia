@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "next-auth/react";
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PwaRegister />
+            <Header />
             <main className="flex-1 bg-slate-50 dark:bg-slate-900">{children}</main>
             <Footer />
             <ChatWidget />

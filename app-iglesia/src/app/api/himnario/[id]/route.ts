@@ -6,6 +6,16 @@ interface FormattedVerse {
   text: string;
 }
 
+// Campos de la API externa de himnario usados para formatear las estrofas
+interface HymnVerseContent {
+  content?: string;
+}
+
+interface HymnVerse {
+  number?: number;
+  contents?: HymnVerseContent[];
+}
+
 // Extrae el ID de Google Drive y construye la URL hacia nuestro Proxy local
 function getProxyAudioUrl(url?: string): string | null {
   if (!url) return null;
@@ -35,8 +45,8 @@ export async function GET(
 
     const himno = await res.json();
 
-    const versesFormatted: FormattedVerse[] = (himno.verses || []).map((v: any) => {
-      const stanzaText = (v.contents || []).map((c: any) => c.content).join('\n');
+    const versesFormatted: FormattedVerse[] = (himno.verses || []).map((v: HymnVerse) => {
+      const stanzaText = (v.contents || []).map((c: HymnVerseContent) => c.content).join('\n');
       return {
         type: v.number === 0 ? 'chorus' : 'verse',
         number: v.number,

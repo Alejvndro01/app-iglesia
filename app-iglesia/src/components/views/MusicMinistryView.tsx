@@ -4,18 +4,10 @@ import React, { useState } from 'react';
 import {
   Music,
   Mic2,
-  Calendar,
   Clock,
-  Sparkles,
   Download,
   Send,
-  CheckCircle2,
-  Volume2,
-  FileMusic,
-  Headphones,
-  Users,
-  Play,
-  Heart
+  CheckCircle2
 } from 'lucide-react';
 
 interface SpecialItemForm {
@@ -206,7 +198,7 @@ export default function MusicMinistryView() {
                   </label>
                   <select
                     value={form.serviceType}
-                    onChange={(e) => setForm({ ...form, serviceType: e.target.value as any })}
+                    onChange={(e) => setForm({ ...form, serviceType: e.target.value as SpecialItemForm['serviceType'] })}
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-200 focus:outline-none focus:border-[#7C9885]"
                   >
                     <option value="culto-divino">Culto Divino (Sábado Mañana)</option>
@@ -221,7 +213,7 @@ export default function MusicMinistryView() {
                   </label>
                   <select
                     value={form.performanceType}
-                    onChange={(e) => setForm({ ...form, performanceType: e.target.value as any })}
+                    onChange={(e) => setForm({ ...form, performanceType: e.target.value as SpecialItemForm['performanceType'] })}
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-200 focus:outline-none focus:border-[#7C9885]"
                   >
                     <option value="canto">Canto Solista / Dúo</option>

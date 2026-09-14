@@ -3,19 +3,13 @@
 import React, { useState } from 'react';
 import {
   HeartHandshake,
-  BookOpen,
   Send,
-  Users,
   Target,
   Download,
-  Share2,
   CheckCircle2,
   Sparkles,
-  MapPin,
   Calendar,
-  PhoneCall,
-  Flame,
-  ArrowRight
+  PhoneCall
 } from 'lucide-react';
 
 interface StudyRequestForm {

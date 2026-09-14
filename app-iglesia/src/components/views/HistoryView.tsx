@@ -3,11 +3,8 @@
 import React, { useState } from 'react';
 import { 
   Church, 
-  MapPin, 
   Sparkles, 
-  Users, 
   Calendar, 
-  Heart, 
   Compass, 
   ShieldCheck, 
   BookOpen, 
@@ -15,7 +12,6 @@ import {
   Flame,
   Globe2,
   Scroll,
-  Award,
   LucideIcon
 } from 'lucide-react';
 
@@ -111,7 +107,7 @@ const TIMELINE_DATA: TimelineItem[] = [
   }
 ];
 
-export function HistoryView({ navigateTo }: HistoryViewProps) {
+export function HistoryView({}: HistoryViewProps) {
   const [activePillar, setActivePillar] = useState<PillarKey>('mision');
   const [timelineFilter, setTimelineFilter] = useState<'all' | 'global' | 'local'>('all');
 
@@ -185,7 +181,7 @@ export function HistoryView({ navigateTo }: HistoryViewProps) {
               </div>
 
               <blockquote className="mt-6 pt-4 border-t border-[#E8E4D5] dark:border-slate-800 italic text-[11px] text-[#66756C] dark:text-slate-400">
-                "{pioneer.quote}"
+                &quot;{pioneer.quote}&quot;
               </blockquote>
             </div>
           ))}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Oracion, SolicitudCurso, Archivo } from '@/types';
 import { 
@@ -30,48 +30,49 @@ export function AdminPanelPageView({ showToast }: AdminViewProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchData = async () => {
-    try {
-      const [dataPrayers, dataCourses, dataFiles] = await Promise.all([
-        apiClient.getOracionesAdmin(),
-        apiClient.getSolicitudesCursos(),
-        apiClient.getArchivos(),
-      ]);
+  const fetchData = useCallback(() => {
+    Promise.all([
+      apiClient.getOracionesAdmin(),
+      apiClient.getSolicitudesCursos(),
+      apiClient.getArchivos(),
+    ])
+      .then(([dataPrayers, dataCourses, dataFiles]) => {
+        setPrayers(dataPrayers.oraciones || []);
+        setCourses(dataCourses.solicitudes || []);
 
-      setPrayers(dataPrayers.oraciones || []);
-      setCourses(dataCourses.solicitudes || []);
+        const rawFiles = (Array.isArray(dataFiles) ? dataFiles : dataFiles?.archivos || []) as unknown as Record<string, unknown>[];
 
-      const rawFiles = (Array.isArray(dataFiles) ? dataFiles : dataFiles?.archivos || []) as unknown as Record<string, unknown>[];
-      
-      const normalizedFiles: Archivo[] = rawFiles.map((item, index) => {
-        const nombre = String(item.nombre || item.titulo || item.fileName || `Archivo ${index + 1}`);
-        const url = String(item.url || item.path || '#');
-        const key = String(item.key || item.id || `key-${index}`);
-        const tipo = String(item.tipo || item.mimeType || item.fileType || 'application/octet-stream');
-        const tamano = Number(item.tamano || item.size || item.fileSize || 0);
+        const normalizedFiles: Archivo[] = rawFiles.map((item, index) => {
+          const nombre = String(item.nombre || item.titulo || item.fileName || `Archivo ${index + 1}`);
+          const url = String(item.url || item.path || '#');
+          const key = String(item.key || item.id || `key-${index}`);
+          const tipo = String(item.tipo || item.mimeType || item.fileType || 'application/octet-stream');
+          const tamano = Number(item.tamano || item.size || item.fileSize || 0);
 
-        return {
-          id: String(item.id || key),
-          nombre,
-          url,
-          key,
-          tipo,
-          tamano,
-          createdAt: String(item.createdAt || new Date().toISOString()),
-        };
+          return {
+            id: String(item.id || key),
+            nombre,
+            url,
+            key,
+            tipo,
+            tamano,
+            createdAt: String(item.createdAt || new Date().toISOString()),
+          };
+        });
+
+        setFiles(normalizedFiles);
+      })
+      .catch(() => {
+        showToast('Error al cargar datos del panel');
+      })
+      .finally(() => {
+        setLoading(false);
       });
-
-      setFiles(normalizedFiles);
-    } catch {
-      showToast('Error al cargar datos del panel');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleMarkAsAnswered = async (id: string) => {
     try {

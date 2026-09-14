@@ -6,12 +6,9 @@ import {
   Search, 
   ChevronLeft, 
   ChevronRight, 
-  Sparkles, 
   Copy, 
   Check, 
-  Loader2,
-  Bookmark,
-  Layers
+  Loader2
 } from 'lucide-react';
 
 interface Verse {
@@ -109,7 +106,7 @@ export function BibleView() {
   const [searchFilter, setSearchFilter] = useState('');
   
   const [verses, setVerses] = useState<Verse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg'>('base');
 
@@ -118,7 +115,6 @@ export function BibleView() {
   // Carga asíncrona conectada al API
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
 
     fetch(`/api/biblia?libro=${encodeURIComponent(selectedBook)}&capitulo=${selectedChapter}&version=${selectedVersion}`)
       .then((res) => res.json())

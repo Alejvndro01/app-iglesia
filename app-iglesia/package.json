@@ -16,6 +16,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
     "bcryptjs": "^3.0.3",
+    "dexie": "^4.4.5",
     "groq-sdk": "^1.5.0",
     "jose": "^6.2.8",
     "lucide-react": "^1.31.0",

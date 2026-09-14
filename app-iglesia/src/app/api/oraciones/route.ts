@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { limiter } from '@/lib/ratelimit';
 
 const oracionSchema = z.object({
   nombre: z.string().default('Anónimo'),
@@ -10,6 +11,11 @@ const oracionSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+    const limitResult = await limiter.limit(`oraciones_${ip}`);
+    if (!limitResult.success) {
+      return NextResponse.json({ error: 'Límite de solicitudes alcanzado. Intenta más tarde.' }, { status: 429 });
+    }
     const body = await req.json();
     const validation = oracionSchema.safeParse(body);
 

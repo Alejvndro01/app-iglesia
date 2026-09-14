@@ -1,0 +1,106 @@
+'use client';
+
+import React, { useRef } from 'react';
+import { HimnoDetail } from '@/types';
+import { BookOpen, Volume2, Mic, Music } from 'lucide-react';
+
+interface HymnalDetailViewProps {
+  hymn: HimnoDetail;
+}
+
+export function HymnalDetailView({ hymn }: HymnalDetailViewProps) {
+  const vocalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const instrAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleVocalPlay = () => {
+    if (instrAudioRef.current && !instrAudioRef.current.paused) {
+      instrAudioRef.current.pause();
+    }
+  };
+
+  const handleInstrPlay = () => {
+    if (vocalAudioRef.current && !vocalAudioRef.current.paused) {
+      vocalAudioRef.current.pause();
+    }
+  };
+
+  return (
+    <div className="bg-[#FAF8F3] dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-[#E2DEC9] dark:border-slate-800 shadow-xs min-h-[400px] space-y-6">
+      <div className="border-b border-[#E8E4D5] dark:border-slate-800 pb-4 space-y-1">
+        <span className="text-xs font-bold text-[#7C9885] dark:text-emerald-400">
+          HIMNO #{hymn.number}
+        </span>
+        <h3 className="text-xl sm:text-2xl font-bold text-[#2D3831] dark:text-emerald-100">
+          {hymn.title}
+        </h3>
+        {hymn.bibleReference && (
+          <p className="text-xs text-[#66756C] dark:text-slate-400 font-medium flex items-center gap-1.5 mt-1">
+            <BookOpen className="w-3.5 h-3.5 text-[#7C9885]" /> {hymn.bibleReference}
+          </p>
+        )}
+      </div>
+
+      {(hymn.mp3Url || hymn.mp3UrlInstr) && (
+        <div className="bg-[#E8F0EA] dark:bg-slate-800/80 p-4 rounded-2xl border border-[#C5D8CC] dark:border-slate-700 space-y-4">
+          <h4 className="text-xs font-bold text-[#2D3831] dark:text-emerald-200 flex items-center gap-1.5">
+            <Volume2 className="w-4 h-4 text-[#7C9885]" /> Reproductor de Audio
+          </h4>
+
+          {hymn.mp3Url && (
+            <div className="space-y-1">
+              <p className="text-[10px] text-[#546E5C] dark:text-slate-400 font-semibold flex items-center gap-1">
+                <Mic className="w-3 h-3" /> Audio Cantado:
+              </p>
+              <audio
+                ref={vocalAudioRef}
+                controls
+                onPlay={handleVocalPlay}
+                preload="metadata"
+                className="w-full h-9 rounded-lg"
+                src={hymn.mp3Url}
+              >
+                Tu navegador no soporta el reproductor de audio.
+              </audio>
+            </div>
+          )}
+
+          {hymn.mp3UrlInstr && (
+            <div className="space-y-1">
+              <p className="text-[10px] text-[#546E5C] dark:text-slate-400 font-semibold flex items-center gap-1">
+                <Music className="w-3 h-3" /> Pista / Instrumental:
+              </p>
+              <audio
+                ref={instrAudioRef}
+                controls
+                onPlay={handleInstrPlay}
+                preload="metadata"
+                className="w-full h-9 rounded-lg"
+                src={hymn.mp3UrlInstr}
+              >
+                Tu navegador no soporta el reproductor de audio.
+              </audio>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-4 text-xs sm:text-sm text-[#3A473E] dark:text-slate-300 leading-relaxed">
+        {hymn.verses?.map((verse, index) => (
+          <div
+            key={index}
+            className={`p-4 rounded-2xl border ${
+              verse.type === 'chorus'
+                ? 'bg-[#F8F5EC] dark:bg-emerald-950/20 border-[#E8E4D5] dark:border-emerald-900/40'
+                : 'bg-white dark:bg-slate-950 border-[#E8E4D5] dark:border-slate-800'
+            }`}
+          >
+            <p className="text-[10px] font-bold text-[#7C9885] dark:text-emerald-400 uppercase mb-1">
+              {verse.type === 'chorus' ? 'Coro' : `Estrofa ${verse.number}`}
+            </p>
+            <p className="whitespace-pre-line font-medium leading-relaxed">{verse.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

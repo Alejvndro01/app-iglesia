@@ -2,20 +2,15 @@
 
 import React, { useState } from 'react';
 import {
-  Heart,
   Home,
   Shield,
-  Smile,
-  MessageSquareHeart,
   Sparkles,
-  Calendar,
   Lock,
   Send,
   CheckCircle2,
   ChevronRight,
   Sun,
-  Coffee,
-  HelpCircle
+  Coffee
 } from 'lucide-react';
 
 interface CounselingForm {
@@ -350,7 +345,7 @@ export default function FamilyMinistryView() {
                   </label>
                   <select
                     value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value as any })}
+                    onChange={(e) => setForm({ ...form, category: e.target.value as CounselingForm['category'] })}
                     className="w-full px-3.5 py-2 text-xs rounded-xl bg-[#FAF8F3] dark:bg-slate-900 border border-[#DCD7C5] dark:border-slate-700 text-[#2D3831] dark:text-slate-200 focus:outline-none focus:border-[#7C9885]"
                   >
                     <option value="matrimonio">Orientación Matrimonial</option>

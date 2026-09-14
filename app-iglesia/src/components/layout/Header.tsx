@@ -2,20 +2,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
 import { BulletinModal } from '../modales/BulletinModal';
 import { ThemeToggle } from '../ThemeToggle';
-import { 
-  Church, 
-  BookOpen, 
-  Calendar, 
-  Music, 
-  GraduationCap, 
-  HeartHandshake, 
-  FileText, 
-  ShieldCheck, 
-  User, 
-  LogOut, 
-  Menu, 
+import {
+  Church,
+  BookOpen,
+  Calendar,
+  Music,
+  GraduationCap,
+  HeartHandshake,
+  FileText,
+  ShieldCheck,
+  User,
+  LogOut,
+  Menu,
   X,
   Flame,
   ChevronDown,
@@ -29,8 +30,6 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  currentPage: string;
-  navigateTo: (page: string) => void;
   setBulletinModalOpen?: (open: boolean) => void;
   showToast?: (msg: string) => void;
 }
@@ -52,11 +51,11 @@ interface NavItem {
 }
 
 export function Header({
-  currentPage,
-  navigateTo,
   showToast,
 }: HeaderProps) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bulletinOpen, setBulletinOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -83,41 +82,41 @@ export function Header({
       label: 'Ministerios',
       icon: Users,
       children: [
-        { 
-          id: 'jovenes', 
-          label: 'Jóvenes JA', 
-          icon: Flame, 
-          description: 'Sociedad JA, proyectos juveniles y Misión Caleb' 
+        {
+          id: 'jovenes',
+          label: 'Jóvenes JA',
+          icon: Flame,
+          description: 'Sociedad JA, proyectos juveniles y Misión Caleb'
         },
-        { 
-          id: 'musica', 
-          label: 'Ministerio de Música', 
-          icon: Music, 
-          description: 'Coros, alabanza congregacional y partes especiales' 
+        {
+          id: 'musica',
+          label: 'Ministerio de Música',
+          icon: Music,
+          description: 'Coros, alabanza congregacional y partes especiales'
         },
-        { 
-          id: 'ministerio-personal', 
-          label: 'Ministerio Personal', 
-          icon: Share2, 
-          description: 'Evangelismo, parejas misioneras y discipulado' 
+        {
+          id: 'ministerio-personal',
+          label: 'Ministerio Personal',
+          icon: Share2,
+          description: 'Evangelismo, parejas misioneras y discipulado'
         },
-        { 
-          id: 'hogar-familia', 
-          label: 'Hogar y Familia', 
-          icon: Home, 
-          description: 'Matrimonios, crianza bíblica y consejería familiar' 
+        {
+          id: 'hogar-familia',
+          label: 'Hogar y Familia',
+          icon: Home,
+          description: 'Matrimonios, crianza bíblica y consejería familiar'
         },
-        { 
-          id: 'comunicaciones', 
-          label: 'Comunicaciones & Medios', 
-          icon: Radio, 
-          description: 'Transmisiones en vivo, avisos y producción digital' 
+        {
+          id: 'comunicaciones',
+          label: 'Comunicaciones & Medios',
+          icon: Radio,
+          description: 'Transmisiones en vivo, avisos y producción digital'
         },
-        { 
-          id: 'mayordomia', 
-          label: 'Mayordomía Cristiana', 
-          icon: HeartHandshake, 
-          description: 'Fidelidad, calculadora de diezmos y ofrendas' 
+        {
+          id: 'mayordomia',
+          label: 'Mayordomía Cristiana',
+          icon: HeartHandshake,
+          description: 'Fidelidad, calculadora de diezmos y ofrendas'
         },
       ],
     },
@@ -126,43 +125,43 @@ export function Header({
       label: 'Recursos',
       icon: Sparkles,
       children: [
-        { 
-          id: 'biblia', 
-          label: 'Biblia Online', 
-          icon: BookOpen, 
-          description: 'Texto bíblico y lecturas RVR1960' 
+        {
+          id: 'biblia',
+          label: 'Biblia Online',
+          icon: BookOpen,
+          description: 'Texto bíblico y lecturas RVR1960'
         },
-        { 
-          id: 'leccion', 
-          label: 'Lección Diaria', 
-          icon: Calendar, 
-          description: 'Escuela Sabática adultos y jóvenes' 
+        {
+          id: 'leccion',
+          label: 'Lección Diaria',
+          icon: Calendar,
+          description: 'Escuela Sabática adultos y jóvenes'
         },
-        { 
-          id: 'himnario', 
-          label: 'Himnario Adventista', 
-          icon: Music, 
-          description: 'Cantos de alabanza y letras completas' 
+        {
+          id: 'himnario',
+          label: 'Himnario Adventista',
+          icon: Music,
+          description: 'Cantos de alabanza y letras completas'
         },
-        { 
-          id: 'estudios-biblicos', 
-          label: 'Estudios Bíblicos', 
-          icon: GraduationCap, 
-          description: 'Cursos de fe con validación OTP' 
+        {
+          id: 'estudios-biblicos',
+          label: 'Estudios Bíblicos',
+          icon: GraduationCap,
+          description: 'Cursos de fe con validación OTP'
         },
-        { 
-          id: 'archivos', 
-          label: 'Archivos & Documentos', 
-          icon: FolderUp, 
-          description: 'Descarga y subida de recursos comunitarios' 
+        {
+          id: 'archivos',
+          label: 'Archivos & Documentos',
+          icon: FolderUp,
+          description: 'Descarga y subida de recursos comunitarios'
         },
       ],
     },
-    { 
-      id: 'boletin', 
-      label: 'Boletín Sabático', 
-      icon: FileText, 
-      action: () => setBulletinOpen(true) 
+    {
+      id: 'boletin',
+      label: 'Boletín Sabático',
+      icon: FileText,
+      action: () => setBulletinOpen(true)
     },
   ];
 
@@ -170,7 +169,7 @@ export function Header({
     if (action) {
       action();
     } else {
-      navigateTo(id);
+      router.push(`/${id === 'inicio' ? '' : id}`);
     }
     setOpenDropdown(null);
     setMobileMenuOpen(false);
@@ -185,7 +184,7 @@ export function Header({
       await fetch('/api/auth/logout', { method: 'POST' });
       await signOut({ redirect: false });
       showToast?.('Sesión cerrada correctamente');
-      navigateTo('inicio');
+      router.push('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -201,8 +200,8 @@ export function Header({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* Logo Identidad */}
-          <div 
-            onClick={() => navigateTo('inicio')} 
+          <div
+            onClick={() => router.push('/')}
             className="flex items-center space-x-3 cursor-pointer group"
           >
             <div className="w-9 h-9 rounded-2xl bg-[#E8F0EA] dark:bg-slate-800 flex items-center justify-center text-[#7C9885] dark:text-emerald-400 border border-[#C5D8CC] dark:border-slate-700 shadow-xs transition-transform group-hover:scale-105">
@@ -222,8 +221,8 @@ export function Header({
           <nav ref={navRef} className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
               const hasChildren = Boolean(item.children && item.children.length > 0);
-              const isChildActive = item.children?.some((child) => child.id === currentPage);
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+              const isChildActive = item.children?.some((child) => pathname.includes(child.id));
+              const isActive = pathname === `/${item.id}` || (pathname === '/' && item.id === 'inicio') || isChildActive;
               const isOpen = openDropdown === item.id;
 
               if (hasChildren) {
@@ -246,7 +245,7 @@ export function Header({
                       <div className="absolute top-full left-0 mt-2 w-72 bg-[#FAF8F3] dark:bg-slate-900 border border-[#E2DEC9] dark:border-slate-800 rounded-2xl shadow-lg p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon;
-                          const isSubActive = currentPage === sub.id;
+                          const isSubActive = pathname.includes(sub.id);
                           return (
                             <button
                               key={sub.id}
@@ -310,7 +309,7 @@ export function Header({
 
                 {userRole === 'ADMIN' && (
                   <button
-                    onClick={() => navigateTo('admin')}
+                    onClick={() => router.push('/admin')}
                     className="px-2.5 py-1 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
                   >
                     Admin
@@ -327,7 +326,7 @@ export function Header({
               </div>
             ) : (
               <button
-                onClick={() => navigateTo('login')}
+                onClick={() => router.push('/login')}
                 className="px-4 py-2 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer transition-all"
               >
                 Iniciar Sesión
@@ -355,8 +354,8 @@ export function Header({
             {navItems.map((item) => {
               const hasChildren = Boolean(item.children && item.children.length > 0);
               const isExpanded = mobileExpanded[item.id];
-              const isChildActive = item.children?.some((child) => child.id === currentPage);
-              const isActive = currentPage === item.id || (currentPage === 'home' && item.id === 'inicio') || isChildActive;
+              const isChildActive = item.children?.some((child) => pathname.includes(child.id));
+              const isActive = pathname === `/${item.id}` || (pathname === '/' && item.id === 'inicio') || isChildActive;
 
               if (hasChildren) {
                 return (
@@ -377,7 +376,7 @@ export function Header({
                       <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-[#C5D8CC] dark:border-slate-700 ml-3">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon;
-                          const isSubActive = currentPage === sub.id;
+                          const isSubActive = pathname.includes(sub.id);
                           return (
                             <button
                               key={sub.id}
@@ -420,7 +419,7 @@ export function Header({
                 <>
                   {userRole === 'ADMIN' && (
                     <button
-                      onClick={() => { navigateTo('admin'); setMobileMenuOpen(false); }}
+                      onClick={() => { router.push('/admin'); setMobileMenuOpen(false); }}
                       className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center flex items-center justify-center gap-1.5"
                     >
                       <ShieldCheck className="w-4 h-4" /> Admin ({userName})
@@ -435,7 +434,7 @@ export function Header({
                 </>
               ) : (
                 <button
-                  onClick={() => { navigateTo('login'); setMobileMenuOpen(false); }}
+                  onClick={() => { router.push('/login'); setMobileMenuOpen(false); }}
                   className="w-full py-2.5 bg-[#7C9885] hover:bg-[#6B8774] text-white font-semibold text-xs rounded-xl text-center"
                 >
                   Iniciar Sesión
